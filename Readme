@@ -67,7 +67,7 @@ Parse a chain using options in iniFile.pip:
 
   pippi parse iniFile.pip
 
-  Pippi will automoatically perform the binning, profiling, marginalising etc 
+  Pippi will automatically perform the binning, profiling, marginalising etc 
   of the requested chain(s) indicated in iniFile.pip, and save them as 
   datafiles. Note that iniFile.pip or the labels file it specifies must
   contain labels that indicate in which column and form pippi can find
@@ -128,7 +128,7 @@ as you can skip parsing:
 pippi script example.pip
 pippi plot example.pip
 
-In general, options in later sections of test.pip do not affect the 
+In general, options in later sections of example.pip do not affect the 
 operations corresponding to earlier sections, e.g. changing things in the
 'plot' section means there is no need to rerun pippi parse or pippi script,
 just pippi plot.  The opposite is not true; if you want changes you make 
@@ -150,12 +150,12 @@ Added posterior mean and best-fit key options
 Added/improved treatment of directory options
 
 v0.2
-Added proper _script_ and _plot_ functions for 2D plots, 1D plots still need finishing
-Fixed various bugs in _parse_
+Added proper script and plot functions for 2D plots, 1D plots still need finishing
+Fixed various bugs in parse
 Uploaded to git repo for DEvoPack and LDMBayes
 
 v0.1  
-First alpha, only _parse_, _pare_ and _merge_ genuinely functional
+First alpha, only parse, pare and merge genuinely functional
 Uploaded to git repo for LDMBayes
 
 
