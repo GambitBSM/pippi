@@ -623,7 +623,7 @@ def script(filename):
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --frame-margins 0.18,0.19,0.05,0.15\\\n')
         else:
-          outfile.write('  --frame-margins 0.18,0.1,0.05,0.15\\\n')
+          outfile.write('  --frame-margins 0.2045,0.0796,0.05,0.15\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
         outfile.write('  --ylabel \''+labels.value[plot[1]]+'\' /shift 2.9\\\n')
@@ -766,7 +766,7 @@ def script(filename):
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --frame-margins 0.18,0.19,0.05,0.15\\\n')
         else:
-          outfile.write('  --frame-margins 0.18,0.1,0.05,0.15\\\n')
+          outfile.write('  --frame-margins 0.2045,0.0796,0.05,0.15\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
         outfile.write('  --ylabel \''+labels.value[plot[1]]+'\' /shift 2.9\\\n')
@@ -911,7 +911,7 @@ def script(filename):
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --frame-margins 0.18,0.19,0.05,0.15\\\n')
         else:
-          outfile.write('  --frame-margins 0.18,0.1,0.05,0.15\\\n')
+          outfile.write('  --frame-margins 0.2045,0.0796,0.05,0.15\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
         outfile.write('  --ylabel \''+labels.value[plot[1]]+'\' /shift 2.9\\\n')
