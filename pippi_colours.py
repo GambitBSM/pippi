@@ -141,8 +141,8 @@ BlueGold.mainPostMeanColour2D = 'Black'
 
 # nightOfTheAllanachs colour scheme
 nightOfTheAllanachs = colourScheme('nightOfTheAllanachs')
-nightOfTheAllanachs.baseProfColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
-nightOfTheAllanachs.basePostColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
+nightOfTheAllanachs.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
+nightOfTheAllanachs.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
 nightOfTheAllanachs.mainPostContourColour2D = 'White'
 nightOfTheAllanachs.mainProfContourColour2D = 'White'
 nightOfTheAllanachs.axisColour2D = 'White'
