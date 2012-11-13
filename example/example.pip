@@ -62,8 +62,8 @@ reference_text = 'True value'			;Key string to be printed for reference point
 logo_file = 'pippi'				;Logo pdf file to overplot (EFN)
 logo_loc = {0.08,0.89}				;Normalised plot x,y co-ordinates of logo centre
 logo_width = 0.09				;Width to display logo with (as a fraction of default plot width) 
-colour_scheme = IceCube				;A recognised pippi colourScheme object (Basic, BlueGold, IceCube, SBClassic,
-						; NightOfTheAllanachs, etc - add your own to colourSchemes.py)
+colour_scheme = IceCube3sig			;A recognised pippi colourScheme object (Basic, BlueGold, IceCube, SBClassic,
+						; NightOfTheAllanachs, etc - add your own to pippi_colours.py)
 -------------------------------
 ---Plotting--------------------
 

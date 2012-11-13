@@ -109,14 +109,26 @@ iceCube.mainPostMeanColour1D = 'Black'
 iceCube.mainBestFitColour2D = 'Black'
 iceCube.mainPostMeanColour2D = 'Black'
 
+# iceCube79 colour scheme
+iceCube79 = colourScheme('iceCube79')
+iceCube79.baseProfColourMap = '#fff--#fff(contour2)--#fab(contour1)--#f45'
+iceCube79.basePostColourMap = '#fff--#fff(contour2)--#ddf(contour1)--#88f'
+iceCube79.mainBestFitColour1D = 'Black'
+iceCube79.mainPostMeanColour1D = 'Black'
+iceCube79.mainBestFitColour2D = 'Black'
+iceCube79.mainPostMeanColour2D = 'Black'
+iceCube79.mainPostContourColour2D = 'Grey'
+iceCube79.mainProfContourColour2D = 'Grey'
+iceCube79.lineWidth2D = '1.5'
+
 # iceCube3sig colour scheme
-iceCube = colourScheme('iceCube3sig')
-iceCube.baseProfColourMap = '#fff--#fff(contour3)--#292(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
-iceCube.basePostColourMap = '#fff--#fff(contour3)--#29d(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
-iceCube.mainBestFitColour1D = 'Black'
-iceCube.mainPostMeanColour1D = 'Black'
-iceCube.mainBestFitColour2D = 'Black'
-iceCube.mainPostMeanColour2D = 'Black'
+iceCube3sig = colourScheme('iceCube3sig')
+iceCube3sig.baseProfColourMap = '#fff--#fff(contour3)--#292(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
+iceCube3sig.basePostColourMap = '#fff--#fff(contour3)--#29d(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
+iceCube3sig.mainBestFitColour1D = 'Black'
+iceCube3sig.mainPostMeanColour1D = 'Black'
+iceCube3sig.mainBestFitColour2D = 'Black'
+iceCube3sig.mainPostMeanColour2D = 'Black'
 
 # SBClassic colour scheme
 SBClassic = colourScheme('SBClassic')
