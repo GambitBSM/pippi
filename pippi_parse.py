@@ -13,7 +13,14 @@ from scipy import version as scipyCurrent
 from scipy.special import gammaincinv as deltaLnLike
 from scipy.interpolate import InterpolatedUnivariateSpline as oneDspline
 from scipy.interpolate import RectBivariateSpline as twoDbilinear
-if float(scipyCurrent.version[0:3]) >= 0.9:
+scipy_major_ver = int(scipyCurrent.version[0])
+if scipyCurrent.version[3] == ".": 
+  scipy_minor_ver = int(scipyCurrent.version[2:3])
+elif scipyCurrent.version[4] == ".":
+  scipy_minor_ver = int(scipyCurrent.version[2:4])
+else: 
+  sys.exit('Unrecognised SciPy version: '+scipyCurrent.version)
+if scipy_major_ver > 0 or scipy_minor_ver > 8:
   from scipy.interpolate import CloughTocher2DInterpolator as twoDspline
 
 # Define parse-specific pip file entries
@@ -35,7 +42,7 @@ firstLikeKey = None
 dataRanges = {}
 
 def parse(filename):
-  #input: 	filename = the name of the pip file
+  #input:   filename = the name of the pip file
   global doPosteriorMean
     
   #Parse pip file
@@ -53,7 +60,7 @@ def parse(filename):
   if twoDplots.value is not None:
     if intMethod.value is None: intMethod.value = allowedIntMethods[0]
     if intMethod.value not in allowedIntMethods: sys.exit('Error: unrecognised interpolation_method.')
-    if intMethod.value == 'spline' and float(scipyCurrent.version[0:3]) < 0.9:
+    if intMethod.value == 'spline' and (scipy_major_ver == 0 and scipy_minor_ver < 9):
       sys.exit('Sorry, Clough-Tocher 2D interpolation is not supported in SciPy \n'+
                'v0.8 or lower; please upgrade your installation to use this option.')
 
