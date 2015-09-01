@@ -13,7 +13,8 @@ from scipy import version as scipyCurrent
 from scipy.special import gammaincinv as deltaLnLike
 from scipy.interpolate import InterpolatedUnivariateSpline as oneDspline
 from scipy.interpolate import RectBivariateSpline as twoDbilinear
-if float(scipyCurrent.version[0:3]) >= 0.9:
+from distutils.version import StrictVersion
+if StrictVersion(scipyCurrent.version) >= StrictVersion("0.9.0"):
   from scipy.interpolate import CloughTocher2DInterpolator as twoDspline
 
 # Define parse-specific pip file entries
@@ -37,14 +38,14 @@ dataRanges = {}
 def parse(filename):
   #input: 	filename = the name of the pip file
   global doPosteriorMean
-    
+
   #Parse pip file
   getIniData(filename,keys,savekeys=[labels],savedir=parsedir)
 
   # Work out where the parse output is to be located
   if parsedir.value is None:
     # No parse_dir; default to the directory containing chain(s)
-    baseFiledir = re.sub(r'/.*?$', '/', mainChain.value) 
+    baseFiledir = re.sub(r'/.*?$', '/', mainChain.value)
   else:
     # Save in parse_dir
     baseFiledir = parsedir.value+'/'
@@ -53,12 +54,12 @@ def parse(filename):
   if twoDplots.value is not None:
     if intMethod.value is None: intMethod.value = allowedIntMethods[0]
     if intMethod.value not in allowedIntMethods: sys.exit('Error: unrecognised interpolation_method.')
-    if intMethod.value == 'spline' and float(scipyCurrent.version[0:3]) < 0.9:
+    if intMethod.value == 'spline' and StrictVersion(scipyCurrent.version) < StrictVersion("0.9.0"):
       sys.exit('Sorry, Clough-Tocher 2D interpolation is not supported in SciPy \n'+
                'v0.8 or lower; please upgrade your installation to use this option.')
 
   #Read in label data if it is not in the pip file
-  if labelFile.value is not None: getIniData(labelFile.value,[labels])  
+  if labelFile.value is not None: getIniData(labelFile.value,[labels])
 
   #Check that flags match up for profile likelihood
   if all(x not in labels.value for x in permittedLikes) and doProfile.value:
@@ -75,22 +76,22 @@ def parse(filename):
 
   #Check that flags match up for evidence
   if doEvidence.value:
-    if chainType.value is mcmc:      
+    if chainType.value is mcmc:
       if all(x not in labels.value for x in permittedLikes) or \
          all(x not in labels.value for x in permittedMults) or \
-         all(x not in labels.value for x in permittedPriors): 
+         all(x not in labels.value for x in permittedPriors):
         print '  The evidence cannot be calculated without multiplicity, prior and likelihood.\n  Skipping evidence...'
         doEvidence.value = False
     else:
       print '  The evidence can only be calculated from an MCMC chain.\n  Skipping evidence...'
-      doEvidence.value = False  
+      doEvidence.value = False
 
   # Open main chain and read in contents
   mainArray = getChainData(mainChain.value)
 
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
-  twoDlist = [] if twoDplots.value is None else twoDplots.value  
+  twoDlist = [] if twoDplots.value is None else twoDplots.value
   setOfRequestedColumns = set(oneDlist + [y for x in twoDlist for y in x])
   for plot in setOfRequestedColumns:
     if plot > mainArray.shape[1]:
@@ -117,11 +118,11 @@ def parse(filename):
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
-    
+
 
 def doParse(dataArray,outputBaseFilename,setOfRequestedColumns):
   #Perform all numerical operations required for chain parsing
-    
+
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray)
   # Sort array if required
@@ -151,7 +152,7 @@ def standardise(dataArray):
       labels.value[refPrior] = labels.value[key]
       if key != refPrior: del labels.value[key]
     if any(key == like for like in permittedLikes):
-      if firstLikeKey is None: firstLikeKey = key 
+      if firstLikeKey is None: firstLikeKey = key
       dataArray[:,labels.value[key]] = mapToRefLike(firstLikeKey,dataArray[:,labels.value[key]])
       labels.value[refLike] = labels.value[key]
       if key != refLike: del labels.value[key]
@@ -159,18 +160,18 @@ def standardise(dataArray):
     if any(entry == prior for prior in permittedPriors): labels.value[key] = refPrior
     if any(entry == like for like in permittedLikes): labels.value[key] = refLike
   # Rescale columns if requested
-  if rescalings.value is not None: 
+  if rescalings.value is not None:
     for key, entry in rescalings.value.iteritems(): dataArray[:,key] *= entry
   # Convert columns to log if requested
   if logPlots.value is not None:
     for column in logPlots.value: dataArray[:,column] = np.log10(dataArray[:,column])
-  
+
 
 def doSort(dataArray):
   # Sort chain in order of increasing posterior mass (i.e. multiplicity)
   if doPosterior.value and contours.value is not None:
     viewString = 'float64' + ',float64' * (dataArray.shape[1]-1)
-    dataArray.view(viewString).sort(order = ['f'+str(labels.value[refMult])], axis=0)   
+    dataArray.view(viewString).sort(order = ['f'+str(labels.value[refMult])], axis=0)
 
 
 def getBestFit(dataArray,outputBaseFilename):
@@ -193,7 +194,7 @@ def getPosteriorMean(dataArray,outputBaseFilename):
   # Find posterior mean
   if doPosteriorMean:
     posteriorMean = []
-    # Get total multiplicity for entire chain 
+    # Get total multiplicity for entire chain
     totalMult = np.sum(dataArray[:,labels.value[refMult]])
     # Calculate posterior mean as weighted average of each point's contribution to each variable
     for i in range(dataArray.shape[1]):
@@ -245,7 +246,7 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
 
   if oneDplots.value is None: return
 
-  if contours.value is not None: 
+  if contours.value is not None:
     # Determine profile likelihood contour levels (same for all plots of a given dimensionality)
     profContourLevels = [np.exp(-deltaLnLike(0.5,0.01*contour)) for contour in contours.value]
     outfile = smart_open(outputBaseFilename+'_like1D.contours','w')
@@ -255,13 +256,13 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     outfile.close
 
   for plot in oneDplots.value:
- 
+
     print '    Parsing data for 1D plots of quantity ',plot
 
     likeGrid = np.empty((nBins.value), dtype=np.float64)
     likeGrid[:] = worstFit + 100.0
     postGrid = np.zeros((nBins.value), dtype=np.float64)
-    
+
     # Work out maximum and minimum values of parameter/derived quantity
     minVal = dataRanges[plot][0]
     maxVal = dataRanges[plot][1]
@@ -272,15 +273,15 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     binCentresOrig = np.array([minVal + (x+0.5)*rangeOfVals/nBins.value for x in range(nBins.value)])
     binCentresInterp = np.array([binCentresOrig[0] + x*(binCentresOrig[-1]-binCentresOrig[0])\
                                  /(resolution.value-1) for x in range(resolution.value)])
-     
+
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
       index = min(int((dataArray[i,plot]-minVal)/rangeOfVals*nBins.value),nBins.value-1)
-  
+
       # Profile over likelihoods
       if doProfile.value: likeGrid[index] = min(dataArray[i,labels.value[refLike]],likeGrid[index])
 
-      if doPosterior.value: 
+      if doPosterior.value:
         # Marginalise by addding to posterior sample count
         postGrid[index] += dataArray[i,labels.value[refMult]]
 
@@ -294,13 +295,13 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     if doPosterior.value: postGridHistogram = postGrid
 
     # Interpolate profile likelihoods and posterior pdfs to requested resolution
-    if doProfile.value: 
+    if doProfile.value:
       interpolator = oneDspline(binCentresOrig, likeGrid)
       likeGrid = interpolator(binCentresInterp)
       # Rescale profile likelihood ratio so that it has maximum 1
       likeGrid = likeGrid / likeGrid.max()
 
-    if doPosterior.value: 
+    if doPosterior.value:
       interpolator = oneDspline(binCentresOrig, postGrid)
       postGrid = interpolator(binCentresInterp)
       # Rescale posterior pdf  so that it has maximum 1
@@ -322,7 +323,7 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
         for j,contour in enumerate(contours.value):
           if 100*integratedPosterior >= contour and postContourLevels[j] is None:
             postContourLevels[j] = sortedPostGrid[i]
-        if all([x is not None for x in postContourLevels]): break         
+        if all([x is not None for x in postContourLevels]): break
 
     # Write profile likelihood to file
     if doProfile.value:
@@ -396,15 +397,15 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     binCentresOrig = np.array([[minVal[j] + (x+0.5)*rangeOfVals[j]/nBins.value for x in range(nBins.value)] for j in range(2)])
     binCentresInterp = np.array([[binCentresOrig[j][0] + x*(binCentresOrig[j][-1]-binCentresOrig[j][0])\
                                  /(resolution.value-1) for x in range(resolution.value)] for j in range(2)])
-    
+
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
       [in1,in2] = [min(int((dataArray[i,plot[j]]-minVal[j])/rangeOfVals[j]*nBins.value),nBins.value-2) for j in range(2)]
-  
+
       # Profile over likelihoods
       if doProfile.value: likeGrid[in1,in2] = min(dataArray[i,labels.value[refLike]],likeGrid[in1,in2])
 
-      if doPosterior.value: 
+      if doPosterior.value:
         # Marginalise by addding to posterior sample count
         postGrid[in1,in2] += dataArray[i,labels.value[refMult]]
 
@@ -421,10 +422,10 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
       if intMethod.value == 'spline':
         likeGrid = np.array(likeGrid).reshape(nBins.value*nBins.value)
         interpolator = twoDspline(oldCoords,likeGrid)
-        likeGrid = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)    
+        likeGrid = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)
       else:
         interpolator = twoDbilinear(binCentresOrig[0,:], binCentresOrig[1,:], likeGrid, ky = 1, kx = 1)
-        likeGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i]) 
+        likeGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i])
                    for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
 
       # Kill off any points that have been sent negative due to ringing
@@ -432,21 +433,21 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
       # Make sure we haven't erased the best-fit point by interpolating over it
       likeGrid[np.unravel_index(likeGrid.argmax(),likeGrid.shape)] = 1.0
 
-    if doPosterior.value: 
+    if doPosterior.value:
       if intMethod.value == 'spline':
         postGrid = np.array(postGrid).reshape(nBins.value*nBins.value)
         interpolator = twoDspline(oldCoords,postGrid)
-        postGrid = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)    
+        postGrid = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)
       else:
         interpolator = twoDbilinear(binCentresOrig[0,:], binCentresOrig[1,:], postGrid, ky = 1, kx = 1)
-        postGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i]) 
+        postGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i])
                    for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
-      
+
       # Kill off any points that have been sent negative due to ringing
       postGrid[postGrid<0] = 0.0
       # Rescale posterior pdf back into the range [0,1]
       postGrid = postGrid / postGrid.max()
-    
+
     # Find posterior pdf contour levels
     if contours.value is not None and doPosterior.value:
       # Zero posterior contour levels
@@ -468,7 +469,7 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     # Write profile likelihood to file
     if doProfile.value:
       outName = outputBaseFilename+'_'+'_'.join([str(x) for x in plot])+'_like2D.ct2'
-      outfile = smart_open(outName,'w')  
+      outfile = smart_open(outName,'w')
       outfile.write('# This 2D binned profile likelihood ratio file created by pippi '\
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
       outfile.write('\n'.join([str(binCentresInterp[0,i])+'\t'+str(binCentresInterp[1,j])+'\t'+str(likeGrid[i,j]) \
