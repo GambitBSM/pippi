@@ -82,28 +82,110 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename,silent=False):
-  #Open a chain file and read it into memory
+def getChainData(filename, silent=False):
+  # Open a chain file and read it into memory
 
-  #Try to open chain file
-  chainfile = safe_open(filename)
+  # Regular ASCII chain
+  if filename.split(":")[0][-5:] != '.hdf5':
+    #Try to open chain file
+    chainfile = safe_open(filename)
 
-  #Read each line into a new list, and save that within a bigger list
-  data=[]
-  for line in chainfile:
-    lines = line.split() 
-    if lines != [] and line[0] not in ['#',';','!',]: data.append(lines)
+    #Read each line into a new list, and save that within a bigger list
+    data=[]
+    for line in chainfile:
+      lines = line.split() 
+      if lines != [] and line[0] not in ['#',';','!',]: data.append(lines)
 
-  #Close the chainfile and indicate success
-  chainfile.close
-  if not silent:
-    print
-    print '  Read chain '+filename
-    print
+    #Close the chainfile and indicate success
+    chainfile.close
+    if not silent:
+      print
+      print '  Read chain '+filename
+      print
+
+    
+    #Turn the whole lot into a numpy array of doubles
+    d = np.array(data, dtype=np.float64)
+    print np.shape(d)
+    quit()
+
+#  # HDF5
+  else:
+    filename, groupname = filename.split(":")
+    if not silent:
+      print
+      print "  Reading HDF5 chain file"
+      print "    filename:", filename
+      print "    group:", groupname
+      print
+
+    # Parse group entry
+    groups = groupname.split('/')
+    if groups[0] != "":
+      raise ValueError("Group identifier should start with '/'")
+    else:
+      groups = groups[1:]
+
+    # Open HDF5 file
+    try:
+      import h5py
+      f = h5py.File(filename,'r')
+    except IOError:
+      print "ERROR while reading hdf5 file.  Check filename and file format."
+      quit()
+
+    # Get relevant group entries and column names
+    entries = f
+    for key in groups:
+      entries = entries[key]
+    column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
+
+    data = []
+    data_isvalid = []
+    for column_name in column_names:
+      data.append(np.array(entries[column_name], dtype=np.float64))
+      data_isvalid.append(np.array(entries[column_name+"_isvalid"], dtype=np.float64))
+    data = np.array(data, dtype=np.float64)
+    data_isvalid = np.array(data_isvalid, dtype=np.float64)
+
+    # Get number of "Parameters[x]" entries.
+    ndim = sum([True if re.match("^Parameters\[\d+\]$", column_name) is not None else
+      False for column_name in column_names])
+
+    # Reorganize LogLike, Posterior, MPIrank, pointID and Parameter[x] entries
+    # for convenience.
+    primary_indices = []
+    for column_name in ['LogLike', 'Posterior', 'MPIrank', 'pointID']:
+      primary_indices.append(column_names.index(column_name))
+    for i in range(ndim):
+      primary_indices.append(column_names.index('Parameters['+str(i)+']'))
+    indices = list(range(len(data)))
+    for j, i in enumerate(primary_indices):
+      indices.remove(i)
+      indices.insert(j, i)
+
+    column_names = np.array(column_names)[indices]
+    data = data[indices]
+    data_isvalid = data_isvalid[indices]
+
+    # Filter out valid points.
+    # FIXME: Which strategy is more correct?
+
+    #cut = (data_isvalid[1] == 1)  # based on posterior entry only
+    cut = (data_isvalid.prod(axis=0) == 1)  # based on *all* entries
+    print "Fraction of valid posteriors: %.4f"%(1.0*sum(cut)/len(cut))
   
-  #Turn the whole lot into a numpy array of doubles
-  return np.array(data, dtype=np.float64)
+    data = data[:,cut]
+    data_isvalid = data_isvalid[:,cut]
+    print "Fraction of invalid entries (after cutting invalid posteriors): %.4f"%(1-data_isvalid.mean())
 
+    # Print list of content for convenience
+    if not silent:
+      for i, column_name in enumerate(column_names):
+        print i, ":", column_name
+        print "  mean: %.2e  min: %.2e  max %.2e"%(data[i].mean(), data[i].min(), data[i].max())
+
+    return np.array(data.T, dtype=np.float64)
 
 def usage():
   #Print pippi usage information
