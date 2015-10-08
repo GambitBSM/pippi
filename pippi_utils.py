@@ -137,7 +137,11 @@ def getChainData(filename, silent=False):
     # Get relevant group entries and column names
     entries = f
     for key in groups:
-      entries = entries[key]
+      try:
+        entries = entries[key]
+      except:
+        print "ERROR: requested group \""+key+"\" does not exist in hdf5 file."
+        quit() 
     column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
 
     data = []

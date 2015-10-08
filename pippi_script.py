@@ -39,7 +39,7 @@ logoFile = dataObject('logo_file',string)
 logoLoc = dataObject('logo_loc',floatuple_list)
 logoWidth = dataObject('logo_width',floater)
 colours = dataObject('colour_scheme',internal)
-axisRanges = dataObject('axis_ranges',floatuple_dictionary)	
+axisRanges = dataObject('axis_ranges',floatuple_dictionary) 
 yAxisAngle = dataObject('yaxis_number_angle',floater)
 refPoint = dataObject('reference_point',float_dictionary)
 refKey = dataObject('reference_text',string)
@@ -65,14 +65,14 @@ keyYVals = {'t':[0.94 - x*keyYSep for x in range(3)], 'c':[0.44 + x*keyYSep for 
 keyXVals = {'r':[0.74 + x*keyXSep for x in range(2)], 'c':[0.45 + x*keyXSep for x in range(2)], 'l':[0.06 + x*keyXSep for x in range(2)]}
 
 def script(filename):
-  # input: 	filename = the name of the pip file
+  # input:  filename = the name of the pip file
 
   print
 
   # Parse pip file
   getIniData(filename,keys)
 
-  # Make sure that comparison is turned off if comaprison filename is missing
+  # Make sure that comparison is turned off if comparison filename is missing
   if doComparison.value and secChain.value is None:
     print '  Warning: comparison curves requested but no comparison file specified.\n  Skipping comparison...\n'
     doComparison.value = False
