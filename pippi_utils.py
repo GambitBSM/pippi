@@ -6,6 +6,7 @@
 #
 # Author: Pat Scott (patscott@physics.mcgill.ca)
 # Originally developed: March 2012
+# Modified: Christoph Weniger, 2015
 #############################################################
 
 import sys
@@ -82,7 +83,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename, silent=False):
+def getChainData(filename, hdf5_assignments=None, silent=False, probe_only=False):
   # Open a chain file and read it into memory
 
   # Regular ASCII chain
@@ -109,7 +110,7 @@ def getChainData(filename, silent=False):
     print np.shape(d)
     quit()
 
-#  # HDF5
+  # HDF5 file
   else:
     filename, groupname = filename.split(":")
     if not silent:
@@ -139,7 +140,7 @@ def getChainData(filename, silent=False):
     for key in groups:
       try:
         entries = entries[key]
-      except:
+      except KeyError:
         print "ERROR: requested group \""+key+"\" does not exist in hdf5 file."
         quit() 
     column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
@@ -152,23 +153,27 @@ def getChainData(filename, silent=False):
     data = np.array(data, dtype=np.float64)
     data_isvalid = np.array(data_isvalid, dtype=np.float64)
 
-    # Get number of "Parameters[x]" entries.
-    ndim = sum([True if re.match("^Parameters\[\d+\]$", column_name) is not None else
-      False for column_name in column_names])
-
-    # Reorganize LogLike, Posterior, MPIrank, pointID and Parameter[x] entries
-    # for convenience.
-    primary_indices = []
-    for column_name in ['LogLike', 'Posterior', 'MPIrank', 'pointID']:
-      primary_indices.append(column_names.index(column_name))
-    for i in range(ndim):
-      primary_indices.append(column_names.index('Parameters['+str(i)+']'))
-    indices = list(range(len(data)))
-    for j, i in enumerate(primary_indices):
-      indices.remove(i)
-      indices.insert(j, i)
-
+    # Reorganize MPIrank, pointID and other requested entries for convenience.
+    indices = []
+    index_count = 0
+    primary_column_names = ['MPIrank', 'pointID']
+    sorted_column_names = primary_column_names + [x for x in column_names if x not in primary_column_names]
+    for column_name in sorted_column_names:
+      while index_count in hdf5_assignments.value:
+        try_append(indices, column_names, hdf5_assignments.value[index_count])
+        index_count += 1
+      if column_name not in hdf5_assignments.value:
+        try_append(indices, column_names, column_name)
+        index_count += 1
     column_names = np.array(column_names)[indices]
+
+    # Print probed contents and split
+    if probe_only:
+      for i, column_name in enumerate(column_names):
+        print "   ", i, ":", column_name
+      print
+      quit()
+
     data = data[indices]
     data_isvalid = data_isvalid[indices]
 
@@ -177,19 +182,30 @@ def getChainData(filename, silent=False):
 
     #cut = (data_isvalid[1] == 1)  # based on posterior entry only
     cut = (data_isvalid.prod(axis=0) == 1)  # based on *all* entries
-    print "Fraction of valid posteriors: %.4f"%(1.0*sum(cut)/len(cut))
+    print "    Fraction of valid posteriors: %.4f"%(1.0*sum(cut)/len(cut))
   
     data = data[:,cut]
     data_isvalid = data_isvalid[:,cut]
-    print "Fraction of invalid entries (after cutting invalid posteriors): %.4f"%(1-data_isvalid.mean())
+    print "    Fraction of invalid entries (after cutting invalid posteriors): %.4f"%(1-data_isvalid.mean())
 
     # Print list of content for convenience
     if not silent:
+      print
       for i, column_name in enumerate(column_names):
-        print i, ":", column_name
-        print "  mean: %.2e  min: %.2e  max %.2e"%(data[i].mean(), data[i].min(), data[i].max())
+        print "   ",i, ":", column_name
+        print "        mean: %.2e  min: %.2e  max %.2e"%(data[i].mean(), data[i].min(), data[i].max())
+      print
 
     return np.array(data.T, dtype=np.float64)
+
+
+def try_append(indices, cols, x):
+  try:
+    indices.append(cols.index(x))
+  except: 
+    print "ERROR: hdf5 file does not contain a field titled \""+x+"\"."
+    quit() 
+
 
 def usage():
   #Print pippi usage information
@@ -210,6 +226,9 @@ def usage():
   print
   print '  run plotting scipts for a chain using options in iniFile.pip:'
   print '    pippi plot iniFile.pip'
+  print
+  print '  print an hdf5 file\'s computed column indices, using options in iniFile.pip:'
+  print '    pippi probe iniFile.pip'
   print
   print '  parse, script and plot in one go:'
   print '    pippi iniFile.pip'
@@ -341,7 +360,7 @@ def floatuple_dictionary(x):
 def string_dictionary(x):
   returnVal = {}
   if len(re.findall("'", x))%2 != 0: raise Exception
-  x = re.findall(".+?:'.+?'[\s,;]*", x)
+  x = re.findall("(.+?:'.+?'[\s,;]*|'.+?':.+?[\s,;]*)", x)
   for i, pair in enumerate(x):
     pair = re.sub("[\s,;]+$", '', pair).split(':')
     for j, single in enumerate(pair):
@@ -384,7 +403,7 @@ def negln(x): return -np.log(x)
 permittedLikes = {'-lnlike':times1,'lnlike':negative,'-2lnlike':half,'chi2':half,'2lnlike':negativehalf,'like':negln}
 refLike = '-lnlike'
 
-permittedMults = ['mult','mult.','multiplicity','multiplic.','mtpcty']
+permittedMults = ['mult','mult.','multiplicity','multiplic.','mtpcty','Posterior']
 refMult = permittedMults[0]
 
 permittedPriors = ['prior','priors','pri.']

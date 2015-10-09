@@ -18,19 +18,10 @@ from distutils.version import StrictVersion
 if StrictVersion(scipyCurrent.version) >= StrictVersion("0.9.0"):
   from scipy.interpolate import CloughTocher2DInterpolator as twoDspline
 
-#scipy_major_ver = int(scipyCurrent.version[0])
-#if scipyCurrent.version[3] == ".": 
-#  scipy_minor_ver = int(scipyCurrent.version[2:3])
-#elif scipyCurrent.version[4] == ".":
-#  scipy_minor_ver = int(scipyCurrent.version[2:4])
-#else: 
-#  sys.exit('Unrecognised SciPy version: '+scipyCurrent.version)
-#if scipy_major_ver > 0 or scipy_minor_ver > 8:
-#  from scipy.interpolate import CloughTocher2DInterpolator as twoDspline
-
 # Define parse-specific pip file entries
 parsedir = dataObject('parse_dir',safe_string)
 labelFile = dataObject('labels_from_file',string)
+hdf5_cols = dataObject('assign_hdf5_label_to_column',string_dictionary)
 labels = dataObject('quantity_labels',string_dictionary)
 logPlots = dataObject('use_log_scale',int_list)
 rescalings = dataObject('quantity_rescalings',float_dictionary)
@@ -39,7 +30,7 @@ resolution = dataObject('interpolated_resolution',integer)
 intMethod = dataObject('interpolation_method',string)
 chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
-keys = keys+[parsedir,labelFile,nBins,intMethod,chainType,resolution,doEvidence,labels,logPlots,rescalings]
+keys = keys+[parsedir,labelFile,nBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings]
 
 # Initialise variables
 doPosteriorMean = True
@@ -66,7 +57,6 @@ def parse(filename):
     if intMethod.value is None: intMethod.value = allowedIntMethods[0]
     if intMethod.value not in allowedIntMethods: sys.exit('Error: unrecognised interpolation_method.')
     if intMethod.value == 'spline' and StrictVersion(scipyCurrent.version) < StrictVersion("0.9.0"):
-#    if intMethod.value == 'spline' and (scipy_major_ver == 0 and scipy_minor_ver < 9):
       sys.exit('Sorry, Clough-Tocher 2D interpolation is not supported in SciPy \n'+
                'v0.8 or lower; please upgrade your installation to use this option.')
 
@@ -79,7 +69,8 @@ def parse(filename):
     doProfile.value = False
 
   #Work out whether to do posterior mean and check that flags match up for posterior pdf
-  if all(x not in labels.value for x in permittedMults):
+  is_hdf5 = mainChain.value.split(":")[0][-5:] == '.hdf5'
+  if all(x not in labels.value for x in permittedMults) or (is_hdf5 and all(x not in hdf5_cols.value for x in permittedMults)):
     doPosteriorMean = False
     if doPosterior.value:
       print '  Warning: no multiplicity in chain labels.\n  Skipping posterior PDF...'
@@ -99,7 +90,7 @@ def parse(filename):
       doEvidence.value = False
 
   # Open main chain and read in contents
-  mainArray = getChainData(mainChain.value)
+  mainArray = getChainData(mainChain.value, hdf5_assignments=hdf5_cols)
 
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
@@ -121,7 +112,7 @@ def parse(filename):
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    secArray = getChainData(secChain.value)
+    secArray = getChainData(secChain.value, hdf5_assignments=hdf5_cols)
     if secArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)

@@ -15,16 +15,17 @@
 # Originally developed: March 2012
 #############################################################
 
-from pippi_merge import *
-from pippi_pare import *
-from pippi_parse import *
+from pippi_probe  import *
+from pippi_merge  import *
+from pippi_pare   import *
+from pippi_parse  import *
 from pippi_script import *
-from pippi_plot import *
+from pippi_plot   import *
 
 def main(arguments):
   #Starting routine
 
-  commandLineOptions = { 'merge':merge, 'pare':pare, 'parse':parse, 'script':script, 'plot':plot }
+  commandLineOptions = { 'probe':probe, 'merge':merge, 'pare':pare, 'parse':parse, 'script':script, 'plot':plot }
 
   if (len(arguments) == 1):
     #Print usage info and quit if pippi is invoked without an argument 
