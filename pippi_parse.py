@@ -90,7 +90,7 @@ def parse(filename):
       doEvidence.value = False
 
   # Open main chain and read in contents
-  mainArray = getChainData(mainChain.value, hdf5_assignments=hdf5_cols)
+  mainArray = getChainData(mainChain.value, labels=labels, hdf5_assignments=hdf5_cols)
 
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
@@ -112,7 +112,7 @@ def parse(filename):
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    secArray = getChainData(secChain.value, hdf5_assignments=hdf5_cols)
+    secArray = getChainData(secChain.value, labels=labels, hdf5_assignments=hdf5_cols)
     if secArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)

@@ -83,7 +83,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename, hdf5_assignments=None, silent=False, probe_only=False):
+def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
   # Open a chain file and read it into memory
 
   # Regular ASCII chain
@@ -104,7 +104,6 @@ def getChainData(filename, hdf5_assignments=None, silent=False, probe_only=False
       print '  Read chain '+filename
       print
 
-    
     #Turn the whole lot into a numpy array of doubles
     d = np.array(data, dtype=np.float64)
     print np.shape(d)
@@ -177,19 +176,19 @@ def getChainData(filename, hdf5_assignments=None, silent=False, probe_only=False
     data = data[indices]
     data_isvalid = data_isvalid[indices]
 
-    # Filter out valid points.
-    # FIXME: Which strategy is more correct?
+    # Filter out valid points, according to the likelihood only -- and only if called with labels provided
+    if (labels):
+      #likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
+      #likelihood_index = likelihood_index[0]
+      #cut = (data_isvalid[likelihood_index] == 1)
+      cut = (data_isvalid.prod(axis=0) == 1)  # based on *all* entries FIXME this is temporary.
+      data = data[:,cut]
+      data_isvalid = data_isvalid[:,cut]
 
-    #cut = (data_isvalid[1] == 1)  # based on posterior entry only
-    cut = (data_isvalid.prod(axis=0) == 1)  # based on *all* entries
-    print "    Fraction of valid posteriors: %.4f"%(1.0*sum(cut)/len(cut))
-  
-    data = data[:,cut]
-    data_isvalid = data_isvalid[:,cut]
-    print "    Fraction of invalid entries (after cutting invalid posteriors): %.4f"%(1-data_isvalid.mean())
-
-    # Print list of content for convenience
+    # Print list of contents for convenience
     if not silent:
+      print "    Fraction of valid points: %.4f"%(1.0*sum(cut)/len(cut))
+      print "    Fraction of valid points with other invalid entries: %.4f"%(1-data_isvalid.mean())
       print
       for i, column_name in enumerate(column_names):
         print "   ",i, ":", column_name
