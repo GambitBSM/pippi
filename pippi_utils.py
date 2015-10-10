@@ -121,7 +121,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
 
     # Parse group entry
     groups = groupname.split('/')
-    if groups[0] != "":
+    if groups[0] != "" or groupname == "":
       raise ValueError("Group identifier should start with '/'")
     else:
       groups = groups[1:]
@@ -136,18 +136,24 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
 
     # Get relevant group entries and column names
     entries = f
-    for key in groups:
-      try:
-        entries = entries[key]
-      except KeyError:
-        print "ERROR: requested group \""+key+"\" does not exist in hdf5 file."
-        quit() 
+    if groups[0] != "":
+      for key in groups:
+        try:
+          entries = entries[key]
+        except KeyError:
+          print "ERROR: requested group \""+key+"\" does not exist in hdf5 file."
+          quit() 
     column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
 
     data = []
     data_isvalid = []
     for column_name in column_names:
-      data.append(np.array(entries[column_name], dtype=np.float64))
+      try:
+        data.append(np.array(entries[column_name], dtype=np.float64))
+      except AttributeError:
+        print "ERROR: \""+column_name+"\" in group \""+groupname+"\" is not convertible to a float."
+        print "Probably you gave the wrong group in your pip file." 
+        quit()
       data_isvalid.append(np.array(entries[column_name+"_isvalid"], dtype=np.float64))
     data = np.array(data, dtype=np.float64)
     data_isvalid = np.array(data_isvalid, dtype=np.float64)
