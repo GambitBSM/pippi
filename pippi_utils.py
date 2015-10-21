@@ -20,10 +20,10 @@ from pippi_colours import *
 def mapToRefLike(otherlike,array):
   #Map from one permitted likelihood form to another
   return [permittedLikes[otherlike](member) for member in array]
- 
+
 
 def safe_dir(dirname):
-  #Check that dirname exists, if not then make it  
+  #Check that dirname exists, if not then make it
   if not os.path.exists(dirname):
     os.makedirs(os.path.abspath(dirname))
 
@@ -44,7 +44,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   pipfile.close
   #Remove all comments
   for i,line in enumerate(parse_options): parse_options[i] = re.sub(r';.*$', '', line)
-  
+
   #Find relevant bits in pipfile
   for i,key in enumerate(keys):
     lines = filter(key.seek,parse_options)
@@ -52,17 +52,17 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
       sys.exit('Error: field '+key.pipFileKey+' required for requested operation not found in '+filename+'.  Quitting...\n')
     if (len(lines) > 1):
       sys.exit('Error: field '+key.pipFileKey+' required for requested operation duplicated in '+filename+'.  Quitting...\n')
-    # Convert key entries to correct internal data format      
+    # Convert key entries to correct internal data format
     key.convert(re.sub(r'.*=', '', lines[0]))
 
-  # Save requested keys    
+  # Save requested keys
   if savekeys is not None:
 
     # Make sure saving is actually possible
     if not mainChain in keys:
       print '\n  Warning: saving of keys not possible because mainChain is undefined.\n  Skipping save...'
       return
-  
+
     # Open the file keys will be saved to
     if savedir is None or not savedir in keys or savedir.value is None:
       outfile = smart_open(re.sub(r"\..?.?.?$", '', mainChain.value)+'_savedkeys.pip','w')
@@ -94,7 +94,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
     #Read each line into a new list, and save that within a bigger list
     data=[]
     for line in chainfile:
-      lines = line.split() 
+      lines = line.split()
       if lines != [] and line[0] not in ['#',';','!',]: data.append(lines)
 
     #Close the chainfile and indicate success
@@ -105,9 +105,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
       print
 
     #Turn the whole lot into a numpy array of doubles
-    d = np.array(data, dtype=np.float64)
-    print np.shape(d)
-    quit()
+    return np.array(data, dtype=np.float64)
 
   # HDF5 file
   else:
@@ -142,7 +140,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
           entries = entries[key]
         except KeyError:
           print "ERROR: requested group \""+key+"\" does not exist in hdf5 file."
-          quit() 
+          quit()
     column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
 
     data = []
@@ -152,7 +150,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
         data.append(np.array(entries[column_name], dtype=np.float64))
       except AttributeError:
         print "ERROR: \""+column_name+"\" in group \""+groupname+"\" is not convertible to a float."
-        print "Probably you gave the wrong group in your pip file." 
+        print "Probably you gave the wrong group in your pip file."
         quit()
       data_isvalid.append(np.array(entries[column_name+"_isvalid"], dtype=np.float64))
     data = np.array(data, dtype=np.float64)
@@ -207,9 +205,9 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
 def try_append(indices, cols, x):
   try:
     indices.append(cols.index(x))
-  except: 
+  except:
     print "ERROR: hdf5 file does not contain a field titled \""+x+"\"."
-    quit() 
+    quit()
 
 
 def usage():
@@ -247,7 +245,7 @@ def safe_open(filename):
     return infile
   except IOError:
     #Crash if file does not exist
-    sys.exit('\n  Sorry, file '+filename+' not found or read-protected.  Quitting...\n')      
+    sys.exit('\n  Sorry, file '+filename+' not found or read-protected.  Quitting...\n')
 
 
 def smart_open(filename,mode):
@@ -257,7 +255,7 @@ def smart_open(filename,mode):
     return outfile
   except IOError:
     #Crash if file cannot be opened the way requested
-    sys.exit('\n  Sorry, file '+filename+' cannot be opened for writing.\nCheck disk space and folder permissions.  Quitting...\n')      
+    sys.exit('\n  Sorry, file '+filename+' cannot be opened for writing.\nCheck disk space and folder permissions.  Quitting...\n')
 
 
 class dataObject:
@@ -276,12 +274,12 @@ class dataObject:
     return False
 
   def convert(self,string):
-    #Convert string to appropriate data format for pip file field 
+    #Convert string to appropriate data format for pip file field
     string = string.strip()
     try:
-      if string == '': 
+      if string == '':
         self.value = None
-      else: 
+      else:
         self.value = self.conversion(string)
     except:
       sys.exit('Error: invalid data format in field '+self.pipFileKey+'. Quitting...\n')
@@ -289,7 +287,7 @@ class dataObject:
 
 #Conversion functions for parsing pip file entries
 
-def integer(x): 
+def integer(x):
   x = re.sub(r"[':;,]", '', x)
   if len(x.split()) != 1: raise Exception
   return int(x)
@@ -302,7 +300,7 @@ def floater(x):
 def string(x):
   if len(re.findall("'", x)) != 2: raise Exception
   return re.sub(r"^.*?'|'.*?$", '', x)
-    
+
 def safe_string(x):
   if len(re.findall("'", x)) != 2 or ';' in x: raise Exception
   return re.sub(r"^.*?'|'.*?$", '', x)
@@ -369,7 +367,7 @@ def string_dictionary(x):
   for i, pair in enumerate(x):
     pair = re.sub("[\s,;]+$", '', pair).split(':')
     for j, single in enumerate(pair):
-      if single[0] == '\'': 
+      if single[0] == '\'':
         pair[j] = string(single)
       else:
         pair[j] = integer(single)
@@ -422,7 +420,7 @@ if permittedSchemes is not None: permittedInternals.update(permittedSchemes)
 allowedIntMethods = ['bilinear', 'spline']
 
 mainChain = dataObject('main_chain',safe_string)
-secChain = dataObject('comparison_chain',safe_string)  
+secChain = dataObject('comparison_chain',safe_string)
 doPosterior = dataObject('do_posterior_pdf',boolean)
 doProfile = dataObject('do_profile_like',boolean)
 oneDplots = dataObject('oneD_plot_quantities',int_list)

@@ -1,72 +1,73 @@
--------------------------------			
----Common fields---------------			;EFN = empty for none
+-------------------------------
+---Common fields---------------             ;EFN = empty for none
 
-main_chain = 'chains/newchain.txt'		;Filename of chain to operate on
-comparison_chain = 'chains/oldchain.txt'	;Filename of secondary chain to operate on, for comparison (EFN)
+main_chain = 'chains/newchain.txt'          ;Filename of chain to operate on
+comparison_chain = 'chains/oldchain.txt'    ;Filename of secondary chain to operate on, for comparison (EFN)
 
-do_posterior_pdf = T				;Parse, script or plot posterior pdfs
-do_profile_like = T 				;Parse, script or plot chain into profile likelihoods
-contour_levels = 68.3 95.4			;Contour levels to plot (EFN; script operation ignores actual values)
-oneD_plot_quantities = 	3 2			;Parameters/observables to construct 1D plots of (EFN)
-twoD_plot_quantities = {3,2} {5,4}		;Parameters/observable combinations to make 2D plots of (EFN)
+do_posterior_pdf = T                        ;Parse, script or plot posterior pdfs
+do_profile_like = T                         ;Parse, script or plot chain into profile likelihoods
+contour_levels = 68.3 95.4                  ;Contour levels to plot (EFN; script operation ignores actual values)
+oneD_plot_quantities =       3 2            ;Parameters/observables to construct 1D plots of (EFN)
+twoD_plot_quantities = {3,2} {5,4}          ;Parameters/observable combinations to make 2D plots of (EFN)
 
 -------------------------------
 ---Parsing---------------------
 
-parse_dir = 'parse'				;Directory to save parsing output in (EFN; default is to place parsed data in same folder as chains)
+parse_dir = 'parse'                         ;Directory to save parsing output in (EFN; default is to place parsed data in same folder as chains)
 
-number_of_bins = 60				;Number of bins in each direction to sort samples into
-interpolated_resolution = 300			;Resolution of binwise interpolation for plotting (~300+ for publication)
-interpolation_method = 'spline'			;Either bilinear (default) or spline (watch out for ringing in the latter case)
+number_of_bins = 60                         ;Number of bins in each direction to sort samples into
+interpolated_resolution = 300               ;Resolution of binwise interpolation for plotting (~300+ for publication)
+interpolation_method = 'spline'             ;Either bilinear (default) or spline (watch out for ringing in the latter case)
 
-chain_type = MultiNest				;Algorithm used to generate chain (valid: MCMC, MultiNest, other)
-compute_evidence = F				;Compute and print evidence (only if chain_type = MCMC)
+chain_type = MultiNest                      ;Algorithm used to generate chain (valid: MCMC, MultiNest, other)
+compute_evidence = F                        ;Compute and print evidence (only if chain_type = MCMC)
 
-use_log_scale = 2 3				;Parameters/observables that need to be converted to a log scale for display (EFN)
-quantity_rescalings = 4:1e-3			;Scaling factors to apply to any columns in chains (EFN)
-labels_from_file = 				;Either a filename or blank (quantity_labels is ignored if a filename is given)
-quantity_labels = 0:'multiplicity' 1:'-lnlike' 2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' 3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' 4:'$A_0$ (TeV)' 5:'$\tan\beta$' 
-						;labels for columns in chains (LaTeX for all but multiplicity, prior and likelihood)
+use_log_scale = 2 3                         ;Parameters/observables that need to be converted to a log scale for display (EFN)
+quantity_rescalings = 4:1e-3                ;Scaling factors to apply to any columns in chains (EFN)
+labels_from_file =                          ;Either a filename or blank (quantity_labels is ignored if a filename is given)
+assign_hdf5_label_to_column =               ;Assign a named hdf5 data stream to a particular column index in pippi (use pippi probe to test; EFN)
+quantity_labels = 0:'multiplicity' 1:'-lnlike' 2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' 3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' 4:'$A_0$ (TeV)' 5:'$\tan\beta$'
+                                            ;labels for columns in chains (LaTeX for all but multiplicity, prior and likelihood)
 -------------------------------
 ---Scripting-------------------
 
-script_dir = 'scripts'				;Directory to save scripts in (EFN; default is to place scripts in same folder as parse output)
+script_dir = 'scripts'                      ;Directory to save scripts in (EFN; default is to place scripts in same folder as parse output)
 
-legend_on_1D = 2 3				;1D plots that should include legends
-legend_locations_1D = 2:'tc' 3:'cl'		;Locations of legends for 1D plots (subset of twoD_plot_quantities)
-plot_as_histograms_1D = F			;Plot 1D distributions as histograms with no interpolation
-key_on_1D = 3 2					;2D plots that should include keys for best fit, posterior mean and/or reference pt
-key_locations_1D = 2:'cl' 3:'tr'			;Locations of keys for 2D plots
+legend_on_1D = 2 3                          ;1D plots that should include legends
+legend_locations_1D = 2:'tc' 3:'cl'         ;Locations of legends for 1D plots (subset of twoD_plot_quantities)
+plot_as_histograms_1D = F                   ;Plot 1D distributions as histograms with no interpolation
+key_on_1D = 3 2                             ;2D plots that should include keys for best fit, posterior mean and/or reference pt
+key_locations_1D = 2:'cl' 3:'tr'            ;Locations of keys for 2D plots
 
-legend_on_2D = {3,2} {5,4}			;2D plots that should include legends
-legend_locations_2D = {3,2}:'br' {5,4}:'bl'	;Locations of legends for 2D plots (single location or partial list that will be filled in with 'bl') 
-key_on_2D = {3,2} {5,4}				;2D plots that should include keys for best fit, posterior mean and/or reference pt
-key_locations_2D = {3,2}:'cl'	{5,4}:'br'	;Locations of keys for 2D plots
-plot_colourbar_2D = {3,2} {5,4}			;2D plots that should include colourbars
+legend_on_2D = {3,2} {5,4}                  ;2D plots that should include legends
+legend_locations_2D = {3,2}:'br' {5,4}:'bl' ;Locations of legends for 2D plots (single location or partial list that will be filled in with 'bl')
+key_on_2D = {3,2} {5,4}                     ;2D plots that should include keys for best fit, posterior mean and/or reference pt
+key_locations_2D = {3,2}:'cl' {5,4}:'br'    ;Locations of keys for 2D plots
+plot_colourbar_2D = {3,2} {5,4}             ;2D plots that should include colourbars
 
-plot_comparison = T				;Overplot distributions from comparisonFilename in 1D plots and contours in 2D plots
+plot_comparison = T                         ;Overplot distributions from comparisonFilename in 1D plots and contours in 2D plots
 extra_legend_lines = 'Flat priors' 'CMSSM $\mu>0$';Additional text lines to be included in any legends (EFN)
-blame = 'pippi v1.0'				;Credit line to be placed in top corner of all plots
-yaxis_number_angle = -90			;Angle relative to vertical for y-axis numerical labels
+blame = 'pippi v1.0'                        ;Credit line to be placed in top corner of all plots
+yaxis_number_angle = -90                    ;Angle relative to vertical for y-axis numerical labels
 
-plot_posterior_mean_on_posterior_pdf = T	;Indicate the posterior mean in all posterior pdf plots
-plot_posterior_mean_on_profile_like = T		;Indicate the posterior mean in all profile likelihood plots
-plot_best_fit_on_posterior_pdf = T		;Indicate the best fit in all posterior pdf plots
-plot_best_fit_on_profile_like = T		;Indicate the best fit in all profile likelihood plots
+plot_posterior_mean_on_posterior_pdf = T    ;Indicate the posterior mean in all posterior pdf plots
+plot_posterior_mean_on_profile_like = T     ;Indicate the posterior mean in all profile likelihood plots
+plot_best_fit_on_posterior_pdf = T          ;Indicate the best fit in all posterior pdf plots
+plot_best_fit_on_profile_like = T           ;Indicate the best fit in all profile likelihood plots
 
 axis_ranges = 2:{1.8,3.55} 3:{2.05,3.6} 4:{-4,4};Axis ranges for parameters/observables (set from chain contents where absent)
 
-reference_point = 2:3.3 3:2.5			;Coordinates of reference point (only plotted where one of the listed axes is present)
-reference_text = 'True value'			;Key string to be printed for reference point
+reference_point = 2:3.3 3:2.5               ;Coordinates of reference point (only plotted where one of the listed axes is present)
+reference_text = 'True value'               ;Key string to be printed for reference point
 
-logo_file = 'pippi'				;Logo pdf file to overplot (EFN)
-logo_loc = {0.08,0.89}				;Normalised plot x,y co-ordinates of logo centre
-logo_width = 0.09				;Width to display logo with (as a fraction of default plot width) 
-colour_scheme = IceCube3sig			;A recognised pippi colourScheme object (Basic, BlueGold, IceCube, SBClassic,
-						; NightOfTheAllanachs, etc - add your own to pippi_colours.py)
+logo_file = 'pippi'                         ;Logo pdf file to overplot (EFN)
+logo_loc = {0.08,0.89}                      ;Normalised plot x,y co-ordinates of logo centre
+logo_width = 0.09                           ;Width to display logo with (as a fraction of default plot width)
+colour_scheme = IceCube3sig                 ;A recognised pippi colourScheme object (Basic, BlueGold, IceCube, SBClassic,
+                                            ; NightOfTheAllanachs, etc - add your own to pippi_colours.py)
 -------------------------------
 ---Plotting--------------------
 
-plot_dir = 'plots'				;Directory to save plots in (EFN; default is to place plots in the current directory)
-file_prefix = 'plot_'				;Prepend prefix to plot filenames (EFN)
-file_suffix = '_example'			;Append suffix to filenames of output plots (EFN)
+plot_dir = 'plots'                          ;Directory to save plots in (EFN; default is to place plots in the current directory)
+file_prefix = 'plot_'                       ;Prepend prefix to plot filenames (EFN)
+file_suffix = '_example'                    ;Append suffix to filenames of output plots (EFN)
