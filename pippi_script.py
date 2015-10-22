@@ -8,6 +8,12 @@
 # Originally developed: March 2012
 #############################################################
 
+left_margin = 0.16
+right_margin = 0.03
+top_margin = 0.05
+bottom_margin = 0.16
+plot_scale = 1.1
+
 from pippi_utils import *
 import subprocess
 import os
@@ -39,7 +45,7 @@ logoFile = dataObject('logo_file',string)
 logoLoc = dataObject('logo_loc',floatuple_list)
 logoWidth = dataObject('logo_width',floater)
 colours = dataObject('colour_scheme',internal)
-axisRanges = dataObject('axis_ranges',floatuple_dictionary) 
+axisRanges = dataObject('axis_ranges',floatuple_dictionary)
 yAxisAngle = dataObject('yaxis_number_angle',floater)
 refPoint = dataObject('reference_point',float_dictionary)
 refKey = dataObject('reference_text',string)
@@ -80,7 +86,7 @@ def script(filename):
   # Work out where the parse output is located
   if parsedir.value is None:
     # No parse_dir; default to searching the directory containing chain(s)
-    parseFiledir = re.sub(r'/.*?$', '/', mainChain.value) 
+    parseFiledir = re.sub(r'/.*?$', '/', mainChain.value)
   else:
     # Search in parse_dir
     parseFiledir = parsedir.value+'/'
@@ -107,7 +113,7 @@ def script(filename):
     else:
       # The script output is also to be placed in a relative path
       parseFiledirFromScriptFiledir = re.sub(r'.+?/', '../', baseFiledir+'/') + parseFiledir
-      
+
   # Locate and scale logo (if any)
   if logoFile.value is not None:
     if logoFile.value == 'pippi': logoFile.value = sys.path[0]+'/pippi'
@@ -124,16 +130,16 @@ def script(filename):
   baseFilename = baseFiledir + re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
   parseFilename = parseFiledir + re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
   parseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  if doComparison.value: 
+  if doComparison.value:
     secParseFilename = parseFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value)
     secParseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-  
+
   # Retrieve labels and data ranges saved in earlier parsing run
   getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges])
 
   # set colour scheme if it is undefined
   if colours.value is None: colours.value = basic
-    
+
   # Create 1D plotting scripts
   if oneDplots.value is not None:
 
@@ -144,13 +150,13 @@ def script(filename):
     for plot in oneDplots.value:
 
       print '    Writing scripts for 1D plots of quantity ',plot
-         
+
       # Set up filenames
       currentBase = baseFilename+'_'+str(plot)
       currentParse = parseFilenameFromScriptFiledir+'_'+str(plot)
       currentBaseMinimal = re.sub(r'.*/', '', currentBase)
       if doComparison.value: currentSecParse = secParseFilenameFromScriptFiledir+'_'+str(plot)
- 
+
       # Get plot limits
       xtrema = dictFallback(axisRanges,dataRanges,plot)
       xRange = xtrema[1] - xtrema[0]
@@ -182,7 +188,7 @@ def script(filename):
 
       # Make profile likelihood plotting scripts
       if doProfile.value:
-    
+
         # Determine keys
         keyString = ''
         if doKey1D.value is not None and plot in doKey1D.value:
@@ -190,27 +196,27 @@ def script(filename):
           try:
             keyLoc = keyLoc1D.value[plot]
           except (KeyError, TypeError):
-            keyLoc = defaultKeyLocation          
+            keyLoc = defaultKeyLocation
           # Get text to be used for reference point
           refText = defaultRefKey if refKey.value is None else refKey.value
-          # Get x and y coordinates for 3 possible keys (for markers and text) 
+          # Get x and y coordinates for 3 possible keys (for markers and text)
           yVals = ytrema[0] + np.array(keyYVals[keyLoc[0]])*yRange
           xVals = xtrema[0] + np.array(keyXVals[keyLoc[1]])*xRange
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour, 
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner, 
+          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
                                       colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
                                       colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
-          if postMeanOnProf.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour1D, 
+          if postMeanOnProf.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour1D,
                                                    colours.value.mainPostMeanMarkerScale, 'Mean'])
           # Get details of key for best fit
-          if bestFitOnProf.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour1D, 
+          if bestFitOnProf.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour1D,
                                                   colours.value.mainBestFitMarkerScale, 'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
-          # Construct ctioga2 command for each key 
+          # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
             if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
             if key[2] > 1.0: key[2] = 1.0
@@ -222,29 +228,32 @@ def script(filename):
             # Write the key text
             keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour1D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
-            
+
         # Open plotting shell script file for writing
         outfile = smart_open(currentBase+'_like1D.bsh','w')
         outfile.write('#!/usr/bin/env bash\n')
         outfile.write('# This plot script created by pippi '+pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write('ctioga2\\\n')
         outfile.write('  --name '+currentBaseMinimal+'_like1D')
-        outfile.write('  --plot-scale \'1.3\'\\\n')
+        outfile.write('  --plot-scale \''+str(plot_scale)+'\'\\\n')
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
-        outfile.write('  --frame-margins 0.15,0.1,0.05,0.15\\\n')
+        outfile.write('  --frame-margins '+str(left_margin)+','
+                                          +str(right_margin)+','
+                                          +str(top_margin)+','
+                                          +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange 0:1\\\n')
         outfile.write('  --ylabel \'Profile likelihood ratio $\Lambda=\mathcal{L}/\mathcal{L}_\mathrm{max}$\' /shift 2.1\\\n')
         outfile.write('  --xlabel \''+labels.value[plot]+'\'\\\n')
-        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15') 
-        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value)) 
-        outfile.write('\\\n') 
+        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15')
+        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
+        outfile.write('\\\n')
         if doComparison.value:
           # Do everything for comparison chain
           outfile.write('  --plot '+currentSecParse+'_like1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                         ' /fill-color '+colours.value.comparisonProfColour1D+' /color '+colours.value.comparisonProfColour1D+
                         ' /line-style '+colours.value.comparison1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
-          if bestFitOnProf.value and colours.value.comparisonBestFitMarker is not None: 
+          if bestFitOnProf.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
             bestFit = getCentralVal(secParseFilename,plot,'like')
             outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.comparisonBestFitMarkerScale/40.0)+' '+
@@ -261,21 +270,21 @@ def script(filename):
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
-          try: 
+          try:
             legendLocation = legendLoc1D.value[plot]
           except (KeyError, TypeError):
             legendLocation = defaultLegendLocation
-          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /dy 1.0\\\n')
-          if legendLines.value is not None: 
+          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /vpadding 0.1\\\n')
+          if legendLines.value is not None:
             for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
-          outfile.write('  --legend-line \'Prof.~likelihood\' /color \''+colours.value.legendTextColour1D+'\'\\\n')                     
-        if bestFitOnProf.value: 
+          outfile.write('  --legend-line \'Prof.~likelihood\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
+        if bestFitOnProf.value:
           # Get best-fit point and plot it
           bestFit = getCentralVal(parseFilename,plot,'like')
           outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.mainBestFitMarkerScale/40.0)+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour1D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
-        if postMeanOnProf.value: 
+        if postMeanOnProf.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
@@ -298,7 +307,7 @@ def script(filename):
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_like1D.bsh', shell=True)
 
-      # Make posterior pdf plotting scripts      
+      # Make posterior pdf plotting scripts
       if doPosterior.value:
 
         # Determine keys
@@ -308,27 +317,27 @@ def script(filename):
           try:
             keyLoc = keyLoc1D.value[plot]
           except (KeyError, TypeError):
-            keyLoc = defaultKeyLocation          
+            keyLoc = defaultKeyLocation
           # Get text to be used for reference point
           refText = defaultRefKey if refKey.value is None else refKey.value
-          # Get x and y coordinates for 3 possible keys (for markers and text) 
+          # Get x and y coordinates for 3 possible keys (for markers and text)
           yVals = ytrema[0] + np.array(keyYVals[keyLoc[0]])*yRange
           xVals = xtrema[0] + np.array(keyXVals[keyLoc[1]])*xRange
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour, 
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner, 
+          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
                                       colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
                                       colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
-          if postMeanOnPost.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour1D, 
+          if postMeanOnPost.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour1D,
                                                    colours.value.mainPostMeanMarkerScale, 'Mean'])
           # Get details of key for best fit
-          if bestFitOnPost.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour1D, 
+          if bestFitOnPost.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour1D,
                                                   colours.value.mainBestFitMarkerScale, 'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
-          # Construct ctioga2 command for each key 
+          # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
             if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
             if key[2] > 1.0: key[2] = 1.0
@@ -340,29 +349,32 @@ def script(filename):
             # Write the key text
             keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour1D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
-            
+
         # Open plotting shell script file for writing
         outfile = smart_open(currentBase+'_post1D.bsh','w')
         outfile.write('#!/usr/bin/env bash\n')
         outfile.write('# This plot script created by pippi '+pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write('ctioga2\\\n')
         outfile.write('  --name '+currentBaseMinimal+'_post1D')
-        outfile.write('  --plot-scale \'1.3\'\\\n')
+        outfile.write('  --plot-scale \''+str(plot_scale)+'\'\\\n')
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
-        outfile.write('  --frame-margins 0.15,0.1,0.05,0.15\\\n')
+        outfile.write('  --frame-margins '+str(left_margin)+','
+                                          +str(right_margin)+','
+                                          +str(top_margin)+','
+                                          +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange 0:1\\\n')
         outfile.write('  --ylabel \'Relative probability $P/P_\mathrm{max}$\' /shift 2.1\\\n')
         outfile.write('  --xlabel \''+labels.value[plot]+'\'\\\n')
-        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15') 
+        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15')
         if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
-        outfile.write('\\\n') 
+        outfile.write('\\\n')
         if doComparison.value:
           # Do everything for comparison chain
           outfile.write('  --plot '+currentSecParse+'_post1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                         ' /fill-color '+colours.value.comparisonPostColour1D+' /color '+colours.value.comparisonPostColour1D+
                         ' /line-style '+colours.value.comparison1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
-          if bestFitOnPost.value and colours.value.comparisonBestFitMarker is not None: 
+          if bestFitOnPost.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
             bestFit = getCentralVal(secParseFilename,plot,'like')
             outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.comparisonBestFitMarkerScale/40.0)+' '+
@@ -379,21 +391,21 @@ def script(filename):
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
-          try: 
+          try:
             legendLocation = legendLoc1D.value[plot]
           except (KeyError, TypeError):
             legendLocation = defaultLegendLocation
-          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /dy 1.0\\\n')
-          if legendLines.value is not None: 
+          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /vpadding 0.1\\\n')
+          if legendLines.value is not None:
             for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
-          outfile.write('  --legend-line \'Marg.~posterior\' /color \''+colours.value.legendTextColour1D+'\'\\\n')                     
-        if bestFitOnPost.value: 
+          outfile.write('  --legend-line \'Marg.~posterior\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
+        if bestFitOnPost.value:
           # Get best-fit point and plot it
           bestFit = getCentralVal(parseFilename,plot,'like')
           outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.mainBestFitMarkerScale/40.0)+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour1D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
-        if postMeanOnPost.value: 
+        if postMeanOnPost.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
@@ -419,9 +431,9 @@ def script(filename):
       # Make profile-posterior comparison plotting scripts
       if doProfile.value and doPosterior.value:
 
-        bestFitData = [colours.value.mainBestFitMarker, colours.value.mainBestFitColour1D, colours.value.mainBestFitMarkerScale, colours.value.mainProfColour1D] 
+        bestFitData = [colours.value.mainBestFitMarker, colours.value.mainBestFitColour1D, colours.value.mainBestFitMarkerScale, colours.value.mainProfColour1D]
         postMeanData = [colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour1D, colours.value.mainPostMeanMarkerScale, colours.value.mainPostColour1D]
-        
+
         # Work out which is the main and which is the comparison
         if PosteriorIsMainInComboPlot:
           [main, sec] = ['post', 'like']
@@ -435,8 +447,8 @@ def script(filename):
         if doKey1D.value is not None and plot in doKey1D.value:
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour, 
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner, 
+          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
                                       colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
                                       colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
@@ -445,7 +457,7 @@ def script(filename):
           markers.append([bestFitData[0], bestFitData[1], bestFitData[2], 'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
-          # Construct ctioga2 command for each key 
+          # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
             if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
             if key[2] > 1.0: key[2] = 1.0
@@ -457,41 +469,44 @@ def script(filename):
             # Write the key text
             keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour1D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
-            
+
         # Open plotting shell script file for writing
         outfile = smart_open(currentBase+'_combo1D.bsh','w')
         outfile.write('#!/usr/bin/env bash\n')
         outfile.write('# This plot script created by pippi '+pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write('ctioga2\\\n')
         outfile.write('  --name '+currentBaseMinimal+'_combo1D')
-        outfile.write('  --plot-scale \'1.3\'\\\n')
+        outfile.write('  --plot-scale \''+str(plot_scale)+'\'\\\n')
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
-        outfile.write('  --frame-margins 0.15,0.1,0.05,0.15\\\n')
+        outfile.write('  --frame-margins '+str(left_margin)+','
+                                          +str(right_margin)+','
+                                          +str(top_margin)+','
+                                          +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange 0:1\\\n')
         outfile.write('  --ylabel \'Relative probability $P/P_\mathrm{max}$\' /shift 2.1\\\n')
         outfile.write('  --xlabel \''+labels.value[plot]+'\'\\\n')
-        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15') 
+        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15')
         if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
-        outfile.write('\\\n') 
-        # Plot comparison distribution        
+        outfile.write('\\\n')
+        # Plot comparison distribution
         outfile.write('  --plot '+currentParse+'_'+sec+'1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                         ' /fill-color '+secData[3]+' /color '+secData[3]+
                         ' /line-style '+colours.value.comparison1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
-        # Plot main distribution        
+        # Plot main distribution
         outfile.write('  --plot '+currentParse+'_'+main+'1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+mainData[3]+' /color '+mainData[3]+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
-          try: 
+          try:
             legendLocation = legendLoc1D.value[plot]
           except (KeyError, TypeError):
             legendLocation = defaultLegendLocation
-          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /dy 1.0\\\n')
-          if legendLines.value is not None: 
+          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /vpadding 0.1\\\n')
+          if legendLines.value is not None:
             for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
-          outfile.write('  --legend-line \'Like vs. Posterior\' /color \''+colours.value.legendTextColour1D+'\'\\\n')                     
+          outfile.write('  --legend-line \'Like vs. Posterior\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
         # Get best-fit point
         bestFit = getCentralVal(parseFilename,plot,'like')
         # Get posterior mean
@@ -526,13 +541,13 @@ def script(filename):
     for plot in twoDplots.value:
 
       print '    Writing scripts for 2D plots of quantities ',plot
-      
+
       # Set up filenames
       currentBase = baseFilename+'_'+'_'.join([str(x) for x in plot])
       currentParse = parseFilenameFromScriptFiledir+'_'+'_'.join([str(x) for x in plot])
       currentBaseMinimal = re.sub(r'.*/', '', currentBase)
       if doComparison.value: currentSecParse = secParseFilenameFromScriptFiledir+'_'+'_'.join([str(x) for x in plot])
-         
+
       # Get plot limits
       xtrema = dictFallback(axisRanges,dataRanges,plot[0])
       ytrema = dictFallback(axisRanges,dataRanges,plot[1])
@@ -569,9 +584,9 @@ def script(filename):
       if doProfile.value:
 
         # Get contours
-        if contours.value is not None: 
+        if contours.value is not None:
           contourLevels = getContours(parseFilename,plot,'like')
-        
+
         # Determine keys
         keyString = ''
         if doKey2D.value is not None and plot in doKey2D.value:
@@ -579,27 +594,27 @@ def script(filename):
           try:
             keyLoc = keyLoc2D.value[plot[0]][plot[1]]
           except (KeyError, TypeError):
-            keyLoc = defaultKeyLocation          
+            keyLoc = defaultKeyLocation
           # Get text to be used for reference point
           refText = defaultRefKey if refKey.value is None else refKey.value
-          # Get x and y coordinates for 3 possible keys (for markers and text) 
+          # Get x and y coordinates for 3 possible keys (for markers and text)
           yVals = ytrema[0] + np.array(keyYVals[keyLoc[0]])*yRange
           xVals = xtrema[0] + np.array(keyXVals[keyLoc[1]])*xRange
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour, 
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner, 
+          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
                                       colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
                                       colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
-          if postMeanOnProf.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D, 
+          if postMeanOnProf.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D,
                                                    colours.value.mainPostMeanMarkerScale, 'Mean'])
           # Get details of key for best fit
-          if bestFitOnProf.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, 
+          if bestFitOnProf.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D,
                                                   colours.value.mainBestFitMarkerScale, 'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
-          # Construct ctioga2 command for each key 
+          # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
             if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
             if key[2] > 1.0: key[2] = 1.0
@@ -611,29 +626,35 @@ def script(filename):
             # Write the key text
             keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour2D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
-            
-        # Open plotting shell script file for writing 
+
+        # Open plotting shell script file for writing
         outfile = smart_open(currentBase+'_like2D.bsh','w')
         outfile.write('#!/usr/bin/env bash\n')
         outfile.write('# This plot script created by pippi '+pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write('ctioga2\\\n')
         outfile.write('  --name '+currentBaseMinimal+'_like2D')
-        outfile.write('  --plot-scale \'1.3\'\\\n')
+        outfile.write('  --plot-scale \''+str(plot_scale)+'\'\\\n')
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
-          outfile.write('  --frame-margins 0.18,0.19,0.05,0.15\\\n')
+          outfile.write('  --frame-margins '+str(left_margin+0.03)+','
+                                            +str(right_margin+0.09)+','
+                                            +str(top_margin)+','
+                                            +str(bottom_margin)+'\\\n')
         else:
-          outfile.write('  --frame-margins 0.2045,0.0796,0.05,0.15\\\n')
+          outfile.write('  --frame-margins '+str(left_margin+0.05)+','
+                                            +str(right_margin)+','
+                                            +str(top_margin)+','
+                                            +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
         outfile.write('  --ylabel \''+labels.value[plot[1]]+'\' /shift 2.9\\\n')
         outfile.write('  --xlabel \''+labels.value[plot[0]]+'\'\\\n')
-        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.75') 
-        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value)) 
+        outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.75')
+        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
         outfile.write('\\\n  --xyz-map\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --new-zaxis zvalues /location right /bar_size \'0.5cm\'\\\n')
-          outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')        
+          outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')
         outfile.write('  --plot '+currentParse+'_like2D.ct2@1:2:3 ')
         if doColourbar.value is not None and plot in doColourbar.value: outfile.write('/zaxis zvalues ')
         outfile.write('/color-map \''+colours.value.colourMap(contourLevels,'like')+'\'\\\n')
@@ -645,7 +666,7 @@ def script(filename):
             for contour in contourLevels:
               outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonProfContourColour2D+
                             ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
-          if bestFitOnProf.value and colours.value.comparisonBestFitMarker is not None: 
+          if bestFitOnProf.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
             bestFit = getCentralVal(secParseFilename,plot,'like')
             outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
@@ -658,28 +679,28 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if contours.value is not None: 
+        if contours.value is not None:
           # Plot contours
           for contour in contourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.mainProfContourColour2D+
                           ' /style '+colours.value.mainContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         if doLegend2D.value is not None and plot in doLegend2D.value:
           # Write legend
-          try: 
+          try:
             legendLocation = legendLoc2D.value[plot[0]][plot[1]]
           except (KeyError, TypeError):
             legendLocation = defaultLegendLocation
-          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /dy 1.0\\\n')
-          if legendLines.value is not None: 
+          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /vpadding 0.1\\\n')
+          if legendLines.value is not None:
             for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
-          outfile.write('  --legend-line \'Prof.~likelihood\' /color \''+colours.value.legendTextColour2D+'\'\\\n')                     
-        if bestFitOnProf.value: 
+          outfile.write('  --legend-line \'Prof.~likelihood\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
+        if bestFitOnProf.value:
           # Get best-fit point and plot it
           bestFit = getCentralVal(parseFilename,plot,'like')
           outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour2D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
-        if postMeanOnProf.value: 
+        if postMeanOnProf.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
@@ -701,20 +722,20 @@ def script(filename):
           outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
-          outfile.write('  --y2 --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n') 
+          outfile.write('  --y2 --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
           outfile.write('  --axis-style y /decoration ticks --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
           outfile.write('  --ylabel \''+likeColourbarString+'\' /shift 3.5 /angle 180 /scale 0.8\\\n')
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_like2D.bsh', shell=True)
 
-      # Make posterior pdf plotting scripts      
+      # Make posterior pdf plotting scripts
       if doPosterior.value:
 
         # Get contours
-        if contours.value is not None: 
+        if contours.value is not None:
           mainContourLevels = getContours(parseFilename,plot,'post')
           if doComparison.value: secContourLevels = getContours(secParseFilename,plot,'post')
-       
+
         # Determine keys
         keyString = ''
         if doKey2D.value is not None and plot in doKey2D.value:
@@ -722,27 +743,27 @@ def script(filename):
           try:
             keyLoc = keyLoc2D.value[plot[0]][plot[1]]
           except (KeyError, TypeError):
-            keyLoc = defaultKeyLocation          
+            keyLoc = defaultKeyLocation
           # Get text to be used for reference point
           refText = defaultRefKey if refKey.value is None else refKey.value
-          # Get x and y coordinates for 3 possible keys (for markers and text) 
+          # Get x and y coordinates for 3 possible keys (for markers and text)
           yVals = ytrema[0] + np.array(keyYVals[keyLoc[0]])*yRange
           xVals = xtrema[0] + np.array(keyXVals[keyLoc[1]])*xRange
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour, 
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner, 
+          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
                                       colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
                                       colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
-          if postMeanOnPost.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D, 
+          if postMeanOnPost.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D,
                                                    colours.value.mainPostMeanMarkerScale, 'Mean'])
           # Get details of key for best fit
-          if bestFitOnPost.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, 
+          if bestFitOnPost.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D,
                                                   colours.value.mainBestFitMarkerScale, 'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
-          # Construct ctioga2 command for each key 
+          # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
             if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
             if key[2] > 1.0: key[2] = 1.0
@@ -761,22 +782,28 @@ def script(filename):
         outfile.write('# This plot script created by pippi '+pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write('ctioga2\\\n')
         outfile.write('  --name '+currentBaseMinimal+'_post2D')
-        outfile.write('  --plot-scale \'1.3\'\\\n')
+        outfile.write('  --plot-scale \''+str(plot_scale)+'\'\\\n')
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
-          outfile.write('  --frame-margins 0.18,0.19,0.05,0.15\\\n')
+          outfile.write('  --frame-margins '+str(left_margin+0.03)+','
+                                            +str(right_margin+0.15)+','
+                                            +str(top_margin)+','
+                                            +str(bottom_margin)+'\\\n')
         else:
-          outfile.write('  --frame-margins 0.2045,0.0796,0.05,0.15\\\n')
+          outfile.write('  --frame-margins '+str(left_margin+0.05)+','
+                                            +str(right_margin)+','
+                                            +str(top_margin)+','
+                                            +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
         outfile.write('  --ylabel \''+labels.value[plot[1]]+'\' /shift 2.9\\\n')
         outfile.write('  --xlabel \''+labels.value[plot[0]]+'\'\\\n')
         outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.75')
-        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value)) 
+        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
         outfile.write('\\\n  --xyz-map\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --new-zaxis zvalues /location right /bar_size \'0.5cm\'\\\n')
-          outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')        
+          outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')
         outfile.write('  --plot '+currentParse+'_post2D.ct2@1:2:3 ')
         if doColourbar.value is not None and plot in doColourbar.value: outfile.write('/zaxis zvalues ')
         outfile.write('/color-map \''+colours.value.colourMap(mainContourLevels,'post')+'\'\\\n')
@@ -788,7 +815,7 @@ def script(filename):
             for contour in secContourLevels:
               outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonPostContourColour2D+
                             ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
-          if bestFitOnPost.value and colours.value.comparisonBestFitMarker is not None: 
+          if bestFitOnPost.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
             bestFit = getCentralVal(secParseFilename,plot,'like')
             outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
@@ -801,28 +828,28 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if contours.value is not None: 
+        if contours.value is not None:
           # Plot contours
-          for contour in mainContourLevels: 
+          for contour in mainContourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.mainPostContourColour2D+
                           ' /style '+colours.value.mainContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         if doLegend2D.value is not None and plot in doLegend2D.value:
           # Write legend
-          try: 
+          try:
             legendLocation = legendLoc2D.value[plot[0]][plot[1]]
           except (KeyError, TypeError):
             legendLocation = defaultLegendLocation
-          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /dy 1.0\\\n')
-          if legendLines.value is not None: 
-            for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour2D+'\'\\\n')            
-          outfile.write('  --legend-line \'Marg.~posterior\' /color \''+colours.value.legendTextColour2D+'\'\\\n')                     
-        if bestFitOnPost.value: 
+          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /vpadding 0.1\\\n')
+          if legendLines.value is not None:
+            for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
+          outfile.write('  --legend-line \'Marg.~posterior\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
+        if bestFitOnPost.value:
           # Get best-fit point and plot it
           bestFit = getCentralVal(parseFilename,plot,'like')
           outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour2D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
-        if postMeanOnPost.value: 
+        if postMeanOnPost.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
@@ -844,12 +871,12 @@ def script(filename):
           outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
-          outfile.write('  --y2 --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n') 
+          outfile.write('  --y2 --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
           outfile.write('  --axis-style y /decoration ticks --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
           outfile.write('  --ylabel \''+postColourbarString+'\' /shift 3.5 /angle 180 /scale 0.8\\\n')
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_post2D.bsh', shell=True)
-  
+
       # Make profile-posterior comparison plotting scripts
       if doProfile.value and doPosterior.value:
 
@@ -857,37 +884,37 @@ def script(filename):
         [main, sec] = ['post', 'like'] if PosteriorIsMainInComboPlot else ['like', 'post']
 
         # Get contours
-        if contours.value is not None: 
+        if contours.value is not None:
           mainContourLevels = getContours(parseFilename,plot,main)
           secContourLevels = getContours(parseFilename,plot,sec)
-       
+
         # Determine keys
         keyString = ''
         if doKey2D.value is not None and plot in doKey2D.value:
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour, 
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner, 
+          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
                                       colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
                                       colours.value.referenceMarkerOuterScale])
           if PosteriorIsMainInComboPlot:
             # Get details of key for posterior mean
-            markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D, 
+            markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D,
                             colours.value.mainPostMeanMarkerScale, 'Mean'])
             # Get details of key for best fit
-            markers.append([colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour, 
+            markers.append([colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour,
                           colours.value.comparisonBestFitMarkerScale, 'Best fit'])
           else:
             # Get details of key for posterior mean
-            markers.append([colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour, 
+            markers.append([colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour,
                             colours.value.comparisonPostMeanMarkerScale, 'Mean'])
             # Get details of key for best fit
-            markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, 
+            markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D,
                           colours.value.mainBestFitMarkerScale, 'Best fit'])
 
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
-          # Construct ctioga2 command for each key 
+          # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
             if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
             if key[2] > 1.0: key[2] = 1.0
@@ -906,22 +933,28 @@ def script(filename):
         outfile.write('# This plot script created by pippi '+pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write('ctioga2\\\n')
         outfile.write('  --name '+currentBaseMinimal+'_combo2D')
-        outfile.write('  --plot-scale \'1.3\'\\\n')
+        outfile.write('  --plot-scale \''+str(plot_scale)+'\'\\\n')
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
-          outfile.write('  --frame-margins 0.18,0.19,0.05,0.15\\\n')
+          outfile.write('  --frame-margins '+str(left_margin+0.03)+','
+                                            +str(right_margin+0.15)+','
+                                            +str(top_margin)+','
+                                            +str(bottom_margin)+'\\\n')
         else:
-          outfile.write('  --frame-margins 0.2045,0.0796,0.05,0.15\\\n')
+          outfile.write('  --frame-margins '+str(left_margin+0.05)+','
+                                            +str(right_margin)+','
+                                            +str(top_margin)+','
+                                            +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
         outfile.write('  --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
         outfile.write('  --ylabel \''+labels.value[plot[1]]+'\' /shift 2.9\\\n')
         outfile.write('  --xlabel \''+labels.value[plot[0]]+'\'\\\n')
         outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.75')
-        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value)) 
+        if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
         outfile.write('\\\n  --xyz-map\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --new-zaxis zvalues /location right /bar_size \'0.5cm\'\\\n')
-          outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')        
+          outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 ')
         if doColourbar.value is not None and plot in doColourbar.value: outfile.write('/zaxis zvalues ')
         outfile.write('/color-map \''+colours.value.colourMap(mainContourLevels,main)+'\'\\\n')
@@ -932,31 +965,31 @@ def script(filename):
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonPostContourColour2D+
                           ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if contours.value is not None: 
+        if contours.value is not None:
           # Plot contours
-          for contour in mainContourLevels: 
+          for contour in mainContourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.mainPostContourColour2D+
                           ' /style '+colours.value.mainContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         if doLegend2D.value is not None and plot in doLegend2D.value:
           # Write legend
-          try: 
+          try:
             legendLocation = legendLoc2D.value[plot[0]][plot[1]]
           except (KeyError, TypeError):
             legendLocation = defaultLegendLocation
-          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /dy 1.0\\\n')
-          if legendLines.value is not None: 
-            for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour2D+'\'\\\n')            
-          outfile.write('  --legend-line \'Like vs. Posterior\' /color \''+colours.value.legendTextColour2D+'\'\\\n')                     
+          outfile.write('  --legend-inside \''+legendLocation+'\' /scale 1.0 /vpadding 0.1\\\n')
+          if legendLines.value is not None:
+            for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
+          outfile.write('  --legend-line \'Like vs. Posterior\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
         # Get best-fit point
         bestFit = getCentralVal(parseFilename,plot,'like')
         # Get posterior mean
         postMean = getCentralVal(parseFilename,plot,'post')
         # Always plot both best fit and posterior mean on comparison plot
         if PosteriorIsMainInComboPlot:
-          bestFitData = [colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour, colours.value.comparisonBestFitMarkerScale] 
+          bestFitData = [colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour, colours.value.comparisonBestFitMarkerScale]
           postMeanData = [colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D, colours.value.mainPostMeanMarkerScale]
         else:
-          bestFitData = [colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, colours.value.mainBestFitMarkerScale] 
+          bestFitData = [colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, colours.value.mainBestFitMarkerScale]
           postMeanData = [colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour, colours.value.comparisonPostMeanMarkerScale]
         outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+bestFitData[0]+' /color \''+bestFitData[1]+
                       '\' /scale '+str(bestFitData[2])+' \\\n')
@@ -978,15 +1011,15 @@ def script(filename):
           outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
-          outfile.write('  --y2 --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n') 
+          outfile.write('  --y2 --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
           outfile.write('  --axis-style y /decoration ticks --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
           outfile.write('  --ylabel \''+postColourbarString+'\' /shift 3.5 /angle 180 /scale 0.8\\\n')
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_combo2D.bsh', shell=True)
 
-def getContours(parseFilename,plot,statistic): 
+def getContours(parseFilename,plot,statistic):
   # Construct dimensionality of plot and string indicating specific plot (if any)
-  if type(plot) == list: 
+  if type(plot) == list:
     [dim, plot] = [str(len(plot)), '' if statistic == 'like' else '_'+'_'.join([str(x) for x in plot])]
   else:
     [dim, plot] = ['1', '' if statistic == 'like' else '_'+str(plot)]
@@ -1000,7 +1033,7 @@ def getContours(parseFilename,plot,statistic):
   levels = fileContents.split()
   return levels
 
-def getCentralVal(parseFilename,plot,statistic): 
+def getCentralVal(parseFilename,plot,statistic):
   # Find central value (either best fit or posterior mean) for requested plot
   # Open .best file
   bestfile = safe_open(parseFilename+'.best')
@@ -1020,7 +1053,7 @@ def getCentralVal(parseFilename,plot,statistic):
     # Never get here
     sys.exit('Error: unrecognised statistic in pippi_script.getCentralVal.\nQuitting...')
   # Choose the coordinates corresponding to the axes of the current plot
-  if type(plot) == list: 
+  if type(plot) == list:
     coordinates = [point[x] for x in plot]
   else:
     coordinates = point[plot]

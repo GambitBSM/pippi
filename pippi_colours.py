@@ -51,29 +51,29 @@ class colourScheme:
   axisColour2D = 'Black'
 
   # Default markers and their colours
-  referenceMarkerInner = 'Times'
-  referenceMarkerInnerScale = 1.2
-  referenceMarkerInnerColour = 'Yellow'
-  referenceMarkerOuter = 'TimesOpen'
-  referenceMarkerOuterScale = 1.2
-  referenceMarkerOuterColour = 'Grey'
+  referenceMarkerInner = 'Cross'
+  referenceMarkerInnerScale = 0.7
+  referenceMarkerInnerColour = 'Black'
+  referenceMarkerOuter = 'Times'
+  referenceMarkerOuterScale = 0.7
+  referenceMarkerOuterColour = 'Yellow'
 
   mainBestFitMarker = 'Star'
-  mainBestFitMarkerScale = 1.5
+  mainBestFitMarkerScale = 0.8
   mainBestFitColour1D = '#300'
   mainBestFitColour2D = '#300'
 
   mainPostMeanMarker = 'Bullet'
-  mainPostMeanMarkerScale = 0.9
+  mainPostMeanMarkerScale = 0.6
   mainPostMeanColour1D = '#004'
   mainPostMeanColour2D = '#004'
 
   comparisonBestFitMarker = 'Star'
-  comparisonBestFitMarkerScale = 1.5
+  comparisonBestFitMarkerScale = 0.8
   comparisonBestFitColour = 'Grey'
 
   comparisonPostMeanMarker = 'Bullet'
-  comparisonPostMeanMarkerScale = 0.9
+  comparisonPostMeanMarkerScale = 0.6
   comparisonPostMeanColour = 'Grey'
 
   def __init__(self,name):
@@ -94,9 +94,9 @@ class colourScheme:
     else:
       sys.exit('    Error: unrecognised type of colourmap requested.\n    Quitting...\n')
     for i, contour in enumerate(contours):
-      localColourMap = re.sub(r'contour'+str(i+1), contour, localColourMap) 
+      localColourMap = re.sub(r'contour'+str(i+1), contour, localColourMap)
     return localColourMap
-    
+
 # basic colour scheme
 basic = colourScheme('basic')
 
