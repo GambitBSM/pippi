@@ -642,7 +642,7 @@ def script(filename):
                                             +str(bottom_margin)+'\\\n')
         else:
           outfile.write('  --frame-margins '+str(left_margin+0.05)+','
-                                            +str(right_margin)+','
+                                            +str(right_margin+0.02)+','
                                             +str(top_margin)+','
                                             +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
@@ -791,7 +791,7 @@ def script(filename):
                                             +str(bottom_margin)+'\\\n')
         else:
           outfile.write('  --frame-margins '+str(left_margin+0.05)+','
-                                            +str(right_margin)+','
+                                            +str(right_margin+0.02)+','
                                             +str(top_margin)+','
                                             +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
@@ -942,7 +942,7 @@ def script(filename):
                                             +str(bottom_margin)+'\\\n')
         else:
           outfile.write('  --frame-margins '+str(left_margin+0.05)+','
-                                            +str(right_margin)+','
+                                            +str(right_margin+0.02)+','
                                             +str(top_margin)+','
                                             +str(bottom_margin)+'\\\n')
         outfile.write('  --xrange '+str(xtrema[0])+':'+str(xtrema[1])+'\\\n')
