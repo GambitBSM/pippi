@@ -170,8 +170,12 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
         index_count += 1
     column_names = np.array(column_names)[indices]
 
+    # Print the raw number of samples in the hdf5 file
+    print "  Total samples: ", data[0].size
+
     # Print probed contents and split
     if probe_only:
+      print
       for i, column_name in enumerate(column_names):
         print "   ", i, ":", column_name
       print
@@ -182,12 +186,16 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
 
     # Filter out valid points, according to the likelihood only -- and only if called with labels provided
     if (labels):
-      #likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
-      #likelihood_index = likelihood_index[0]
-      #cut = (data_isvalid[likelihood_index] == 1)
-      cut = (data_isvalid.prod(axis=0) == 1)  # based on *all* entries FIXME this is temporary.
+      # Based on the likelihood entry only
+      likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
+      likelihood_index = likelihood_index[0]
+      cut = (data_isvalid[likelihood_index] == 1)
+      # Based on *all* entries. FIXME the isvalid flag really should be probed individually for different observables
+      #cut = (data_isvalid.prod(axis=0) == 1)
       data = data[:,cut]
       data_isvalid = data_isvalid[:,cut]
+      print "  Total valid samples: ", data[0].size
+      print
 
     # Print list of contents for convenience
     if not silent:

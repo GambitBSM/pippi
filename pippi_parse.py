@@ -301,12 +301,16 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     if doProfile.value:
       interpolator = oneDspline(binCentresOrig, likeGrid)
       likeGrid = interpolator(binCentresInterp)
-      # Rescale profile likelihood ratio so that it has maximum 1
-      likeGrid = likeGrid / likeGrid.max()
+      # Kill off any points that have been sent negative due to ringing
+      likeGrid[likeGrid<0] = 0.0
+      # Fix any points that have been sent >1 due to ringing
+      likeGrid[likeGrid>1] = 1.0
 
     if doPosterior.value:
       interpolator = oneDspline(binCentresOrig, postGrid)
       postGrid = interpolator(binCentresInterp)
+      # Kill off any points that have been sent negative due to ringing
+      postGrid[postGrid<0] = 0.0
       # Rescale posterior pdf  so that it has maximum 1
       postGrid = postGrid / postGrid.max()
 
@@ -408,9 +412,8 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
       # Profile over likelihoods
       if doProfile.value: likeGrid[in1,in2] = min(dataArray[i,labels.value[refLike]],likeGrid[in1,in2])
 
-      if doPosterior.value:
-        # Marginalise by addding to posterior sample count
-        postGrid[in1,in2] += dataArray[i,labels.value[refMult]]
+      # Marginalise by addding to posterior sample count
+      if doPosterior.value: postGrid[in1,in2] += dataArray[i,labels.value[refMult]]
 
     # Convert -log(profile likelihoods) to profile likelihood ratio
     likeGrid = np.exp(bestFit - likeGrid)
@@ -433,6 +436,8 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
 
       # Kill off any points that have been sent negative due to ringing
       likeGrid[likeGrid<0] = 0.0
+      # Fix any points that have been sent >1 due to ringing
+      likeGrid[likeGrid>1] = 1.0
       # Make sure we haven't erased the best-fit point by interpolating over it
       likeGrid[np.unravel_index(likeGrid.argmax(),likeGrid.shape)] = 1.0
 
