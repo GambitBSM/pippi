@@ -137,6 +137,11 @@ def script(filename):
   # Retrieve labels and data ranges saved in earlier parsing run
   getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges])
 
+  #Work out whether to do posteriors and check that flags match up
+  if doPosterior.value and not has_multiplicity(labels, None):
+    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    doPosterior.value = False
+
   # set colour scheme if it is undefined
   if colours.value is None: colours.value = basic
 
@@ -262,6 +267,7 @@ def script(filename):
           if postMeanOnProf.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
             postMean = getCentralVal(secParseFilename,plot,'post')
+            if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
             outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.comparisonPostMeanMarkerScale/40.0)+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
@@ -287,6 +293,7 @@ def script(filename):
         if postMeanOnProf.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
+          if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour1D+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
@@ -383,6 +390,7 @@ def script(filename):
           if postMeanOnPost.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
             postMean = getCentralVal(secParseFilename,plot,'post')
+            if not postMean: sys.exit('Error: plot_posterior_mean_on_posterior_pdf = T but no multiplicity given!')
             outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.comparisonPostMeanMarkerScale/40.0)+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
@@ -408,6 +416,7 @@ def script(filename):
         if postMeanOnPost.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
+          if not postMean: sys.exit('Error: plot_posterior_mean_on_posterior_pdf = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour1D+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
@@ -514,8 +523,8 @@ def script(filename):
         # Always plot both best fit and posterior mean on comparison plot
         outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*bestFitData[2]/40.0)+' '+bestFitData[0]+' /color \''+bestFitData[1]+
                       '\' /scale '+str(bestFitData[2])+' \\\n')
-        outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*postMeanData[2]/40.0)+' '+postMeanData[0]+' /color \''+postMeanData[1]+
-                      '\' /scale '+str(postMeanData[2])+' \\\n')
+        if postMean: outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*postMeanData[2]/40.0)+' '+postMeanData[0]+' /color \''+postMeanData[1]+
+                                   '\' /scale '+str(postMeanData[2])+' \\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -637,7 +646,7 @@ def script(filename):
         outfile.write('  --page-size \''+plotSizeInternal+'\'\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           outfile.write('  --frame-margins '+str(left_margin+0.03)+','
-                                            +str(right_margin+0.09)+','
+                                            +str(right_margin+0.15)+','
                                             +str(top_margin)+','
                                             +str(bottom_margin)+'\\\n')
         else:
@@ -675,6 +684,7 @@ def script(filename):
           if postMeanOnProf.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
             postMean = getCentralVal(secParseFilename,plot,'post')
+            if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
             outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
@@ -703,6 +713,7 @@ def script(filename):
         if postMeanOnProf.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post')
+          if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour2D+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
@@ -993,8 +1004,8 @@ def script(filename):
           postMeanData = [colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour, colours.value.comparisonPostMeanMarkerScale]
         outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+bestFitData[0]+' /color \''+bestFitData[1]+
                       '\' /scale '+str(bestFitData[2])+' \\\n')
-        outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+postMeanData[0]+' /color \''+postMeanData[1]+
-                      '\' /scale '+str(postMeanData[2])+' \\\n')
+        if postMean: outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+postMeanData[0]+' /color \''+postMeanData[1]+
+                                   '\' /scale '+str(postMeanData[2])+' \\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -1047,8 +1058,11 @@ def getCentralVal(parseFilename,plot,statistic):
     # Extract best fit
     point = fileContents[1].split()
   elif statistic == 'post':
-    # Extract posterior pdf
-    point = fileContents[3].split()
+    try:
+      # Extract posterior pdf
+      point = fileContents[3].split()
+    except IndexError:
+      return None
   else:
     # Never get here
     sys.exit('Error: unrecognised statistic in pippi_script.getCentralVal.\nQuitting...')

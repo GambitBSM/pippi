@@ -69,13 +69,10 @@ def parse(filename):
     doProfile.value = False
 
   #Work out whether to do posterior mean and check that flags match up for posterior pdf
-  is_hdf5 = mainChain.value.split(":")[0][-5:] == '.hdf5'
-  if all(x not in labels.value for x in permittedMults) or (is_hdf5 and all(x not in hdf5_cols.value for x in permittedMults)):
-    doPosteriorMean = False
-    if doPosterior.value:
-      print '  Warning: no multiplicity in chain labels.\n  Skipping posterior PDF...'
-      doPosterior.value = False
-  else: doPosteriorMean = True
+  doPosteriorMean = has_multiplicity(labels, hdf5_cols)
+  if doPosterior.value and not doPosteriorMean:
+    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    doPosterior.value = False
 
   #Check that flags match up for evidence
   if doEvidence.value:

@@ -12,6 +12,7 @@ from pippi_utils import *
 
 #Define pip file entries required from parsing
 parsedir = dataObject('parse_dir',safe_string)
+labels = dataObject('quantity_labels',string_dictionary)
 
 #Define pip file entries required from scripting
 scriptdir = dataObject('script_dir',safe_string)
@@ -47,6 +48,18 @@ def plot(filename):
 
   # Extract main chain filename, without extension
   baseFilename = re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
+
+  # Retrieve labels saved in earlier parsing run
+  if parsedir.value:
+    savedkeys = parsedir.value + '/' + baseFilename+'_savedkeys.pip'
+  else:
+    savedkeys = baseFiledir + baseFilename+'_savedkeys.pip'
+  getIniData([savedkeys],[labels])
+
+  #Work out whether to do posteriors check that flags match up for posterior pdf
+  if doPosterior.value and not has_multiplicity(labels, None):
+    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    doPosterior.value = False
 
   # Set defaults for prepend and append string
   outdirectory = '.' if outdir.value is None else outdir.value    

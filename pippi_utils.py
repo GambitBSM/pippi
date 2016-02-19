@@ -218,6 +218,14 @@ def try_append(indices, cols, x):
     quit()
 
 
+def has_multiplicity(labels, hdf5_cols):
+  is_hdf5 = mainChain.value.split(":")[0][-5:] == '.hdf5'
+  if is_hdf5 and hdf5_cols:
+    return any(x in hdf5_cols.value for x in permittedMults)
+  else:
+    return any(x in labels.value for x in permittedMults)
+
+
 def usage():
   #Print pippi usage information
   print
