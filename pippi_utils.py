@@ -95,7 +95,9 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
     data=[]
     for line in chainfile:
       lines = line.split()
-      if lines != [] and line[0] not in ['#',';','!',]: data.append(lines)
+      if lines != [] and line[0] not in ['#',';','!',]:
+        if not any(x == "none" for x in lines): # For now we just exclude all points with any invalid entries. 
+          data.append(lines)
 
     #Close the chainfile and indicate success
     chainfile.close
