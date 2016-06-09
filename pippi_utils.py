@@ -202,11 +202,11 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
     # Print list of contents for convenience
     if not silent:
       print "    Fraction of valid points: %.4f"%(1.0*sum(cut)/len(cut))
-      print "    Fraction of valid points with other invalid entries: %.4f"%(1-data_isvalid.mean())
       print
       for i, column_name in enumerate(column_names):
         print "   ",i, ":", column_name
         print "        mean: %.2e  min: %.2e  max %.2e"%(data[i].mean(), data[i].min(), data[i].max())
+        print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[i].mean())
       print
 
     return np.array(data.T, dtype=np.float64)
