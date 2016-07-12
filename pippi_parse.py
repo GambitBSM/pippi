@@ -164,7 +164,14 @@ def standardise(dataArray):
     for key, entry in rescalings.value.iteritems(): dataArray[:,key] *= entry
   # Convert columns to log if requested
   if logPlots.value is not None:
-    for column in logPlots.value: dataArray[:,column] = np.log10(dataArray[:,column])
+    for column in logPlots.value: 
+      if any(dataArray[:,column] <= 0.0):
+        print "Error: column {0} requested for log plotting has non-positive values!".format(column)
+        bad_indices = np.where(dataArray[:,column] <= 0.0)[0]
+        print "Here is the first point with bad values, for example: "
+        for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val) 
+        sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
+      dataArray[:,column] = np.log10(dataArray[:,column])
 
 
 def doSort(dataArray):
@@ -298,15 +305,21 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
     if doProfile.value:
       interpolator = oneDspline(binCentresOrig, likeGrid)
       likeGrid = interpolator(binCentresInterp)
+      # Fix any points sent NaN by scipy's crappy interpolators
+      likeGrid[np.isnan(likeGrid)] = 0.0
       # Kill off any points that have been sent negative due to ringing
+      likeGrid[np.isneginf(likeGrid)] = 0.0
       likeGrid[likeGrid<0] = 0.0
       # Fix any points that have been sent >1 due to ringing
+      likeGrid[np.isposinf(likeGrid)] = 1.0
       likeGrid[likeGrid>1] = 1.0
+
 
     if doPosterior.value:
       interpolator = oneDspline(binCentresOrig, postGrid)
       postGrid = interpolator(binCentresInterp)
       # Kill off any points that have been sent negative due to ringing
+      postGrid[~np.isfinite(postGrid)] = 0.0
       postGrid[postGrid<0] = 0.0
       # Rescale posterior pdf  so that it has maximum 1
       postGrid = postGrid / postGrid.max()
@@ -431,9 +444,13 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
         likeGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i])
                    for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
 
+      # Fix any points sent NaN by scipy's crappy interpolators
+      likeGrid[np.isnan(likeGrid)] = 0.0
       # Kill off any points that have been sent negative due to ringing
+      likeGrid[np.isneginf(likeGrid)] = 0.0
       likeGrid[likeGrid<0] = 0.0
       # Fix any points that have been sent >1 due to ringing
+      likeGrid[np.isposinf(likeGrid)] = 1.0
       likeGrid[likeGrid>1] = 1.0
       # Make sure we haven't erased the best-fit point by interpolating over it
       likeGrid[np.unravel_index(likeGrid.argmax(),likeGrid.shape)] = 1.0
@@ -449,6 +466,7 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
                    for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
 
       # Kill off any points that have been sent negative due to ringing
+      postGrid[~np.isfinite(postGrid)] = 0.0
       postGrid[postGrid<0] = 0.0
       # Rescale posterior pdf back into the range [0,1]
       postGrid = postGrid / postGrid.max()

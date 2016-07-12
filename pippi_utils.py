@@ -1,4 +1,3 @@
-
 #############################################################
 # pippi: parse it, plot it
 # ------------------------
@@ -145,18 +144,22 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
           quit()
     column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
 
-    data = []
-    data_isvalid = []
-    for column_name in column_names:
-      try:
-        data.append(np.array(entries[column_name], dtype=np.float64))
-      except AttributeError:
-        print "ERROR: \""+column_name+"\" in group \""+groupname+"\" is not convertible to a float."
-        print "Probably you gave the wrong group in your pip file."
-        quit()
-      data_isvalid.append(np.array(entries[column_name+"_isvalid"], dtype=np.float64))
-    data = np.array(data, dtype=np.float64)
-    data_isvalid = np.array(data_isvalid, dtype=np.float64)
+    if not probe_only:
+      # Get data                                                                                          
+      data = []                                                                                           
+      data_isvalid = []                                                                                   
+      for column_name in column_names:                                                                    
+        try:                                                                                              
+          data.append(np.array(entries[column_name], dtype=np.float64))                                   
+        except AttributeError:                                                                            
+          print "ERROR: \""+column_name+"\" in group \""+groupname+"\" is not convertible to a float."    
+          print "Probably you gave the wrong group in your pip file."                                     
+          quit()                                                                                          
+        data_isvalid.append(np.array(entries[column_name+"_isvalid"], dtype=np.float64))                  
+      data = np.array(data, dtype=np.float64)                                                             
+      data_isvalid = np.array(data_isvalid, dtype=np.float64)
+      # Print the raw number of samples in the hdf5 file                                                  
+      print "  Total samples: ", data[0].size                                                             
 
     # Reorganize MPIrank, pointID and other requested entries for convenience.
     indices = []
@@ -164,20 +167,17 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
     primary_column_names = ['MPIrank', 'pointID']
     sorted_column_names = primary_column_names + [x for x in column_names if x not in primary_column_names]
     for column_name in sorted_column_names:
-      while index_count in hdf5_assignments.value:
-        try_append(indices, column_names, hdf5_assignments.value[index_count])
-        index_count += 1
-      if column_name not in hdf5_assignments.value:
+      if hdf5_assignments.value is not None:
+        while index_count in hdf5_assignments.value:
+          try_append(indices, column_names, hdf5_assignments.value[index_count])
+          index_count += 1
+      if hdf5_assignments.value is None or column_name not in hdf5_assignments.value:
         try_append(indices, column_names, column_name)
         index_count += 1
     column_names = np.array(column_names)[indices]
 
-    # Print the raw number of samples in the hdf5 file
-    print "  Total samples: ", data[0].size
-
     # Print probed contents and split
     if probe_only:
-      print
       for i, column_name in enumerate(column_names):
         print "   ", i, ":", column_name
       print
@@ -203,7 +203,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
     if not silent:
       print "    Fraction of valid points: %.4f"%(1.0*sum(cut)/len(cut))
       print "    Fraction of valid points with other invalid entries: %.4f"%(1-data_isvalid.mean())
-      print
+      print                                                                                           
       for i, column_name in enumerate(column_names):
         print "   ",i, ":", column_name
         print "        mean: %.2e  min: %.2e  max %.2e"%(data[i].mean(), data[i].min(), data[i].max())
