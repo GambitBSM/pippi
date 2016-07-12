@@ -192,7 +192,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
       likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
       likelihood_index = likelihood_index[0]
       cut = (data_isvalid[likelihood_index] == 1)
-      # Based on *all* entries. FIXME the isvalid flag really should be probed individually for different observables
+      # Based on *all* entries.
       #cut = (data_isvalid.prod(axis=0) == 1)
       data = data[:,cut]
       data_isvalid = data_isvalid[:,cut]
