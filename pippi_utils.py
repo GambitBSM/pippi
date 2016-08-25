@@ -392,12 +392,16 @@ def floatuple_dictionary(x):
 def string_dictionary(x):
   returnVal = {}
   if len(re.findall("'", x))%2 != 0: raise Exception
-  x = re.findall("(.+?:'.+?'[\s,;]*|'.+?':.+?[\s,;]*)", x)
+  x = re.findall("(.+?\s*:\s*'.+?'[\s,;$]+?|'.+?'\s*:\s*.+?[\s,;$]+?)", x)
   for i, pair in enumerate(x):
+    capture = re.findall("'.+?'", pair)
+    if len(capture) > 1: raise Exception
+    pair = re.sub("'.+?'", '__temp__', pair) 
     pair = re.sub("[\s,;]+$", '', pair).split(':')
     for j, single in enumerate(pair):
-      if single[0] == '\'':
-        pair[j] = string(single)
+      single.strip()
+      if '__temp__' in single:
+        pair[j] = string(capture[0].strip())
       else:
         pair[j] = integer(single)
     returnVal[pair[0]] = pair[1]
