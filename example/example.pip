@@ -30,7 +30,8 @@ quantity_labels = 0:'multiplicity' \
                   1:'-lnlike'      \ 
                   2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' \
                   3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' \
-                  4:'$A_0$ (TeV)' 5:'$\tan\beta$'
+                  4:'$A_0$ (TeV)' \
+                  5:'$\tan\beta$'
                                             ;labels for columns in chains (LaTeX for all but multiplicity, prior and likelihood)
 -------------------------------
 ---Scripting-------------------
