@@ -38,11 +38,22 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   #Try to open pip file
   pipfile = safe_open(filename)
   #Get the contents
-  parse_options = pipfile.readlines()
+  original_parse_options = pipfile.readlines()
   #Shut it
   pipfile.close
   #Remove all comments
-  for i,line in enumerate(parse_options): parse_options[i] = re.sub(r';.*$', '', line)
+  for i,line in enumerate(original_parse_options): original_parse_options[i] = re.sub(r';.*$', '', line)
+  #Stitch together multi-line lines
+  parse_options = list([])
+  oldline = ""
+  for i,line in enumerate(original_parse_options):
+    newline = line.rstrip()
+    oldline += newline
+    if (oldline != "" and oldline[-1] == "\\"):
+      oldline = oldline[:-1]
+    else:
+      parse_options.append(oldline+"\n")
+      oldline = ""
 
   #Find relevant bits in pipfile
   for i,key in enumerate(keys):
