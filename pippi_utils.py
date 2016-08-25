@@ -309,6 +309,8 @@ class dataObject:
       else:
         self.value = self.conversion(string)
     except:
+      print "Failed to convert string:"
+      print string
       sys.exit('Error: invalid data format in field '+self.pipFileKey+'. Quitting...\n')
 
 
