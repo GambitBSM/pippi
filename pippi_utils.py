@@ -392,7 +392,7 @@ def floatuple_dictionary(x):
 def string_dictionary(x):
   returnVal = {}
   if len(re.findall("'", x))%2 != 0: raise Exception
-  x = re.findall("(.+?\s*:\s*'.+?'[\s,;$]*?|'.+?'\s*:\s*.+?[\s,;$]+?)", x)
+  x = re.findall("(.+?\s*:\s*'.+?'[\s,;$]*?|'.+?'\s*:\s*.+?[\s,;]+?|'.+?'\s*:\s*.+?[\s,;]*?$)", x)
   for i, pair in enumerate(x):
     capture = re.findall("'.+?'", pair)
     if len(capture) > 1: raise Exception
