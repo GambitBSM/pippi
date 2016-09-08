@@ -96,6 +96,8 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
 def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
   # Open a chain file and read it into memory
 
+  column_names=None
+
   # Regular ASCII chain
   if filename.split(":")[0][-5:] != '.hdf5':
     #Try to open chain file
@@ -117,7 +119,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
       print
 
     #Turn the whole lot into a numpy array of doubles
-    return np.array(data, dtype=np.float64)
+    return (np.array(data, dtype=np.float64), column_names)
 
   # HDF5 file
   else:
@@ -218,7 +220,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
         print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[i].mean())
       print
 
-    return np.array(data.T, dtype=np.float64)
+    return (np.array(data.T, dtype=np.float64), column_names)
 
 
 def try_append(indices, cols, x):

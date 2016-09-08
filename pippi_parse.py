@@ -87,7 +87,7 @@ def parse(filename):
       doEvidence.value = False
 
   # Open main chain and read in contents
-  mainArray = getChainData(mainChain.value, labels=labels, hdf5_assignments=hdf5_cols)
+  (mainArray, hdf5_names) = getChainData(mainChain.value, labels=labels, hdf5_assignments=hdf5_cols)
 
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
@@ -103,24 +103,24 @@ def parse(filename):
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  doParse(mainArray,outputBaseFilename,setOfRequestedColumns)
+  doParse(mainArray,outputBaseFilename,setOfRequestedColumns,hdf5_names)
 
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    secArray = getChainData(secChain.value, labels=labels, hdf5_assignments=hdf5_cols)
+    (secArray, hdf5_names) = getChainData(secChain.value, labels=labels, hdf5_assignments=hdf5_cols)
     if secArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
-      doParse(secArray,outputBaseFilename,setOfRequestedColumns)
+      doParse(secArray,outputBaseFilename,setOfRequestedColumns,hdf5_names)
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
 
 
-def doParse(dataArray,outputBaseFilename,setOfRequestedColumns):
+def doParse(dataArray,outputBaseFilename,setOfRequestedColumns,column_names):
   #Perform all numerical operations required for chain parsing
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
@@ -128,7 +128,7 @@ def doParse(dataArray,outputBaseFilename,setOfRequestedColumns):
   # Sort array if required
   doSort(dataArray)
   # Find best-fit point
-  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,outputBaseFilename)
+  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,outputBaseFilename,column_names)
   # Find posterior mean
   [totalMult, posteriorMean] = getPosteriorMean(dataArray,outputBaseFilename)
   # Get evidence for mcmc
@@ -181,7 +181,7 @@ def doSort(dataArray):
     dataArray.view(viewString).sort(order = ['f'+str(labels.value[refMult])], axis=0)
 
 
-def getBestFit(dataArray,outputBaseFilename):
+def getBestFit(dataArray,outputBaseFilename,column_names):
   # Find best-fit point
   bestFitIndex = dataArray[:,labels.value[refLike]].argmin()
   bestFit = dataArray[bestFitIndex,labels.value[refLike]]
@@ -189,10 +189,19 @@ def getBestFit(dataArray,outputBaseFilename):
   print '    Best fit -lnlike: ',bestFit
   outfile = smart_open(outputBaseFilename+'.best','w')
   outfile.write('# This best-fit/posterior mean file created by pippi '\
-                +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
+           +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
   outfile.write('Best-fit log-likelihood: '+str(-bestFit)+'\n')
   outfile.write('Best-fit point:\n')
   outfile.write(' '.join([str(x) for x in dataArray[bestFitIndex,:]])+'\n')
+  outfile.close
+  outfile = smart_open(outputBaseFilename+'.best.yaml','w')
+  outfile.write('# This best-fit file created by pippi '\
+           +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
+  for i, x in enumerate(dataArray[bestFitIndex,:]):
+    if (column_names is None) :
+       outfile.write(str(i)+': '+str(x)+'\n')
+    else:
+       outfile.write(column_names[i].lstrip('#')+': '+str(x)+'\n')
   outfile.close
   return [bestFit,worstFit,bestFitIndex]
 
