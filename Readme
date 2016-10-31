@@ -1,14 +1,14 @@
-Readme for Pippi v1.0
+Readme for Pippi v1.1
 ---------------------
 
 #############################################################
 # pippi: parse it, plot it
 # ------------------------
-# A program for operating on MCMC chains and related lists of 
+# A program for operating on MCMC chains and related lists of
 # samples from a function or distribution.  Pippi can merge,
 # parse and plot sample ensembles ('chains'), either in terms
 # of the likelihood/fitness function directly, or as implied
-# posterior probability densities.  With the addition of a 
+# posterior probability densities.  With the addition of a
 # user-defined function, it can also post-process ('pare')
 # chains.
 #
@@ -21,11 +21,11 @@ Readme for Pippi v1.0
 Installation
 ------------
 
-Pippi requires almost no installation.  
+Pippi requires almost no installation.
 
 1. Make sure you have the following already installed:
    * Python v2.7 or later
-   * NumPy and SciPy libraries for python (NumPy v0.9.0 or 
+   * NumPy and SciPy libraries for python (NumPy v0.9.0 or
      greater is required for full functionality)
    * ctioga2 v0.2 or later
    * bash
@@ -33,7 +33,7 @@ Pippi requires almost no installation.
 2. Extract the full pippi source directory and save it
    somewhere.
 
-3. Add the path to wherever you've just saved the 
+3. Add the path to wherever you've just saved the
    pippi source files to your $PATH variable.
 
 4. Hit it.
@@ -47,7 +47,7 @@ Merge two or more chains:
 
   pippi merge <chain1> <chain2> ... <chainx>
 
-  Pippi will simply concatenate the two chains, doing a bit of basic 
+  Pippi will simply concatenate the two chains, doing a bit of basic
   error-checking along the way, and spit out a new merged chain to stdout.
 
 
@@ -55,9 +55,9 @@ Post-process a chain:
 
   pippi pare <chain> <name_of_python_module> <name_of_function_in_module>
 
-  Pippi will dynamically load the python module <name_of_python_module>, 
-  find function <name_of_function_in_module> within it, and use this 
-  function to operate on each point in the chosen chain, spitting out 
+  Pippi will dynamically load the python module <name_of_python_module>,
+  find function <name_of_function_in_module> within it, and use this
+  function to operate on each point in the chosen chain, spitting out
   the resulting post-processed chain to stdout.  The returned chain need
   not contain the same parameters/observables or even the same number of
   them as the initial chain.
@@ -67,8 +67,8 @@ Parse a chain using options in iniFile.pip:
 
   pippi parse iniFile.pip
 
-  Pippi will automatically perform the binning, profiling, marginalising etc 
-  of the requested chain(s) indicated in iniFile.pip, and save them as 
+  Pippi will automatically perform the binning, profiling, marginalising etc
+  of the requested chain(s) indicated in iniFile.pip, and save them as
   datafiles. Note that iniFile.pip or the labels file it specifies must
   contain labels that indicate in which column and form pippi can find
   the mulitiplicities and/or likelihoods in the chain in question.
@@ -86,7 +86,7 @@ Run plotting scipts for a chain using options in iniFile.pip:
 
   pippi plot iniFile.pip
 
-  Pippi will run the bash scripts written in a pippi script operation 
+  Pippi will run the bash scripts written in a pippi script operation
   to generate pdf plots with ctioga2, then move and rename the plots as per
   the options in iniFile.pip.
 
@@ -94,7 +94,7 @@ Parse, script and plot in one go:
 
   pippi iniFile.pip
 
-  Equivalent to running 
+  Equivalent to running
     pippi parse iniFile.pip
     pippi script iniFile.pip
     pippi plot iniFile.pip
@@ -103,8 +103,8 @@ Parse, script and plot in one go:
 Examples
 --------
 
-Examples can be found in the example folder.  Run these examples to 
-see how pippi works and how to use it - look at the input and output files 
+Examples can be found in the example folder.  Run these examples to
+see how pippi works and how to use it - look at the input and output files
 involved to get an idea of what is happening and how you can tinker with it.
 example/example.pip in particular has a full list of available options.
 
@@ -112,33 +112,40 @@ First download the example chain, using e.g. wget under linux, and save it
 to the example/chains directory:
 wget http://www.physics.mcgill.ca/~patscott/pippi/oldchain.txt -P example/chains
 
-Post-process the CMSSM chain 'oldchain' in order to remove all points with 
+Post-process the CMSSM chain 'oldchain' in order to remove all points with
 m_0 < 1 TeV, and save the new chain as 'newchain':
 cd example
 pippi pare chains/oldchain.txt pare_example.py strip > chains/newchain.txt
 
-Make some plots comparing the distributions of m_0, m_half, A_0 and tanbeta in 
+Make some plots comparing the distributions of m_0, m_half, A_0 and tanbeta in
 oldchain and newchain:
 pippi example.pip
 
-If there are no errors, the plots will appear in 'example/plots'.  If you 
-want to change visual aspects of the plots like legends, etc, you can get 
-away with just running script and plot again, which saves a bit of time 
-as you can skip parsing:  
+If there are no errors, the plots will appear in 'example/plots'.  If you
+want to change visual aspects of the plots like legends, etc, you can get
+away with just running script and plot again, which saves a bit of time
+as you can skip parsing:
 pippi script example.pip
 pippi plot example.pip
 
-In general, options in later sections of example.pip do not affect the 
+In general, options in later sections of example.pip do not affect the
 operations corresponding to earlier sections, e.g. changing things in the
 'plot' section means there is no need to rerun pippi parse or pippi script,
-just pippi plot.  The opposite is not true; if you want changes you make 
+just pippi plot.  The opposite is not true; if you want changes you make
 to options in the 'parse' section to be implemented, you will need to
 rerun parse, script and plot.
 
 
 Version history
 ---------------
-v1.0 
+v1.1
+Added human-readable best fit output
+Upgraded to compatibility with ctioga2 v0.8
+Upgraded pip file parsing to support multi-line entries
+Added pippi probe operation for hdf5 archives
+Added hdf5 support (thanks to Christoph Weniger for first version of this code)
+
+v1.0
 Finished 1D plots
 Expanded colour schemes
 Added logo option
@@ -154,7 +161,7 @@ Added proper script and plot functions for 2D plots, 1D plots still need finishi
 Fixed various bugs in parse
 Uploaded to git repo for DEvoPack and LDMBayes
 
-v0.1  
+v0.1
 First alpha, only parse, pare and merge genuinely functional
 Uploaded to git repo for LDMBayes
 
@@ -162,7 +169,7 @@ Uploaded to git repo for LDMBayes
 Standard BSD License
 --------------------
 
-Copyright (c) 2012, Patrick Scott
+Copyright (c) 2012 onwards, Patrick Scott
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
