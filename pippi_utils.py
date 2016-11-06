@@ -93,7 +93,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
+def getChainData(filename, requested_cols=None, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
   # Open a chain file and read it into memory
 
   column_names=None
@@ -108,7 +108,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
     for line in chainfile:
       lines = line.split()
       if lines != [] and line[0] not in ['#',';','!',]:
-        if not any(x == "none" for x in lines): # For now we just exclude all points with any invalid entries. 
+        if not any(x == "none" for x in lines): # For now we just exclude all points with any invalid entries.
           data.append(lines)
 
     #Close the chainfile and indicate success
@@ -119,7 +119,8 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
       print
 
     #Turn the whole lot into a numpy array of doubles
-    return (np.array(data, dtype=np.float64), column_names)
+    data = np.array(data, dtype=np.float64)
+    return (data, column_names, np.arange(data.shape[1]))
 
   # HDF5 file
   else:
@@ -157,23 +158,6 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
           quit()
     column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
 
-    if not probe_only:
-      # Get data                                                                                          
-      data = []                                                                                           
-      data_isvalid = []                                                                                   
-      for column_name in column_names:                                                                    
-        try:                                                                                              
-          data.append(np.array(entries[column_name], dtype=np.float64))                                   
-        except AttributeError:                                                                            
-          print "ERROR: \""+column_name+"\" in group \""+groupname+"\" is not convertible to a float."    
-          print "Probably you gave the wrong group in your pip file."                                     
-          quit()                                                                                          
-        data_isvalid.append(np.array(entries[column_name+"_isvalid"], dtype=np.float64))                  
-      data = np.array(data, dtype=np.float64)                                                             
-      data_isvalid = np.array(data_isvalid, dtype=np.float64)
-      # Print the raw number of samples in the hdf5 file                                                  
-      print "  Total samples: ", data[0].size                                                             
-
     # Reorganize MPIrank, pointID and other requested entries for convenience.
     indices = []
     index_count = 0
@@ -196,15 +180,43 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
       print
       quit()
 
-    data = data[indices]
-    data_isvalid = data_isvalid[indices]
+    # Identify any likelihood or multiplicity indicated by the labels.
+    if (labels):
+      likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
+      if likelihood_index:
+        likelihood_index = likelihood_index[0]
+        if likelihood_index not in requested_cols: requested_cols.add(likelihood_index)
+      multiplicity_index = [value for key, value in labels.value.iteritems() if key in permittedMults]
+      if multiplicity_index:
+        multiplicity_index = multiplicity_index[0]
+        if multiplicity_index not in requested_cols: requested_cols.add(multiplicity_index)
+
+    # Get data, reading only those columns requested in the pip file.
+    data = []
+    data_isvalid = []
+    index_count = 0
+    lookup_key = {}
+    for index in requested_cols:
+      if index >= column_names.shape[0]:
+        sys.exit('Error: requested column number '+str(index)+' does not exist in chain '+mainChain.value+'.\nQuitting...\n')
+      try:
+        data.append(np.array(entries[column_names[index]], dtype=np.float64))
+      except AttributeError:
+        print "ERROR: \""+column_name+"\" in group \""+groupname+"\" is not convertible to a float."
+        print "Probably you gave the wrong group in your pip file."
+        quit()
+      data_isvalid.append(np.array(entries[column_names[index]+"_isvalid"], dtype=np.float64))
+      lookup_key[index] = index_count
+      index_count += 1
+    data = np.array(data, dtype=np.float64)
+    data_isvalid = np.array(data_isvalid, dtype=np.float64)
+    # Print the raw number of samples in the hdf5 file
+    print "  Total samples: ", data[0].size
 
     # Filter out valid points, according to the likelihood only -- and only if called with labels provided
     if (labels):
       # Based on the likelihood entry only
-      likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
-      likelihood_index = likelihood_index[0]
-      cut = (data_isvalid[likelihood_index] == 1)
+      if likelihood_index: cut = (data_isvalid[lookup_key[likelihood_index]] == 1)
       # Based on *all* entries.
       #cut = (data_isvalid.prod(axis=0) == 1)
       data = data[:,cut]
@@ -220,7 +232,7 @@ def getChainData(filename, hdf5_assignments=None, labels=None, silent=False, pro
         print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[i].mean())
       print
 
-    return (np.array(data.T, dtype=np.float64), column_names)
+    return (np.array(data.T, dtype=np.float64), column_names, lookup_key)
 
 
 def try_append(indices, cols, x):
@@ -398,7 +410,7 @@ def string_dictionary(x):
   for i, pair in enumerate(x):
     capture = re.findall("'.+?'", pair)
     if len(capture) > 1: raise Exception
-    pair = re.sub("'.+?'", '__temp__', pair) 
+    pair = re.sub("'.+?'", '__temp__', pair)
     pair = re.sub("[\s,;]+$", '', pair).split(':')
     for j, single in enumerate(pair):
       single.strip()

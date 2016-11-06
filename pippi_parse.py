@@ -86,62 +86,62 @@ def parse(filename):
       print '  The evidence can only be calculated from an MCMC chain.\n  Skipping evidence...'
       doEvidence.value = False
 
-  # Open main chain and read in contents
-  (mainArray, hdf5_names) = getChainData(mainChain.value, labels=labels, hdf5_assignments=hdf5_cols)
-
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
   twoDlist = [] if twoDplots.value is None else twoDplots.value
   setOfRequestedColumns = set(oneDlist + [y for x in twoDlist for y in x])
+
+  # Check that labels for all the requested columns are present.
   for plot in setOfRequestedColumns:
-    if plot > mainArray.shape[1]:
-      sys.exit('Error: requested column number '+str(plot)+' does not exist in chain '+mainChain.value+'.\nQuitting...\n')
     try:
       label = labels.value[plot]
     except (KeyError, TypeError):
       sys.exit('Error: please provide a label for column '+str(plot)+' if you want to plot it.\nQuitting...\n')
 
+  # Open main chain and read in contents
+  (mainArray, hdf5_names, lookupKey) = getChainData(mainChain.value, requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
+
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  doParse(mainArray,outputBaseFilename,setOfRequestedColumns,hdf5_names)
+  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names)
 
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    (secArray, hdf5_names) = getChainData(secChain.value, labels=labels, hdf5_assignments=hdf5_cols)
-    if secArray.shape[1] >= max(setOfRequestedColumns):
+    (mainArray, hdf5_names, lookupKey) = getChainData(secChain.value, requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
+    if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
-      doParse(secArray,outputBaseFilename,setOfRequestedColumns,hdf5_names)
+      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names)
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
 
 
-def doParse(dataArray,outputBaseFilename,setOfRequestedColumns,column_names):
+def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names):
   #Perform all numerical operations required for chain parsing
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
-  standardise(dataArray)
+  standardise(dataArray,lk)
   # Sort array if required
   doSort(dataArray)
   # Find best-fit point
-  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,outputBaseFilename,column_names)
+  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names)
   # Find posterior mean
-  [totalMult, posteriorMean] = getPosteriorMean(dataArray,outputBaseFilename)
+  [totalMult, posteriorMean] = getPosteriorMean(dataArray,lk,outputBaseFilename)
   # Get evidence for mcmc
-  [lnZMain,lnZMainError] = getEvidence(dataArray,bestFit,totalMult,outputBaseFilename)
+  [lnZMain,lnZMainError] = getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename)
   # Save data minima and maxima
-  saveExtrema(dataArray,outputBaseFilename,setOfRequestedColumns)
+  saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns)
   # Do binning for 1D plots
-  oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename)
+  oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename)
   # Do binning for 2D plots
-  twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename)
+  twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename)
 
 
-def standardise(dataArray):
+def standardise(dataArray,lk):
   global firstLikeKey
   # Standardise likelihood, prior and multiplicity labels, rescale likelihood if necessary,
   for key, entry in labels.value.copy().iteritems():
@@ -153,7 +153,7 @@ def standardise(dataArray):
       if key != refPrior: del labels.value[key]
     if any(key == like for like in permittedLikes):
       if firstLikeKey is None: firstLikeKey = key
-      dataArray[:,labels.value[key]] = mapToRefLike(firstLikeKey,dataArray[:,labels.value[key]])
+      dataArray[:,lk[labels.value[key]]] = mapToRefLike(firstLikeKey,dataArray[:,lk[labels.value[key]]])
       labels.value[refLike] = labels.value[key]
       if key != refLike: del labels.value[key]
     if any(entry == mult for mult in permittedMults): labels.value[key] = refMult
@@ -161,17 +161,17 @@ def standardise(dataArray):
     if any(entry == like for like in permittedLikes): labels.value[key] = refLike
   # Rescale columns if requested
   if rescalings.value is not None:
-    for key, entry in rescalings.value.iteritems(): dataArray[:,key] *= entry
+    for key, entry in rescalings.value.iteritems(): dataArray[:,lk[key]] *= entry
   # Convert columns to log if requested
   if logPlots.value is not None:
-    for column in logPlots.value: 
-      if any(dataArray[:,column] <= 0.0):
+    for column in logPlots.value:
+      if any(dataArray[:,lk[column]] <= 0.0):
         print "Error: column {0} requested for log plotting has non-positive values!".format(column)
-        bad_indices = np.where(dataArray[:,column] <= 0.0)[0]
+        bad_indices = np.where(dataArray[:,lk[column]] <= 0.0)[0]
         print "Here is the first point with bad values, for example: "
-        for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val) 
+        for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val)
         sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
-      dataArray[:,column] = np.log10(dataArray[:,column])
+      dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
 
 
 def doSort(dataArray):
@@ -181,11 +181,11 @@ def doSort(dataArray):
     dataArray.view(viewString).sort(order = ['f'+str(labels.value[refMult])], axis=0)
 
 
-def getBestFit(dataArray,outputBaseFilename,column_names):
+def getBestFit(dataArray,lk,outputBaseFilename,column_names):
   # Find best-fit point
-  bestFitIndex = dataArray[:,labels.value[refLike]].argmin()
-  bestFit = dataArray[bestFitIndex,labels.value[refLike]]
-  worstFit = dataArray[:,labels.value[refLike]].max()
+  bestFitIndex = dataArray[:,lk[labels.value[refLike]]].argmin()
+  bestFit = dataArray[bestFitIndex,lk[labels.value[refLike]]]
+  worstFit = dataArray[:,lk[labels.value[refLike]]].max()
   print '    Best fit -lnlike: ',bestFit
   outfile = smart_open(outputBaseFilename+'.best','w')
   outfile.write('# This best-fit/posterior mean file created by pippi '\
@@ -206,15 +206,15 @@ def getBestFit(dataArray,outputBaseFilename,column_names):
   return [bestFit,worstFit,bestFitIndex]
 
 
-def getPosteriorMean(dataArray,outputBaseFilename):
+def getPosteriorMean(dataArray,lk,outputBaseFilename):
   # Find posterior mean
   if doPosteriorMean:
     posteriorMean = []
     # Get total multiplicity for entire chain
-    totalMult = np.sum(dataArray[:,labels.value[refMult]])
+    totalMult = np.sum(dataArray[:,lk[labels.value[refMult]]])
     # Calculate posterior mean as weighted average of each point's contribution to each variable
     for i in range(dataArray.shape[1]):
-      posteriorMean.append(np.sum(dataArray[:,labels.value[refMult]] * dataArray[:,i])/totalMult)
+      posteriorMean.append(np.sum(dataArray[:,lk[labels.value[refMult]]] * dataArray[:,lk[i]])/totalMult)
     outfile = smart_open(outputBaseFilename+'.best','a')
     outfile.write('Posterior mean:\n')
     outfile.write(' '.join([str(x) for x in posteriorMean])+'\n')
@@ -224,13 +224,13 @@ def getPosteriorMean(dataArray,outputBaseFilename):
     return [None, None]
 
 
-def getEvidence(dataArray,bestFit,totalMult,outputBaseFilename):
+def getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename):
   # Get evidence (sum of mult*prior*like for mcmc)
   if doEvidence.value:
     if chainType.value is mcmc:
-      lnZ = np.log(np.sum(dataArray[:,labels.value[refMult]]  * \
-                          dataArray[:,labels.value[refPrior]] * \
-                          np.exp(bestFit-dataArray[:,labels.value[refLike]]))) \
+      lnZ = np.log(np.sum(dataArray[:,lk[labels.value[refMult]]]  * \
+                          dataArray[:,lk[labels.value[refPrior]]] * \
+                          np.exp(bestFit-dataArray[:,lk[labels.value[refLike]]]))) \
                           - bestFit - np.log(totalMult)
       lnZError = np.log(1.0 - pow(totalMult,-0.5))
       print '    ln(evidence): ',lnZ,'+/-',lnZError
@@ -246,18 +246,18 @@ def getEvidence(dataArray,bestFit,totalMult,outputBaseFilename):
     return [None, None]
 
 
-def saveExtrema(dataArray,outputBaseFilename,setOfRequestedColumns):
+def saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns):
   # Save the maxima and minima for each parameter requested for plotting
   outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
   outfile.write('axis_ranges =')
   for column in setOfRequestedColumns:
-    extrema = [dataArray[:,column].min(), dataArray[:,column].max()]
+    extrema = [dataArray[:,lk[column]].min(), dataArray[:,lk[column]].max()]
     dataRanges[column] = extrema
     outfile.write(' '+str(column)+':{'+str(extrema[0])+', '+str(extrema[1])+'}')
   outfile.close
 
 
-def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
+def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename):
   # Do sample sorting for 1D plots
 
   if oneDplots.value is None: return
@@ -292,14 +292,14 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
 
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
-      index = min(int((dataArray[i,plot]-minVal)/rangeOfVals*nBins.value),nBins.value-1)
+      index = min(int((dataArray[i,lk[plot]]-minVal)/rangeOfVals*nBins.value),nBins.value-1)
 
       # Profile over likelihoods
-      if doProfile.value: likeGrid[index] = min(dataArray[i,labels.value[refLike]],likeGrid[index])
+      if doProfile.value: likeGrid[index] = min(dataArray[i,lk[labels.value[refLike]]],likeGrid[index])
 
       if doPosterior.value:
         # Marginalise by addding to posterior sample count
-        postGrid[index] += dataArray[i,labels.value[refMult]]
+        postGrid[index] += dataArray[i,lk[labels.value[refMult]]]
 
     # Convert -log(profile likelihoods) to profile likelihood ratio
     if doProfile.value: likeGrid = np.exp(bestFit - likeGrid)
@@ -386,7 +386,7 @@ def oneDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
         outfile.close
 
 
-def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
+def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename):
   # Do sample sorting for 2D plots
 
   if twoDplots.value is None: return
@@ -426,13 +426,13 @@ def twoDsampler(dataArray,bestFit,worstFit,outputBaseFilename):
 
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
-      [in1,in2] = [min(int((dataArray[i,plot[j]]-minVal[j])/rangeOfVals[j]*nBins.value),nBins.value-2) for j in range(2)]
+      [in1,in2] = [min(int((dataArray[i,lk[plot[j]]]-minVal[j])/rangeOfVals[j]*nBins.value),nBins.value-2) for j in range(2)]
 
       # Profile over likelihoods
-      if doProfile.value: likeGrid[in1,in2] = min(dataArray[i,labels.value[refLike]],likeGrid[in1,in2])
+      if doProfile.value: likeGrid[in1,in2] = min(dataArray[i,lk[labels.value[refLike]]],likeGrid[in1,in2])
 
       # Marginalise by addding to posterior sample count
-      if doPosterior.value: postGrid[in1,in2] += dataArray[i,labels.value[refMult]]
+      if doPosterior.value: postGrid[in1,in2] += dataArray[i,lk[labels.value[refMult]]]
 
     # Convert -log(profile likelihoods) to profile likelihood ratio
     likeGrid = np.exp(bestFit - likeGrid)
