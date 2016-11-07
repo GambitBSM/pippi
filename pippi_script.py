@@ -56,6 +56,7 @@ keys = keys+[scriptdir,doComparison,postMeanOnPost,postMeanOnProf,bestFitOnPost,
 # Define pip file entries to be read from savedkeys file
 labels = dataObject('quantity_labels',string_dictionary)
 dataRanges = dataObject('axis_ranges',floatuple_dictionary)
+lookupKeys = dataObject('lookup_keys',int_dictionary)
 
 # Constants
 blameFractionalVerticalOffset = 1.2e-2
@@ -135,7 +136,7 @@ def script(filename):
     secParseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value)
 
   # Retrieve labels and data ranges saved in earlier parsing run
-  getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges])
+  getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges,lookupKeys])
 
   #Work out whether to do posteriors and check that flags match up
   if doPosterior.value and not has_multiplicity(labels, None):
@@ -260,13 +261,13 @@ def script(filename):
                         ' /line-style '+colours.value.comparison1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
           if bestFitOnProf.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
-            bestFit = getCentralVal(secParseFilename,plot,'like')
+            bestFit = getCentralVal(secParseFilename,plot,'like',lookupKeys)
             outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.comparisonBestFitMarkerScale/40.0)+' '+
                           colours.value.comparisonBestFitMarker+' /color \''+colours.value.comparisonBestFitColour+
                           '\' /scale '+str(colours.value.comparisonBestFitMarkerScale)+' \\\n')
           if postMeanOnProf.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
-            postMean = getCentralVal(secParseFilename,plot,'post')
+            postMean = getCentralVal(secParseFilename,plot,'post',lookupKeys)
             if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
             outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.comparisonPostMeanMarkerScale/40.0)+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
@@ -286,13 +287,13 @@ def script(filename):
           outfile.write('  --legend-line \'Prof.~likelihood\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
         if bestFitOnProf.value:
           # Get best-fit point and plot it
-          bestFit = getCentralVal(parseFilename,plot,'like')
+          bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
           outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.mainBestFitMarkerScale/40.0)+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour1D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
         if postMeanOnProf.value:
           # Get posterior mean and plot it
-          postMean = getCentralVal(parseFilename,plot,'post')
+          postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
           if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour1D+
@@ -383,13 +384,13 @@ def script(filename):
                         ' /line-style '+colours.value.comparison1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
           if bestFitOnPost.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
-            bestFit = getCentralVal(secParseFilename,plot,'like')
+            bestFit = getCentralVal(secParseFilename,plot,'like',lookupKeys)
             outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.comparisonBestFitMarkerScale/40.0)+' '+
                           colours.value.comparisonBestFitMarker+' /color \''+colours.value.comparisonBestFitColour+
                           '\' /scale '+str(colours.value.comparisonBestFitMarkerScale)+' \\\n')
           if postMeanOnPost.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
-            postMean = getCentralVal(secParseFilename,plot,'post')
+            postMean = getCentralVal(secParseFilename,plot,'post',lookupKeys)
             if not postMean: sys.exit('Error: plot_posterior_mean_on_posterior_pdf = T but no multiplicity given!')
             outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.comparisonPostMeanMarkerScale/40.0)+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
@@ -409,13 +410,13 @@ def script(filename):
           outfile.write('  --legend-line \'Marg.~posterior\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
         if bestFitOnPost.value:
           # Get best-fit point and plot it
-          bestFit = getCentralVal(parseFilename,plot,'like')
+          bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
           outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*colours.value.mainBestFitMarkerScale/40.0)+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour1D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
         if postMeanOnPost.value:
           # Get posterior mean and plot it
-          postMean = getCentralVal(parseFilename,plot,'post')
+          postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
           if not postMean: sys.exit('Error: plot_posterior_mean_on_posterior_pdf = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour1D+
@@ -517,9 +518,9 @@ def script(filename):
             for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
           outfile.write('  --legend-line \'Like vs. Posterior\' /color \''+colours.value.legendTextColour1D+'\'\\\n')
         # Get best-fit point
-        bestFit = getCentralVal(parseFilename,plot,'like')
+        bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
         # Get posterior mean
-        postMean = getCentralVal(parseFilename,plot,'post')
+        postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
         # Always plot both best fit and posterior mean on comparison plot
         outfile.write('  --draw-marker '+str(bestFit)+','+str(yRange*bestFitData[2]/40.0)+' '+bestFitData[0]+' /color \''+bestFitData[1]+
                       '\' /scale '+str(bestFitData[2])+' \\\n')
@@ -677,13 +678,13 @@ def script(filename):
                             ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
           if bestFitOnProf.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
-            bestFit = getCentralVal(secParseFilename,plot,'like')
+            bestFit = getCentralVal(secParseFilename,plot,'like',lookupKeys)
             outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
                           colours.value.comparisonBestFitMarker+' /color \''+colours.value.comparisonBestFitColour+
                           '\' /scale '+str(colours.value.comparisonBestFitMarkerScale)+' \\\n')
           if postMeanOnProf.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
-            postMean = getCentralVal(secParseFilename,plot,'post')
+            postMean = getCentralVal(secParseFilename,plot,'post',lookupKeys)
             if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
             outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
@@ -706,13 +707,13 @@ def script(filename):
           outfile.write('  --legend-line \'Prof.~likelihood\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
         if bestFitOnProf.value:
           # Get best-fit point and plot it
-          bestFit = getCentralVal(parseFilename,plot,'like')
+          bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
           outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour2D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
         if postMeanOnProf.value:
           # Get posterior mean and plot it
-          postMean = getCentralVal(parseFilename,plot,'post')
+          postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
           if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour2D+
@@ -828,13 +829,13 @@ def script(filename):
                             ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
           if bestFitOnPost.value and colours.value.comparisonBestFitMarker is not None:
             # Get best-fit point and plot it
-            bestFit = getCentralVal(secParseFilename,plot,'like')
+            bestFit = getCentralVal(secParseFilename,plot,'like',lookupKeys)
             outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
                           colours.value.comparisonBestFitMarker+' /color \''+colours.value.comparisonBestFitColour+
                           '\' /scale '+str(colours.value.comparisonBestFitMarkerScale)+' \\\n')
           if postMeanOnPost.value and colours.value.comparisonPostMeanMarker is not None:
             # Get posterior mean and plot it
-            postMean = getCentralVal(secParseFilename,plot,'post')
+            postMean = getCentralVal(secParseFilename,plot,'post',lookupKeys)
             outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
@@ -856,13 +857,13 @@ def script(filename):
           outfile.write('  --legend-line \'Marg.~posterior\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
         if bestFitOnPost.value:
           # Get best-fit point and plot it
-          bestFit = getCentralVal(parseFilename,plot,'like')
+          bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
           outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
                         colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour2D+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
         if postMeanOnPost.value:
           # Get posterior mean and plot it
-          postMean = getCentralVal(parseFilename,plot,'post')
+          postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour2D+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
@@ -992,9 +993,9 @@ def script(filename):
             for x in legendLines.value: outfile.write('  --legend-line \''+x+'\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
           outfile.write('  --legend-line \'Like vs. Posterior\' /color \''+colours.value.legendTextColour2D+'\'\\\n')
         # Get best-fit point
-        bestFit = getCentralVal(parseFilename,plot,'like')
+        bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
         # Get posterior mean
-        postMean = getCentralVal(parseFilename,plot,'post')
+        postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
         # Always plot both best fit and posterior mean on comparison plot
         if PosteriorIsMainInComboPlot:
           bestFitData = [colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour, colours.value.comparisonBestFitMarkerScale]
@@ -1044,7 +1045,7 @@ def getContours(parseFilename,plot,statistic):
   levels = fileContents.split()
   return levels
 
-def getCentralVal(parseFilename,plot,statistic):
+def getCentralVal(parseFilename,plot,statistic,lk):
   # Find central value (either best fit or posterior mean) for requested plot
   # Open .best file
   bestfile = safe_open(parseFilename+'.best')
@@ -1068,9 +1069,9 @@ def getCentralVal(parseFilename,plot,statistic):
     sys.exit('Error: unrecognised statistic in pippi_script.getCentralVal.\nQuitting...')
   # Choose the coordinates corresponding to the axes of the current plot
   if type(plot) == list:
-    coordinates = [point[x] for x in plot]
+    coordinates = [point[lk.value[x]] for x in plot]
   else:
-    coordinates = point[plot]
+    coordinates = point[lk.value[plot]]
   return coordinates
 
 def dictFallback(risky,safe,key):

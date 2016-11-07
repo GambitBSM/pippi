@@ -93,7 +93,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename, requested_cols=None, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
+def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
   # Open a chain file and read it into memory
 
   column_names=None
@@ -120,7 +120,7 @@ def getChainData(filename, requested_cols=None, hdf5_assignments=None, labels=No
 
     #Turn the whole lot into a numpy array of doubles
     data = np.array(data, dtype=np.float64)
-    return (data, column_names, np.arange(data.shape[1]))
+    lookup_key = np.arange(data.shape[1])
 
   # HDF5 file
   else:
@@ -215,24 +215,33 @@ def getChainData(filename, requested_cols=None, hdf5_assignments=None, labels=No
 
     # Filter out valid points, according to the likelihood only -- and only if called with labels provided
     if (labels):
-      # Based on the likelihood entry only
-      if likelihood_index: cut = (data_isvalid[lookup_key[likelihood_index]] == 1)
-      # Based on *all* entries.
-      #cut = (data_isvalid.prod(axis=0) == 1)
-      data = data[:,cut]
-      data_isvalid = data_isvalid[:,cut]
+      cut = None
+      if cut_all_invalid:
+        # Based on all entries.
+        cut = (data_isvalid.prod(axis=0) == 1)
+        data = data[:,cut]
+        data_isvalid = data_isvalid[:,cut]
+      else:
+        # Based on the likelihood entry only
+        if likelihood_index is not None:
+          cut = (data_isvalid[lookup_key[likelihood_index]] == 1)
+          data = data[:,cut]
+          data_isvalid = data_isvalid[:,cut]
       print "  Total valid samples: ", data[0].size
-      print "  Fraction of samples deemed valid: %.4f"%(1.0*sum(cut)/len(cut))
+      rescaling = 1.0 if cut is None else sum(cut)/len(cut)
+      print "  Fraction of samples deemed valid: %.4f"%(1.0*rescaling)
+
+    data = np.array(data.T, dtype=np.float64)
 
     # Print list of contents for convenience
     if not silent:
-      for i, column_name in enumerate(column_names):
-        print "   ",i, ":", column_name
-        print "        mean: %.2e  min: %.2e  max %.2e"%(data[i].mean(), data[i].min(), data[i].max())
-        print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[i].mean())
+      for key, value in sorted(lookup_key.iteritems()):
+        print "   ",key, ":", column_names[key]
+        print "        mean: %.2e  min: %.2e  max %.2e"%(data[value].mean(), data[value].min(), data[value].max())
+        print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[value].mean())
       print
 
-    return (np.array(data.T, dtype=np.float64), column_names, lookup_key)
+  return (data, column_names, lookup_key)
 
 
 def try_append(indices, cols, x):
@@ -385,6 +394,15 @@ def string_list(x):
     returnVal.append(string(entry))
   return returnVal
 
+def int_dictionary(x):
+  returnVal = {}
+  x = re.findall(".+?:.+?[\s,;]+?|.+?:.+?$", x)
+  for i, pair in enumerate(x):
+    pair = re.sub("[\s,;]+$", '', pair).split(':')
+    pair = [integer(pair[0]), integer(pair[1])]
+    returnVal[pair[0]] = pair[1]
+  return returnVal
+
 def float_dictionary(x):
   returnVal = {}
   x = re.findall(".+?:.+?[\s,;]+?|.+?:.+?$", x)
@@ -443,7 +461,7 @@ def internal(x):
   return permittedInternals[re.sub(r"[':;,]", ' ', x).lower()]
 
 #Global constants and simple one-liners
-pippiVersion = 'v1.0'
+pippiVersion = 'v1.1'
 
 def times1(x): return x
 def half(x): return x*0.5

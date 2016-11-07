@@ -20,6 +20,7 @@ if StrictVersion(scipyCurrent.version) >= StrictVersion("0.9.0"):
 
 # Define parse-specific pip file entries
 parsedir = dataObject('parse_dir',safe_string)
+cutOnAnyInvalid = dataObject('cut_on_invalid_observables',boolean)
 labelFile = dataObject('labels_from_file',string)
 hdf5_cols = dataObject('assign_hdf5_label_to_column',string_dictionary)
 labels = dataObject('quantity_labels',string_dictionary)
@@ -30,7 +31,7 @@ resolution = dataObject('interpolated_resolution',integer)
 intMethod = dataObject('interpolation_method',string)
 chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
-keys = keys+[parsedir,labelFile,nBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings]
+keys = keys+[parsedir,labelFile,cutOnAnyInvalid,nBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings]
 
 # Initialise variables
 doPosteriorMean = True
@@ -99,7 +100,8 @@ def parse(filename):
       sys.exit('Error: please provide a label for column '+str(plot)+' if you want to plot it.\nQuitting...\n')
 
   # Open main chain and read in contents
-  (mainArray, hdf5_names, lookupKey) = getChainData(mainChain.value, requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
+  (mainArray, hdf5_names, lookupKey) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value, requested_cols=setOfRequestedColumns,
+   labels=labels, hdf5_assignments=hdf5_cols)
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
@@ -109,7 +111,8 @@ def parse(filename):
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    (mainArray, hdf5_names, lookupKey) = getChainData(secChain.value, requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
+    (mainArray, hdf5_names, lookupKey) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
+     requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
     if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
@@ -135,6 +138,8 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names):
   [lnZMain,lnZMainError] = getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename)
   # Save data minima and maxima
   saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns)
+  # Save lookup keys for parameters
+  saveLookupKeys(lk,outputBaseFilename)
   # Do binning for 1D plots
   oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename)
   # Do binning for 2D plots
@@ -165,13 +170,14 @@ def standardise(dataArray,lk):
   # Convert columns to log if requested
   if logPlots.value is not None:
     for column in logPlots.value:
-      if any(dataArray[:,lk[column]] <= 0.0):
-        print "Error: column {0} requested for log plotting has non-positive values!".format(column)
-        bad_indices = np.where(dataArray[:,lk[column]] <= 0.0)[0]
-        print "Here is the first point with bad values, for example: "
-        for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val)
-        sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
-      dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
+      if column in lk:
+        if any(dataArray[:,lk[column]] <= 0.0):
+          print "Error: column {0} requested for log plotting has non-positive values!".format(column)
+          bad_indices = np.where(dataArray[:,lk[column]] <= 0.0)[0]
+          print "Here is the first point with bad values, for example: "
+          for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val)
+          sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
+        dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
 
 
 def doSort(dataArray):
@@ -254,6 +260,19 @@ def saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns):
     extrema = [dataArray[:,lk[column]].min(), dataArray[:,lk[column]].max()]
     dataRanges[column] = extrema
     outfile.write(' '+str(column)+':{'+str(extrema[0])+', '+str(extrema[1])+'}')
+  outfile.write('\n')
+  outfile.close
+
+
+def saveLookupKeys(lk,outputBaseFilename):
+  # Save the lookup keys for all the requested parameters
+  outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
+  outfile.write('lookup_keys =')
+  if type(lk) == dict:
+    for key, value in lk.iteritems(): outfile.write(' '+str(key)+':'+str(value))
+  else:
+    for i in lk: outfile.write(' '+str(i)+':'+str(i))
+  outfile.write('\n')
   outfile.close
 
 
