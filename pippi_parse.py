@@ -194,7 +194,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
   worstFit = dataArray[:,lk[labels.value[refLike]]].max()
   print '    Best fit -lnlike: ',bestFit
   outfile = smart_open(outputBaseFilename+'.best','w')
-  outfile.write('# This best-fit/posterior mean file created by pippi '\
+  outfile.write('# This best-fit/posterior mean file created by pippi '
            +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
   outfile.write('Best-fit log-likelihood: '+str(-bestFit)+'\n')
   outfile.write('Best-fit point:\n')
@@ -204,13 +204,28 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
   outfile.write('# This best-fit file created by pippi '\
            +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
   if (column_names is None) :
+    # Just a regular ASCII chain from MultiNest or similar
     for i, x in enumerate(dataArray[bestFitIndex,:]):
        outfile.write(str(i)+': '+str(x)+'\n')
   else:
+    # HDF5 file from GAMBIT or similar, with proper data record idenntifiers
+    parameter_sets = {}
     for i, x in enumerate(column_names):
        outfile.write(x.lstrip('#')+': '+all_best_fit_data[i]+'\n')
-    #outfile2 = smart_open(outputBaseFilename+'.best_parameters.yaml','w')
-    #outfile2.close
+       if "primary_parameters" in x:
+         model = re.sub(".*@|::.*", '', x)
+         par = re.sub(".*::", '', x)
+         if not model in parameter_sets: parameter_sets[model] = []
+         parameter_sets[model].append('    '+ par + ': ' + all_best_fit_data[i])
+    if parameter_sets != {}:
+      outfile2 = smart_open(outputBaseFilename+'.best_parameters.yaml','w')
+      outfile2.write('# This best-fit file created in GAMBIT yaml format by pippi '
+                     +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
+      outfile2.write('# Best-fit log-likelihood: '+str(-bestFit)+'\n\n')
+      for model, parameters in parameter_sets.iteritems():
+        outfile2.write('    ' + model + ':\n')
+        for parval in parameters: outfile2.write('  ' + parval + '\n')
+      outfile2.close
   outfile.close
   return [bestFit,worstFit,bestFitIndex]
 
