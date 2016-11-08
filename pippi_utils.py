@@ -97,6 +97,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
   # Open a chain file and read it into memory
 
   column_names=None
+  all_best_fit_data = []
 
   # Regular ASCII chain
   if filename.split(":")[0][-5:] != '.hdf5':
@@ -181,12 +182,14 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
       quit()
 
     # Identify any likelihood or multiplicity indicated by the labels.
-    if (labels):
+    if labels:
       likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
+      if not likelihood_index: likelihood_index = [key for key, value in labels.value.iteritems() if value in permittedLikes]
       if likelihood_index:
         likelihood_index = likelihood_index[0]
         if likelihood_index not in requested_cols: requested_cols.add(likelihood_index)
       multiplicity_index = [value for key, value in labels.value.iteritems() if key in permittedMults]
+      if not multiplicity_index: multiplicity_index = [key for key, value in labels.value.iteritems() if value in permittedMults]
       if multiplicity_index:
         multiplicity_index = multiplicity_index[0]
         if multiplicity_index not in requested_cols: requested_cols.add(multiplicity_index)
@@ -213,8 +216,11 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
     # Print the raw number of samples in the hdf5 file
     print "  Total samples: ", data[0].size
 
+    # Save likelihood column before filtering on validity
+    if likelihood_index is not None: old_likelihood_column = data[lookup_key[likelihood_index],:]
+
     # Filter out valid points, according to the likelihood only -- and only if called with labels provided
-    if (labels):
+    if labels:
       cut = None
       if cut_all_invalid:
         # Based on all entries.
@@ -231,6 +237,18 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
       rescaling = 1.0 if cut is None else sum(cut)/len(cut)
       print "  Fraction of samples deemed valid: %.4f"%(1.0*rescaling)
 
+    # Find the unfiltered index of the best-fit point
+    if likelihood_index is not None:
+      if likelihood_index in labels.value:
+        findMin = labels.value[likelihood_index] in permittedLikes_samesign
+      else:
+        findMin = [value for key, value in labels.value.iteritems() if key in permittedLikes_samesign]
+      if findMin:
+        bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmin()
+      else:
+        bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmax()
+      for column_name in column_names: all_best_fit_data.append(str(entries[column_name][bestfit_any_index]))
+
     data = np.array(data.T, dtype=np.float64)
 
     # Print list of contents for convenience
@@ -241,7 +259,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
         print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[value].mean())
       print
 
-  return (data, column_names, lookup_key)
+  return (data, column_names, lookup_key, all_best_fit_data)
 
 
 def try_append(indices, cols, x):
@@ -469,6 +487,7 @@ def negative(x): return -x
 def negativehalf(x): return -x*0.5
 def negln(x): return -np.log(x)
 permittedLikes = {'-lnlike':times1,'lnlike':negative,'-2lnlike':half,'chi2':half,'2lnlike':negativehalf,'like':negln}
+permittedLikes_samesign = ['-lnlike', '-2lnlike']
 refLike = '-lnlike'
 
 permittedMults = ['mult','mult.','multiplicity','multiplic.','mtpcty','Posterior']

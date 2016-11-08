@@ -100,30 +100,30 @@ def parse(filename):
       sys.exit('Error: please provide a label for column '+str(plot)+' if you want to plot it.\nQuitting...\n')
 
   # Open main chain and read in contents
-  (mainArray, hdf5_names, lookupKey) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value, requested_cols=setOfRequestedColumns,
-   labels=labels, hdf5_assignments=hdf5_cols)
+  (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value,
+   cut_all_invalid=cutOnAnyInvalid.value, requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names)
+  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,all_best_fit_data)
 
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    (mainArray, hdf5_names, lookupKey) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
+    (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
      requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
     if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
-      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names)
+      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,all_best_fit_data)
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
 
 
-def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names):
+def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,all_best_fit_data):
   #Perform all numerical operations required for chain parsing
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
@@ -131,7 +131,7 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names):
   # Sort array if required
   doSort(dataArray)
   # Find best-fit point
-  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names)
+  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data)
   # Find posterior mean
   [totalMult, posteriorMean] = getPosteriorMean(dataArray,lk,outputBaseFilename)
   # Get evidence for mcmc
@@ -187,7 +187,7 @@ def doSort(dataArray):
     dataArray.view(viewString).sort(order = ['f'+str(labels.value[refMult])], axis=0)
 
 
-def getBestFit(dataArray,lk,outputBaseFilename,column_names):
+def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
   # Find best-fit point
   bestFitIndex = dataArray[:,lk[labels.value[refLike]]].argmin()
   bestFit = dataArray[bestFitIndex,lk[labels.value[refLike]]]
@@ -200,14 +200,17 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names):
   outfile.write('Best-fit point:\n')
   outfile.write(' '.join([str(x) for x in dataArray[bestFitIndex,:]])+'\n')
   outfile.close
-  outfile = smart_open(outputBaseFilename+'.best.yaml','w')
+  outfile = smart_open(outputBaseFilename+'.best_all','w')
   outfile.write('# This best-fit file created by pippi '\
            +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
-  for i, x in enumerate(dataArray[bestFitIndex,:]):
-    if (column_names is None) :
+  if (column_names is None) :
+    for i, x in enumerate(dataArray[bestFitIndex,:]):
        outfile.write(str(i)+': '+str(x)+'\n')
-    else:
-       outfile.write(column_names[i].lstrip('#')+': '+str(x)+'\n')
+  else:
+    for i, x in enumerate(column_names):
+       outfile.write(x.lstrip('#')+': '+all_best_fit_data[i]+'\n')
+    #outfile2 = smart_open(outputBaseFilename+'.best_parameters.yaml','w')
+    #outfile2.close
   outfile.close
   return [bestFit,worstFit,bestFitIndex]
 
