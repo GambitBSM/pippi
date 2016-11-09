@@ -17,7 +17,8 @@ parse_dir = 'parse'                         ;Directory to save parsing output in
 
 cut_on_invalid_observables = F              ;Cut on any invalid entries in an hdf5 file, not just the likelihood (defaults to false, meaning cut on likelihood only)
 
-number_of_bins = 50                         ;Number of bins in each direction to sort samples into
+default_bins = 50                           ;Default number of bins to sort samples into in each direction.
+number_of_bins = 2:40 3:60                  ;Bins to use for specific observables (overrides default)
 interpolated_resolution = 300               ;Resolution of binwise interpolation for plotting (~300+ for publication)
 interpolation_method = 'spline'             ;Either bilinear (default) or spline (watch out for ringing in the latter case)
 

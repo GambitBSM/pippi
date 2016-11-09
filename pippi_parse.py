@@ -26,13 +26,14 @@ hdf5_cols = dataObject('assign_hdf5_label_to_column',string_dictionary)
 labels = dataObject('quantity_labels',string_dictionary)
 logPlots = dataObject('use_log_scale',int_list)
 rescalings = dataObject('quantity_rescalings',float_dictionary)
-nBins = dataObject('number_of_bins',integer)
+defaultBins = dataObject('default_bins',integer)
+specificBins = dataObject('number_of_bins',int_dictionary)
 resolution = dataObject('interpolated_resolution',integer)
 intMethod = dataObject('interpolation_method',string)
 chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
 data_ranges = dataObject('data_ranges',floatuple_dictionary)
-keys = keys+[parsedir,labelFile,cutOnAnyInvalid,nBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings,data_ranges]
+keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings,data_ranges]
 
 # Initialise variables
 doPosteriorMean = True
@@ -102,6 +103,11 @@ def parse(filename):
     except (KeyError, TypeError):
       sys.exit('Error: please provide a label for column '+str(plot)+' if you want to plot it.\nQuitting...\n')
 
+  # Work out what binning to use in each dimension
+  nBins = {}
+  for x in setOfRequestedColumns:
+    nBins[x] = defaultBins.value if (not specificBins.value or x not in specificBins.value) else specificBins.value[x]
+
   # Open main chain and read in contents
   (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value,
    requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols, data_ranges=data_ranges, log_plots=logPlots,
@@ -109,7 +115,7 @@ def parse(filename):
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data)
+  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins)
 
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
@@ -122,13 +128,13 @@ def parse(filename):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
-      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data)
+      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins)
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
 
 
-def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data):
+def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data,nBins):
   #Perform all numerical operations required for chain parsing
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
@@ -146,9 +152,9 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   # Save lookup keys for parameters
   saveLookupKeys(lk,outputBaseFilename)
   # Do binning for 1D plots
-  oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges)
+  oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nBins)
   # Do binning for 2D plots
-  twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges)
+  twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nBins)
 
 
 def standardise(dataArray,lk):
@@ -300,7 +306,7 @@ def saveLookupKeys(lk,outputBaseFilename):
   outfile.close
 
 
-def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
+def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAllBins):
   # Do sample sorting for 1D plots
 
   if oneDplots.value is None: return
@@ -318,24 +324,26 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
 
     print '    Parsing data for 1D plots of quantity ',plot
 
-    likeGrid = np.empty((nBins.value), dtype=np.float64)
+    nBins = nAllBins[plot]
+
+    likeGrid = np.empty((nBins), dtype=np.float64)
     likeGrid[:] = worstFit + 100.0
-    postGrid = np.zeros((nBins.value), dtype=np.float64)
+    postGrid = np.zeros((nBins), dtype=np.float64)
 
     # Work out maximum and minimum values of parameter/derived quantity
     minVal = dataRanges[plot][0]
     maxVal = dataRanges[plot][1]
     rangeOfVals = maxVal - minVal
-    binSep = rangeOfVals / nBins.value
+    binSep = rangeOfVals / nBins
 
     # Calculate bin centres
-    binCentresOrig = np.array([minVal + (x+0.5)*rangeOfVals/nBins.value for x in range(nBins.value)])
+    binCentresOrig = np.array([minVal + (x+0.5)*rangeOfVals/nBins for x in range(nBins)])
     binCentresInterp = np.array([binCentresOrig[0] + x*(binCentresOrig[-1]-binCentresOrig[0])\
                                  /(resolution.value-1) for x in range(resolution.value)])
 
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
-      index = min(int((dataArray[i,lk[plot]]-minVal)/rangeOfVals*nBins.value),nBins.value-1)
+      index = min(int((dataArray[i,lk[plot]]-minVal)/rangeOfVals*nBins),nBins-1)
 
       # Profile over likelihoods
       if doProfile.value: likeGrid[index] = min(dataArray[i,lk[labels.value[refLike]]],likeGrid[index])
@@ -365,7 +373,6 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
       # Fix any points that have been sent >1 due to ringing
       likeGrid[np.isposinf(likeGrid)] = 1.0
       likeGrid[likeGrid>1] = 1.0
-
 
     if doPosterior.value:
       interpolator = oneDspline(binCentresOrig, postGrid)
@@ -429,7 +436,7 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
         outfile.close
 
 
-def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
+def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAllBins):
   # Do sample sorting for 2D plots
 
   if twoDplots.value is None: return
@@ -448,28 +455,32 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
 
     print '    Parsing data for 2D plots of quantities ',plot
 
-    likeGrid = np.empty((nBins.value,nBins.value), dtype=np.float64)
+    nBins = [nAllBins[plot[j]] for j in range(2)]
+
+    likeGrid = np.empty((nBins[0],nBins[1]), dtype=np.float64)
     likeGrid[:,:] = worstFit + 100.0
-    postGrid = np.zeros((nBins.value,nBins.value), dtype=np.float64)
+    postGrid = np.zeros((nBins[0],nBins[1]), dtype=np.float64)
 
     # Work out maximum and minimum values of parameters/derived quantities
     minVal = [dataRanges[plot[j]][0] for j in range(2)]
     maxVal = [dataRanges[plot[j]][1] for j in range(2)]
     rangeOfVals = [maxVal[j] - minVal[j] for j in range(2)]
     # Pad edges of grid
-    binSep = [rangeOfVals[j]/(nBins.value-2) for j in range(2)]
+    binSep = [rangeOfVals[j]/(nBins[j]-2) for j in range(2)]
     minVal = [minVal[j] - binSep[j] for j in range(2)]
     maxVal = [maxVal[j] + binSep[j] for j in range(2)]
     rangeOfVals = [rangeOfVals[j] + 2.0 * binSep[j] for j in range(2)]
 
     # Calculate bin centres
-    binCentresOrig = np.array([[minVal[j] + (x+0.5)*rangeOfVals[j]/nBins.value for x in range(nBins.value)] for j in range(2)])
-    binCentresInterp = np.array([[binCentresOrig[j][0] + x*(binCentresOrig[j][-1]-binCentresOrig[j][0])\
-                                 /(resolution.value-1) for x in range(resolution.value)] for j in range(2)])
+    binCentresOrig = []
+    binCentresInterp = []
+    for j in range(2): binCentresOrig.append(np.array([minVal[j] + (x+0.5)*rangeOfVals[j]/nBins[j] for x in range(nBins[j])]))
+    for j in range(2): binCentresInterp.append(np.array([binCentresOrig[j][0] + x*(binCentresOrig[j][-1]-binCentresOrig[j][0])\
+                                 /(resolution.value-1) for x in range(resolution.value)]))
 
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
-      [in1,in2] = [min(int((dataArray[i,lk[plot[j]]]-minVal[j])/rangeOfVals[j]*nBins.value),nBins.value-2) for j in range(2)]
+      [in1,in2] = [min(int((dataArray[i,lk[plot[j]]]-minVal[j])/rangeOfVals[j]*nBins[j]),nBins[j]-2) for j in range(2)]
 
       # Profile over likelihoods
       if doProfile.value: likeGrid[in1,in2] = min(dataArray[i,lk[labels.value[refLike]]],likeGrid[in1,in2])
@@ -482,18 +493,18 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
 
     # Precompute co-ordinate grids for splines to avoid repetition
     if intMethod.value == 'spline':
-      oldCoords = np.array([[binCentresOrig[0,i], binCentresOrig[1,j]] for i in range(nBins.value) for j in range(nBins.value)])
-      newCoords = [[binCentresInterp[0,i], binCentresInterp[1,j]] for i in range(resolution.value) for j in range(resolution.value)]
+      oldCoords = np.array([[binCentresOrig[0][i], binCentresOrig[1][j]] for i in range(nBins[0]) for j in range(nBins[1])])
+      newCoords = [[binCentresInterp[0][i], binCentresInterp[1][j]] for i in range(resolution.value) for j in range(resolution.value)]
 
     # Interpolate posterior pdf and profile likelihood to requested display resolution
     if doProfile.value:
       if intMethod.value == 'spline':
-        likeGrid = np.array(likeGrid).reshape(nBins.value*nBins.value)
+        likeGrid = np.array(likeGrid).reshape(nBins[0]*nBins[1])
         interpolator = twoDspline(oldCoords,likeGrid)
         likeGrid = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)
       else:
-        interpolator = twoDbilinear(binCentresOrig[0,:], binCentresOrig[1,:], likeGrid, ky = 1, kx = 1)
-        likeGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i])
+        interpolator = twoDbilinear(binCentresOrig[0], binCentresOrig[1], likeGrid, ky = 1, kx = 1)
+        likeGrid = np.array([interpolator(binCentresInterp[0][j], binCentresInterp[1][i])
                    for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
 
       # Fix any points sent NaN by scipy's crappy interpolators
@@ -509,12 +520,12 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
 
     if doPosterior.value:
       if intMethod.value == 'spline':
-        postGrid = np.array(postGrid).reshape(nBins.value*nBins.value)
+        postGrid = np.array(postGrid).reshape(nBins[0]*nBins[1])
         interpolator = twoDspline(oldCoords,postGrid)
         postGrid = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)
       else:
-        interpolator = twoDbilinear(binCentresOrig[0,:], binCentresOrig[1,:], postGrid, ky = 1, kx = 1)
-        postGrid = np.array([interpolator(binCentresInterp[0,j], binCentresInterp[1,i])
+        interpolator = twoDbilinear(binCentresOrig[0], binCentresOrig[1], postGrid, ky = 1, kx = 1)
+        postGrid = np.array([interpolator(binCentresInterp[0][j], binCentresInterp[1][i])
                    for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
 
       # Kill off any points that have been sent negative due to ringing
@@ -547,7 +558,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
       outfile = smart_open(outName,'w')
       outfile.write('# This 2D binned profile likelihood ratio file created by pippi '\
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
-      outfile.write('\n'.join([str(binCentresInterp[0,i])+'\t'+str(binCentresInterp[1,j])+'\t'+str(likeGrid[i,j]) \
+      outfile.write('\n'.join([str(binCentresInterp[0][i])+'\t'+str(binCentresInterp[1][j])+'\t'+str(likeGrid[i,j]) \
                                for i in range(likeGrid.shape[0]) for j in range(likeGrid.shape[1])]))
       outfile.close
 
@@ -557,7 +568,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
       outfile = smart_open(outName,'w')
       outfile.write('# This 2D binned posterior pdf file created by pippi '\
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
-      outfile.write('\n'.join([str(binCentresInterp[0,i])+'\t'+str(binCentresInterp[1,j])+'\t'+str(postGrid[i,j]) \
+      outfile.write('\n'.join([str(binCentresInterp[0][i])+'\t'+str(binCentresInterp[1][j])+'\t'+str(postGrid[i,j]) \
                                for i in range(postGrid.shape[0]) for j in range(postGrid.shape[1])]))
       outfile.close
       if contours.value is not None:
