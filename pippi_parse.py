@@ -31,19 +31,22 @@ resolution = dataObject('interpolated_resolution',integer)
 intMethod = dataObject('interpolation_method',string)
 chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
-keys = keys+[parsedir,labelFile,cutOnAnyInvalid,nBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings]
+data_ranges = dataObject('data_ranges',floatuple_dictionary)
+keys = keys+[parsedir,labelFile,cutOnAnyInvalid,nBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings,data_ranges]
 
 # Initialise variables
 doPosteriorMean = True
 firstLikeKey = None
-dataRanges = {}
 
 def parse(filename):
   #input:   filename = the name of the pip file
   global doPosteriorMean
 
-  #Parse pip file
+  # Parse pip file
   getIniData(filename,keys,savekeys=[labels],savedir=parsedir)
+
+  # Make a local copy of data_ranges
+  dataRanges = {} if not data_ranges.value else dict(data_ranges.value)
 
   # Work out where the parse output is to be located
   if parsedir.value is None:
@@ -100,30 +103,32 @@ def parse(filename):
       sys.exit('Error: please provide a label for column '+str(plot)+' if you want to plot it.\nQuitting...\n')
 
   # Open main chain and read in contents
-  (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value,
-   cut_all_invalid=cutOnAnyInvalid.value, requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
+  (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value,
+   requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols, data_ranges=data_ranges, log_plots=logPlots,
+   rescalings=rescalings)
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,all_best_fit_data)
+  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data)
 
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
     (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
-     requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols)
+     requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols, data_ranges=data_ranges, log_plots=logPlots,
+     rescalings=rescalings)
     if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
-      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,all_best_fit_data)
+      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data)
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
 
 
-def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,all_best_fit_data):
+def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data):
   #Perform all numerical operations required for chain parsing
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
@@ -137,13 +142,13 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,a
   # Get evidence for mcmc
   [lnZMain,lnZMainError] = getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename)
   # Save data minima and maxima
-  saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns)
+  saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns,dataRanges)
   # Save lookup keys for parameters
   saveLookupKeys(lk,outputBaseFilename)
   # Do binning for 1D plots
-  oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename)
+  oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges)
   # Do binning for 2D plots
-  twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename)
+  twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges)
 
 
 def standardise(dataArray,lk):
@@ -270,12 +275,13 @@ def getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename):
     return [None, None]
 
 
-def saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns):
+def saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns,dataRanges):
   # Save the maxima and minima for each parameter requested for plotting
   outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
-  outfile.write('axis_ranges =')
+  outfile.write('data_ranges =')
   for column in setOfRequestedColumns:
     extrema = [dataArray[:,lk[column]].min(), dataArray[:,lk[column]].max()]
+    if column in dataRanges: extrema = [max(dataRanges[column][0], extrema[0]), min(dataRanges[column][1], extrema[1])]
     dataRanges[column] = extrema
     outfile.write(' '+str(column)+':{'+str(extrema[0])+', '+str(extrema[1])+'}')
   outfile.write('\n')
@@ -294,7 +300,7 @@ def saveLookupKeys(lk,outputBaseFilename):
   outfile.close
 
 
-def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename):
+def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
   # Do sample sorting for 1D plots
 
   if oneDplots.value is None: return
@@ -423,7 +429,7 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename):
         outfile.close
 
 
-def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename):
+def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges):
   # Do sample sorting for 2D plots
 
   if twoDplots.value is None: return

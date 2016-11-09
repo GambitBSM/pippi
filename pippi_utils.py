@@ -93,7 +93,8 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assignments=None, labels=None, silent=False, probe_only=False):
+def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assignments=None, labels=None, silent=False,
+ probe_only=False, data_ranges=None, log_plots=None, rescalings=None):
   # Open a chain file and read it into memory
 
   column_names=None
@@ -122,6 +123,33 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
     #Turn the whole lot into a numpy array of doubles
     data = np.array(data, dtype=np.float64)
     lookup_key = np.arange(data.shape[1])
+
+    # Filter out points inside the requested data ranges
+    cut = None
+    if data_ranges.value:
+      for key, value in data_ranges.value.iteritems():
+        lowercut = value[0]
+        uppercut = value[1]
+        if log_plots.value is not None and key in log_plots.value:
+          lowercut = pow(10.0,lowercut)
+          uppercut = pow(10.0,uppercut)
+        if rescalings.value is not None and key in rescalings.value:
+          lowercut *= rescalings.value[key]
+          uppercut *= rescalings.value[key]
+        if cut is None:
+          cut = np.logical_and(data[:,key] >= lowercut, data[:,key] <= uppercut)
+        else:
+          cut = np.logical_and(cut, np.logical_and(data[:,key] >= lowercut, data[:,key] <= uppercut))
+      # Print the details of the cuts
+      rescaling = 1.0
+      print "  Total samples: ", data.shape[0]
+      if cut is not None:
+        data = data[cut,:]
+        sumcut = sum(cut)
+        print "  Total samples within requested data ranges: ", sumcut
+        if sumcut <= 0.0: sys.exit('Requested data cuts leave no remaining samples!')
+        rescaling = 1.0*sumcut/len(cut)
+      print "  Fraction of samples within requested data ranges: %.4f"%(rescaling)
 
   # HDF5 file
   else:
@@ -216,38 +244,56 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
     # Print the raw number of samples in the hdf5 file
     print "  Total samples: ", data[0].size
 
-    # Save likelihood column before filtering on validity
+    # Save likelihood column before filtering on validity or data ranges
     if likelihood_index is not None: old_likelihood_column = data[lookup_key[likelihood_index],:]
 
-    # Filter out valid points, according to the likelihood only -- and only if called with labels provided
+    # Filter out invalid points if called with labels provided
+    cut = None
     if labels:
-      cut = None
       if cut_all_invalid:
         # Based on all entries.
         cut = (data_isvalid.prod(axis=0) == 1)
-        data = data[:,cut]
-        data_isvalid = data_isvalid[:,cut]
       else:
         # Based on the likelihood entry only
         if likelihood_index is not None:
           cut = (data_isvalid[lookup_key[likelihood_index]] == 1)
-          data = data[:,cut]
-          data_isvalid = data_isvalid[:,cut]
-      print "  Total valid samples: ", data[0].size
-      rescaling = 1.0 if cut is None else sum(cut)/len(cut)
-      print "  Fraction of samples deemed valid: %.4f"%(1.0*rescaling)
 
-    # Find the unfiltered index of the best-fit point
-    if likelihood_index is not None:
-      if likelihood_index in labels.value:
-        findMin = labels.value[likelihood_index] in permittedLikes_samesign
-      else:
-        findMin = [value for key, value in labels.value.iteritems() if key in permittedLikes_samesign]
-      if findMin:
-        bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmin()
-      else:
-        bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmax()
-      for column_name in column_names: all_best_fit_data.append(str(entries[column_name][bestfit_any_index]))
+    # Filter out points inside the requested data ranges
+    if data_ranges.value:
+      for key, value in data_ranges.value.iteritems():
+        lowercut = value[0]
+        uppercut = value[1]
+        if log_plots.value is not None and key in log_plots.value:
+          lowercut = pow(10.0,lowercut)
+          uppercut = pow(10.0,uppercut)
+        if rescalings.value is not None and key in rescalings.value:
+          lowercut *= rescalings.value[key]
+          uppercut *= rescalings.value[key]
+        if cut is None:
+          cut = np.logical_and(data[lookup_key[key],:] >= lowercut, data[lookup_key[key],:] <= uppercut)
+        else:
+          cut = np.logical_and(cut, np.logical_and(data[lookup_key[key],:] >= lowercut, data[lookup_key[key],:] <= uppercut))
+
+    # Print the details of the cuts
+    rescaling = 1.0
+    if cut is not None:
+      data = data[:,cut]
+      data_isvalid = data_isvalid[:,cut]
+      sumcut = sum(cut)
+      print "  Total valid samples within requested data ranges: ", sumcut
+      rescaling = 1.0*sumcut/len(cut)
+      # Find the full details of the best-fit point
+      if likelihood_index is not None:
+        if likelihood_index in labels.value:
+          findMin = labels.value[likelihood_index] in permittedLikes_samesign
+        else:
+          findMin = [value for key, value in labels.value.iteritems() if key in permittedLikes_samesign]
+        if findMin:
+          bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmin()
+        else:
+          bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmax()
+        for column_name in column_names: all_best_fit_data.append(str(entries[column_name][bestfit_any_index]))
+    print "  Fraction of samples deemed valid and within requested data ranges: %.4f"%(rescaling)
 
     data = np.array(data.T, dtype=np.float64)
 

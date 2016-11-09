@@ -55,7 +55,7 @@ keys = keys+[scriptdir,doComparison,postMeanOnPost,postMeanOnProf,bestFitOnPost,
         refKey,doKey1D,doKey2D,keyLoc1D,keyLoc2D,parsedir,logoFile,logoLoc,logoWidth]
 # Define pip file entries to be read from savedkeys file
 labels = dataObject('quantity_labels',string_dictionary)
-dataRanges = dataObject('axis_ranges',floatuple_dictionary)
+dataRanges = dataObject('data_ranges',floatuple_dictionary)
 lookupKeys = dataObject('lookup_keys',int_dictionary)
 
 # Constants
