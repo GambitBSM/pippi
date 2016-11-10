@@ -11,12 +11,12 @@
 from pippi_utils import *
 
 # Define probe-specific pip file entries
-hdf5_cols = dataObject('assign_hdf5_label_to_column',string_dictionary)
-keys = keys+[hdf5_cols]
+col_assignments = dataObject('assign_to_pippi_datastream',string_dictionary)
+keys = keys+[col_assignments]
 
 #input:   filename = the name of the pip file
 def probe(filename):
   #Parse pip file
   getIniData(filename,keys)
   # Open main chain and read in contents
-  mainArray = getChainData(mainChain.value, hdf5_assignments=hdf5_cols, probe_only=True)
+  mainArray = getChainData(mainChain.value, assignments=col_assignments, probe_only=True)
