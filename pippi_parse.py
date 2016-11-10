@@ -22,7 +22,7 @@ if StrictVersion(scipyCurrent.version) >= StrictVersion("0.9.0"):
 parsedir = dataObject('parse_dir',safe_string)
 cutOnAnyInvalid = dataObject('cut_on_invalid_observables',boolean)
 labelFile = dataObject('labels_from_file',string)
-hdf5_cols = dataObject('assign_hdf5_label_to_column',string_dictionary)
+col_assignments = dataObject('assign_to_pippi_datastream',string_dictionary)
 labels = dataObject('quantity_labels',string_dictionary)
 logPlots = dataObject('use_log_scale',int_list)
 rescalings = dataObject('quantity_rescalings',float_dictionary)
@@ -33,7 +33,7 @@ intMethod = dataObject('interpolation_method',string)
 chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
 data_ranges = dataObject('data_ranges',floatuple_dictionary)
-keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,hdf5_cols,logPlots,rescalings,data_ranges]
+keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,col_assignments,logPlots,rescalings,data_ranges]
 
 # Initialise variables
 doPosteriorMean = True
@@ -74,7 +74,7 @@ def parse(filename):
     doProfile.value = False
 
   #Work out whether to do posterior mean and check that flags match up for posterior pdf
-  doPosteriorMean = has_multiplicity(labels, hdf5_cols)
+  doPosteriorMean = has_multiplicity(labels, col_assignments)
   if doPosterior.value and not doPosteriorMean:
     print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
     doPosterior.value = False
@@ -110,7 +110,7 @@ def parse(filename):
 
   # Open main chain and read in contents
   (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value,
-   requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols, data_ranges=data_ranges, log_plots=logPlots,
+   requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
    rescalings=rescalings)
 
   # Parse main chain
@@ -122,7 +122,7 @@ def parse(filename):
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
     (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
-     requested_cols=setOfRequestedColumns, labels=labels, hdf5_assignments=hdf5_cols, data_ranges=data_ranges, log_plots=logPlots,
+     requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
      rescalings=rescalings)
     if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain

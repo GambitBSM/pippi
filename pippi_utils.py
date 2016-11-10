@@ -93,7 +93,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 
-def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assignments=None, labels=None, silent=False,
+def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignments=None, labels=None, silent=False,
  probe_only=False, data_ranges=None, log_plots=None, rescalings=None):
   # Open a chain file and read it into memory
 
@@ -193,11 +193,11 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, hdf5_assig
     primary_column_names = ['MPIrank', 'pointID']
     sorted_column_names = primary_column_names + [x for x in column_names if x not in primary_column_names]
     for column_name in sorted_column_names:
-      if hdf5_assignments.value is not None:
-        while index_count in hdf5_assignments.value:
-          try_append(indices, column_names, hdf5_assignments.value[index_count])
+      if assignments.value is not None:
+        while index_count in assignments.value:
+          try_append(indices, column_names, assignments.value[index_count])
           index_count += 1
-      if hdf5_assignments.value is None or column_name not in hdf5_assignments.value:
+      if assignments.value is None or column_name not in assignments.value:
         try_append(indices, column_names, column_name)
         index_count += 1
     column_names = np.array(column_names)[indices]
@@ -316,10 +316,10 @@ def try_append(indices, cols, x):
     quit()
 
 
-def has_multiplicity(labels, hdf5_cols):
+def has_multiplicity(labels, cols):
   is_hdf5 = mainChain.value.split(":")[0][-5:] == '.hdf5'
-  if is_hdf5 and hdf5_cols:
-    return any(x in hdf5_cols.value for x in permittedMults)
+  if is_hdf5 and cols:
+    return any(x in cols.value for x in permittedMults)
   else:
     return any(x in labels.value for x in permittedMults)
 

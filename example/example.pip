@@ -26,18 +26,18 @@ chain_type = MultiNest                      ;Algorithm used to generate chain (v
 compute_evidence = F                        ;Compute and print evidence (only if chain_type = MCMC)
 
 use_log_scale = 2 3                         ;Parameters/observables that need to be converted to a log scale for display (EFN)
-quantity_rescalings = 4:1e-3                ;Scaling factors to apply to any columns in chains (EFN)
+quantity_rescalings = 4:1e-3                ;Scaling factors to apply to any pippi datastream indices (EFN)
 data_ranges = 2:{2.2,3.4}                   ;Discard any points outside these ranges of parameters/observables
 
 labels_from_file =                          ;Either a filename or blank (quantity_labels is ignored if a filename is given)
-assign_hdf5_label_to_column =               ;Assign a named hdf5 data stream to a particular column index in pippi (use pippi probe to test; EFN)
+assign_to_pippi_datastream =                ;Assign a python function or named hdf5 data stream to a particular pippi datastream index (use pippi probe to test; EFN)
 quantity_labels = 0:'multiplicity' \
                   1:'-lnlike'      \
                   2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' \
                   3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' \
                   4:'$A_0$ (TeV)' \
                   5:'$\tan\beta$'
-                                            ;labels for columns in chains (LaTeX for all but multiplicity, prior and likelihood)
+                                            ;labels to apply to different pippi datastream indices (LaTeX for all but multiplicity, prior and likelihood)
 -------------------------------
 ---Scripting-------------------
 
