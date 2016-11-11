@@ -14,9 +14,10 @@ top_margin = 0.05
 bottom_margin = 0.16
 plot_scale = 1.1
 
-from pippi_utils import *
 import subprocess
 import os
+from pippi_utils import *
+from pippi_read import *
 
 #Define pip file entries required from parsing
 parsedir = dataObject('parse_dir',safe_string)

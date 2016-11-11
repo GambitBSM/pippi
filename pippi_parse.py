@@ -8,7 +8,9 @@
 # Originally developed: March 2012
 #############################################################
 
+import subprocess
 from pippi_utils import *
+from pippi_read import *
 from scipy import version as scipyCurrent
 from scipy.special import gammaincinv as deltaLnLike
 from scipy.interpolate import InterpolatedUnivariateSpline as oneDspline

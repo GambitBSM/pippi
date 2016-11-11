@@ -8,7 +8,7 @@
 # Originally developed: Oct 2015
 #############################################################
 
-from pippi_utils import *
+from pippi_read import *
 
 # Define probe-specific pip file entries
 col_assignments = dataObject('assign_to_pippi_datastream',string_dictionary)
