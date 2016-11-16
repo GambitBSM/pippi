@@ -35,7 +35,8 @@ intMethod = dataObject('interpolation_method',string)
 chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
 data_ranges = dataObject('data_ranges',floatuple_dictionary)
-keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,col_assignments,logPlots,rescalings,data_ranges]
+preamble = dataObject('preamble',string)
+keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,col_assignments,logPlots,rescalings,data_ranges,preamble]
 
 # Initialise variables
 doPosteriorMean = True
@@ -96,10 +97,12 @@ def parse(filename):
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
   twoDlist = [] if twoDplots.value is None else twoDplots.value
-  setOfRequestedColumns = set(oneDlist + [y for x in twoDlist for y in x])
+  datarangelist = [] if data_ranges.value is None else data_ranges.value.keys()
+  partialSetOfRequestedColumns = set(oneDlist + [y for x in twoDlist for y in x])
+  setOfRequestedColumns = set.union(partialSetOfRequestedColumns, set(datarangelist))
 
   # Check that labels for all the requested columns are present.
-  for plot in setOfRequestedColumns:
+  for plot in partialSetOfRequestedColumns:
     try:
       label = labels.value[plot]
     except (KeyError, TypeError):
@@ -113,7 +116,7 @@ def parse(filename):
   # Open main chain and read in contents
   (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value,
    requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
-   rescalings=rescalings)
+   rescalings=rescalings, preamble=preamble.value)
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
@@ -125,7 +128,7 @@ def parse(filename):
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
     (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
      requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
-     rescalings=rescalings)
+     rescalings=rescalings, preamble=preamble.value)
     if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
@@ -223,13 +226,16 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
   else:
     # HDF5 file from GAMBIT or similar, with proper data record idenntifiers
     parameter_sets = {}
-    for i, x in enumerate(column_names):
-       outfile.write(x.lstrip('#')+': '+all_best_fit_data[i]+'\n')
+    i = 0
+    for x in column_names:
        if "primary_parameters" in x:
          model = re.sub(".*@|::.*", '', x)
          par = re.sub(".*::", '', x)
          if not model in parameter_sets: parameter_sets[model] = []
          parameter_sets[model].append('    '+ par + ': ' + all_best_fit_data[i])
+       if x != '':
+         outfile.write(x.lstrip('#')+': '+all_best_fit_data[i]+'\n')
+         i += 1
     if parameter_sets != {}:
       outfile2 = smart_open(outputBaseFilename+'.best_parameters.yaml','w')
       outfile2.write('# This best-fit file created in GAMBIT yaml format by pippi '

@@ -29,6 +29,13 @@ def try_append(indices, cols, x):
     print "ERROR: hdf5 file does not contain a field titled \""+x+"\"."
     quit()
 
+def castable_to_int(x):
+  try:
+    int(x)
+    return True
+  except ValueError:
+    return False
+
 def has_multiplicity(labels, cols):
   is_hdf5 = mainChain.value.split(":")[0][-5:] == '.hdf5'
   if is_hdf5 and cols:
@@ -80,6 +87,13 @@ def smart_open(filename,mode):
   except IOError:
     #Crash if file cannot be opened the way requested
     sys.exit('\n  Sorry, file '+filename+' cannot be opened for writing.\nCheck disk space and folder permissions.  Quitting...\n')
+
+def is_functional_assignment(assignment):
+  return len(re.findall("\$", assignment)) != len(re.findall("[\\\]\$", assignment))
+
+def parse_functional_assignment(assignment, replacement):
+  replacement_parts = replacement.split('$')
+  return re.sub("\$([0-9]*)", replacement_parts[0]+'\\1'+replacement_parts[1], assignment)
 
 class dataObject:
   #Class for pip file entries, containing their values, keys and expected data types
@@ -234,7 +248,7 @@ def internal(x):
 
 
 #Global constants and simple one-liners
-pippiVersion = 'v1.1'
+pippiVersion = 'v2.0'
 
 def times1(x): return x
 def half(x): return x*0.5

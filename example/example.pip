@@ -8,7 +8,7 @@ do_posterior_pdf = T                        ;Parse, script or plot posterior pdf
 do_profile_like = T                         ;Parse, script or plot chain into profile likelihoods
 contour_levels = 68.3 95.4                  ;Contour levels to plot (EFN; script operation ignores actual values)
 oneD_plot_quantities =       3 2            ;Parameters/observables to construct 1D plots of (EFN)
-twoD_plot_quantities = {3,2} {5,4}          ;Parameters/observable combinations to make 2D plots of (EFN)
+twoD_plot_quantities = {3,2}{5,4}{5,64} {5,65};Parameters/observable combinations to make 2D plots of (EFN)
 
 -------------------------------
 ---Parsing---------------------
@@ -30,13 +30,18 @@ quantity_rescalings = 4:1e-3                ;Scaling factors to apply to any pip
 data_ranges = 2:{2.2,3.4}                   ;Discard any points outside these ranges of parameters/observables
 
 labels_from_file =                          ;Either a filename or blank (quantity_labels is ignored if a filename is given)
-assign_to_pippi_datastream =                ;Assign a python function or named hdf5 data stream to a particular pippi datastream index (use pippi probe to test; EFN)
+preamble = 'from preamble_example import *' ;A one-line python preamble to run before processing functional datastreams.
+assign_to_pippi_datastream = 'np.log10($2)-np.log10($3)':64 \
+                             'times_pi($5)':65 \
+                                            ;Assign a python function or named hdf5 data stream to a particular pippi datastream index (use pippi probe to test; EFN)
 quantity_labels = 0:'multiplicity' \
                   1:'-lnlike'      \
                   2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' \
                   3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' \
                   4:'$A_0$ (TeV)' \
-                  5:'$\tan\beta$'
+                  5:'$\tan\beta$' \
+                  64:'$\log_{10}\left(m_0/m_\frac12\right)$' \
+                  65:'$\pi\tan\beta$' \
                                             ;labels to apply to different pippi datastream indices (LaTeX for all but multiplicity, prior and likelihood)
 -------------------------------
 ---Scripting-------------------
@@ -70,7 +75,7 @@ axis_ranges = 2:{2.0,3.5} 3:{2.05,3.6} 4:{-4,4} ;Axis ranges over which to plot 
 reference_point = 2:3.3 3:2.5               ;Coordinates of reference point (only plotted where one of the listed axes is present)
 reference_text = 'True value'               ;Key string to be printed for reference point
 
-logo_file = 'pippi'                         ;Logo pdf file to overplot (EFN)
+logo_file = './pippi'                       ;Logo pdf file to overplot (EFN)
 logo_loc = {0.08,0.89}                      ;Normalised plot x,y co-ordinates of logo centre
 logo_width = 0.09                           ;Width to display logo with (as a fraction of default plot width)
 colour_scheme = IceCube3sig                 ;A recognised pippi colourScheme object (Basic, BlueGold, IceCube, SBClassic,
