@@ -1,4 +1,4 @@
-Readme for Pippi v1.1
+Readme for Pippi v2.0
 ---------------------
 
 #############################################################
@@ -27,7 +27,7 @@ Pippi requires almost no installation.
    * Python v2.7 or later
    * NumPy and SciPy libraries for python (NumPy v0.9.0 or
      greater is required for full functionality)
-   * ctioga2 v0.2 or later
+   * ctioga2 v0.8 or later
    * bash
 
 2. Extract the full pippi source directory and save it
@@ -138,6 +138,12 @@ rerun parse, script and plot.
 
 Version history
 ---------------
+v2.0
+Made hdf5 routines operate out of core
+Made binning configurable on per-column basis
+Added inline post-processing from the .pip file
+Added per-column data cuts
+
 v1.1
 Added human-readable best fit output
 Upgraded to compatibility with ctioga2 v0.8
