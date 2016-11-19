@@ -123,8 +123,8 @@ pippi example.pip
 
 If there are no errors, the plots will appear in 'example/plots'.  If you
 want to change visual aspects of the plots like legends, etc, you can get
-away with just running script and plot again, which saves a bit of time
-as you can skip parsing:
+away with just running script and plot, as there is no need to redo the
+parsing that is also included in "pippi example.pip":
 pippi script example.pip
 pippi plot example.pip
 
