@@ -140,7 +140,7 @@ def script(filename):
   getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges,lookupKeys])
 
   #Work out whether to do posteriors and check that flags match up
-  if doPosterior.value and not has_multiplicity(labels, None):
+  if doPosterior.value and not any(x in labels.value for x in permittedMults):
     print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
     doPosterior.value = False
 

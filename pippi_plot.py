@@ -59,7 +59,7 @@ def plot(filename):
   getIniData([savedkeys],[labels])
 
   #Work out whether to do posteriors check that flags match up for posterior pdf
-  if doPosterior.value and not has_multiplicity(labels, None):
+  if doPosterior.value and not any(x in labels.value for x in permittedMults):
     print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
     doPosterior.value = False
 

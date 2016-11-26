@@ -36,13 +36,6 @@ def castable_to_int(x):
   except ValueError:
     return False
 
-def has_multiplicity(labels, cols):
-  is_hdf5 = mainChain.value.split(":")[0][-5:] == '.hdf5'
-  if is_hdf5 and cols:
-    return any(x in cols.value for x in permittedMults)
-  else:
-    return any(x in labels.value for x in permittedMults)
-
 def usage():
   #Print pippi usage information
   print

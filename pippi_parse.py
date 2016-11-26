@@ -77,7 +77,7 @@ def parse(filename):
     doProfile.value = False
 
   #Work out whether to do posterior mean and check that flags match up for posterior pdf
-  doPosteriorMean = has_multiplicity(labels, col_assignments)
+  doPosteriorMean = any(x in labels.value for x in permittedMults)
   if doPosterior.value and not doPosteriorMean:
     print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
     doPosterior.value = False
@@ -145,7 +145,7 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray,lk)
   # Sort array if required
-  doSort(dataArray)
+  doSort(dataArray,lk)
   # Find best-fit point
   [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data)
   # Find posterior mean
@@ -196,11 +196,11 @@ def standardise(dataArray,lk):
         dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
 
 
-def doSort(dataArray):
+def doSort(dataArray,lk):
   # Sort chain in order of increasing posterior mass (i.e. multiplicity)
   if doPosterior.value and contours.value is not None:
     viewString = 'float64' + ',float64' * (dataArray.shape[1]-1)
-    dataArray.view(viewString).sort(order = ['f'+str(labels.value[refMult])], axis=0)
+    dataArray.view(viewString).sort(order = ['f'+str(lk[labels.value[refMult]])], axis=0)
 
 
 def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
@@ -257,7 +257,7 @@ def getPosteriorMean(dataArray,lk,outputBaseFilename):
     totalMult = np.sum(dataArray[:,lk[labels.value[refMult]]])
     # Calculate posterior mean as weighted average of each point's contribution to each variable
     for i in range(dataArray.shape[1]):
-      posteriorMean.append(np.sum(dataArray[:,lk[labels.value[refMult]]] * dataArray[:,lk[i]])/totalMult)
+      posteriorMean.append(np.sum(dataArray[:,lk[labels.value[refMult]]] * dataArray[:,i])/totalMult)
     outfile = smart_open(outputBaseFilename+'.best','a')
     outfile.write('Posterior mean:\n')
     outfile.write(' '.join([str(x) for x in posteriorMean])+'\n')
@@ -343,6 +343,11 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
     maxVal = dataRanges[plot][1]
     rangeOfVals = maxVal - minVal
     binSep = rangeOfVals / nBins
+
+    # Throw a sensible error if the range of values is a delta function
+    if (rangeOfVals <= 0): sys.exit('Error: datastream '+str(plot)+' contains exactly the same '
+     + 'number for every point, so pippi cannot bin it further within its range.  Does it make '
+     + 'sense to plot this quantity at all, if it is constant?')
 
     # Calculate bin centres
     binCentresOrig = np.array([minVal + (x+0.5)*rangeOfVals/nBins for x in range(nBins)])

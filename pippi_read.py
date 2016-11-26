@@ -243,6 +243,16 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         try_append(indices, column_names, column_name)
         try_append(all_indices, column_names, column_name)
         index_count += 1
+    # Fill in any remaining entries up to the largest in the hdf5 file
+    while index_count in assignments.value:
+      if assignments.value is not None:
+        if is_functional_assignment(assignments.value[index_count]):
+          functional_assignment_indices.append(index_count)
+          all_indices.append(index_count)
+        else:
+          try_append(indices, column_names, assignments.value[index_count])
+          try_append(all_indices, column_names, assignments.value[index_count])
+        index_count += 1
     # Rearrange the column names into the order we want them in.
     column_names = np.array(column_names)[all_indices]
     # Pick up all the datastreams with indices larger than the largest index in the hdf5 file
