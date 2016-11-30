@@ -28,22 +28,18 @@ def merge(filenames):
   # Work out whether we are doing an hdf5 merge or an ascii merge
   try:
     import h5py
+    f = h5py.File(filenames[0],'r')
     h5merge = True
+    print
+    print "Files identified as hdf5.  Interpreting final argument as output filename."
+    print
+    print "Concatenating common datasets and outputting to {0}...".format(filenames[-1])
+    print
   except:
     h5merge = False
-    print "WARNING: Python package h5py not detected.  Assuming ASCII format for merge!"
-    print
-    
-  if h5merge and not any(x.endswith(".hdf5") for x in filenames):
-    try:
-      f = h5py.File(filenames[0],'r')
-      print
-      print "Files identified as hdf5.  Interpreting final argument as output filename."
-      print
-      print "Concatenating common datasets and outputting to {0}...".format(filenames[-1])
-      print
-    except:
-      h5merge = False
+
+  if any(x.endswith(".hdf5") for x in filenames) and not h5merge:
+    sys.exit("ERROR: Python package h5py not detected, but judging from the filenames you're trying to merge hdf5 files."
 
   if (h5merge):  # We are doing an hdf5 merge
 
@@ -105,7 +101,7 @@ def merge(filenames):
         out_dsets[ds][index_low:index_high,...] = f[ds][...]
         index_low = index_high
 
-    print 
+    print
     print "Done."
     print
 
@@ -113,22 +109,22 @@ def merge(filenames):
   else:    # We are doing an ASCII merge
 
     firstLine = True
-  
+
     for filename in filenames:
-  
+
       #Try to open input file
       infile = safe_open(filename)
-  
+
       #Read the first line
       line = infile.readline()
-  
+
       #Skip comments at the beginning of the file
       while (line[0] == '#'):
-        line = infile.readline()    
-      
-      #Work out the number of columns in the first valid line 
+        line = infile.readline()
+
+      #Work out the number of columns in the first valid line
       columns = len(line.split())
-  
+
       while (columns != 0):
         try:
           if (firstLine):
@@ -137,18 +133,18 @@ def merge(filenames):
             firstLine = False
           elif (columns != columnsPredicted):
             #Crash if a later chain or line has a different number of columns to the first one
-            sys.exit('Error: chains do not match (number of columns differ).  Quitting...')      
+            sys.exit('Error: chains do not match (number of columns differ).  Quitting...')
           #Output the current line to stdout and get the next one
           print line.rstrip('\n')
           #Read the next line
           line = infile.readline()
-          #Work out the number of columns in the next line 
+          #Work out the number of columns in the next line
           columns = len(line.split())
         except IOError:
           break
-  
+
       #Shut the chain file and move on to the next
-      infile.close  
+      infile.close
 
 def get_datasets(g,datasets):
   import h5py
