@@ -101,7 +101,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
       if line != [] and line[0] not in ['#',';','!',]: just_comments = False
     ncols = len(lines)
     n_extra_cols = 0
-    if assignments.value is not None:
+    if assignments is not None:
       for index in assignments.value:
         if castable_to_int(index):
           if ncols+n_extra_cols not in assignments.value:
@@ -139,7 +139,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     lookup_key = np.arange(data.shape[1])
 
     # Compute the derived quantities
-    if assignments.value is not None:
+    if assignments is not None:
       for i in [ncols + x for x in range(n_extra_cols)]:
         expression = parse_functional_assignment(assignments.value[i], 'data[:,$]')
         try:
@@ -161,7 +161,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
 
     # Filter out points inside the requested data ranges
     cut = None
-    if data_ranges.value:
+    if data_ranges is not None and data_ranges.value:
       for key, value in data_ranges.value.iteritems():
         lowercut = value[0]
         uppercut = value[1]
