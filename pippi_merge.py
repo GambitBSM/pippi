@@ -39,11 +39,13 @@ def merge(filenames):
     h5merge = False
 
   if any(x.endswith(".hdf5") for x in filenames) and not h5merge:
-    sys.exit("ERROR: Python package h5py not detected, but judging from the filenames you're trying to merge hdf5 files."
+    sys.exit("ERROR: Python package h5py not detected, but judging from the filenames you're trying to merge hdf5 files.")
 
-  if (h5merge):  # We are doing an hdf5 merge
 
-    #Try to open the output file (the last filename given)
+  if h5merge:
+    # We are doing an hdf5 merge.
+
+    # Try to open the output file (the last filename given)
     try:
       fout = h5py.File(filenames[-1],'w-')
     except:
