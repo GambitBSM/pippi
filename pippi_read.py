@@ -89,6 +89,12 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
   # Regular ASCII chain
   if filename.split(":")[0][-5:] != '.hdf5':
 
+    # Make sure the user is not trying to probe a non-hdf5 file.
+    if probe_only:
+      print 'ERROR: you cannot use pippi probe with ASCII files. (Why would you need to?)'
+      print
+      quit()
+
     #Try to open chain file
     chainfile = safe_open(filename)
 
