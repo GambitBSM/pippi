@@ -1,7 +1,7 @@
 -------------------------------
 ---Common fields---------------             ;EFN = empty for none
 
-main_chain = 'chains/newchain.txt'          ;Filename of chain to operate on
+main_chain = 'chains/newchain.txt'          ;Filename of chain to operate on.  For a group in an hdf5 file, something like 'myfile.hdf5:/group'
 comparison_chain = 'chains/oldchain.txt'    ;Filename of secondary chain to operate on, for comparison (EFN)
 
 do_posterior_pdf = T                        ;Parse, script or plot posterior pdfs
