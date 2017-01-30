@@ -107,7 +107,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
       if line != [] and line[0] not in ['#',';','!',]: just_comments = False
     ncols = len(lines)
     n_extra_cols = 0
-    if assignments is not None:
+    if assignments is not None and assignments.value is not None:
       for index in assignments.value:
         if castable_to_int(index):
           if ncols+n_extra_cols not in assignments.value:
@@ -250,8 +250,8 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         try_append(all_indices, column_names, column_name)
         index_count += 1
     # Fill in any remaining entries up to the largest in the hdf5 file
-    while index_count in assignments.value:
-      if assignments.value is not None:
+    if assignments.value is not None:
+      while index_count in assignments.value:
         if is_functional_assignment(assignments.value[index_count]):
           functional_assignment_indices.append(index_count)
           all_indices.append(index_count)
