@@ -36,7 +36,8 @@ chainType = dataObject('chain_type',internal)
 doEvidence = dataObject('compute_evidence',boolean)
 data_ranges = dataObject('data_ranges',floatuple_dictionary)
 preamble = dataObject('preamble',string)
-keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,col_assignments,logPlots,rescalings,data_ranges,preamble]
+alt_best_fit = dataObject('bf_lnlike_for_profile_like',float)
+keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMethod,chainType,resolution,doEvidence,labels,col_assignments,logPlots,rescalings,data_ranges,preamble,alt_best_fit]
 
 # Initialise variables
 doPosteriorMean = True
@@ -120,7 +121,7 @@ def parse(filename):
 
   # Parse main chain
   outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
-  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins)
+  doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins,alt_best_fit)
 
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
@@ -133,13 +134,13 @@ def parse(filename):
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
-      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins)
+      doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins,alt_best_fit)
     else:
       print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
       print '    Skipping parsing of this chain...'
 
 
-def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data,nBins):
+def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data,nBins,alt_best_fit):
   #Perform all numerical operations required for chain parsing
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
@@ -147,7 +148,7 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   # Sort array if required
   doSort(dataArray,lk)
   # Find best-fit point
-  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data)
+  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,alt_best_fit)
   # Find posterior mean
   [totalMult, posteriorMean] = getPosteriorMean(dataArray,lk,outputBaseFilename)
   # Get evidence for mcmc
@@ -203,7 +204,7 @@ def doSort(dataArray,lk):
     dataArray.view(viewString).sort(order = ['f'+str(lk[labels.value[refMult]])], axis=0)
 
 
-def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
+def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,alt_best_fit):
   # Find best-fit point
   bestFitIndex = dataArray[:,lk[labels.value[refLike]]].argmin()
   bestFit = dataArray[bestFitIndex,lk[labels.value[refLike]]]
@@ -246,6 +247,9 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data):
         for parval in parameters: outfile2.write('  ' + parval + '\n')
       outfile2.close
   outfile.close
+  if alt_best_fit.value is not None:
+    bestFit = -alt_best_fit.value
+    print '    Best fit -lnlike to be used to define profile likelihood ratio: ',bestFit
   return [bestFit,worstFit,bestFitIndex]
 
 

@@ -24,6 +24,7 @@ interpolation_method = 'spline'             ;Either bilinear (default) or spline
 
 chain_type = MultiNest                      ;Algorithm used to generate chain (valid: MCMC, MultiNest, other)
 compute_evidence = F                        ;Compute and print evidence (only if chain_type = MCMC)
+bf_lnlike_for_profile_like =                ;Denominator of profile likelihood ratio (if empty, set to best fit determined from chain)
 
 use_log_scale = 2 3                         ;Parameters/observables that need to be converted to a log scale for display (EFN)
 quantity_rescalings = 4:1e-3                ;Scaling factors to apply to any pippi datastream indices (EFN)
