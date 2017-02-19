@@ -143,12 +143,16 @@ def parse(filename):
 def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data,nBins,alt_best_fit):
   #Perform all numerical operations required for chain parsing
 
+  # Determine the minimum log-likelihood requested as an isocontour in 2D plots
+  if doProfile.value and twoDplots.value and contours.value:
+    min_contour = deltaLnLike(1.0,0.01*max(contours.value))
+
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray,lk)
   # Sort array if required
   doSort(dataArray,lk)
   # Find best-fit point
-  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,alt_best_fit)
+  [bestFit,worstFit,bestFitIndex] = getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,alt_best_fit,min_contour)
   # Find posterior mean
   [totalMult, posteriorMean] = getPosteriorMean(dataArray,lk,outputBaseFilename)
   # Get evidence for mcmc
@@ -204,7 +208,7 @@ def doSort(dataArray,lk):
     dataArray.view(viewString).sort(order = ['f'+str(lk[labels.value[refMult]])], axis=0)
 
 
-def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,alt_best_fit):
+def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,alt_best_fit,min_contour):
   # Find best-fit point
   bestFitIndex = dataArray[:,lk[labels.value[refLike]]].argmin()
   bestFit = dataArray[bestFitIndex,lk[labels.value[refLike]]]
@@ -248,8 +252,10 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
       outfile2.close
   outfile.close
   if alt_best_fit.value is not None:
+    halt = (min_contour is not None) and (bestFit+alt_best_fit.value > min_contour)
     bestFit = -alt_best_fit.value
     print '    Best fit -lnlike to be used to define profile likelihood ratio: ',bestFit
+    if halt: sys.exit('\n  The highest CL likelihood likelihood contour you have requested contains no samples! No more pippi for you.\n')
   return [bestFit,worstFit,bestFitIndex]
 
 
@@ -346,12 +352,9 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
     minVal = dataRanges[plot][0]
     maxVal = dataRanges[plot][1]
     rangeOfVals = maxVal - minVal
+    # Fix things if the range of values is a delta function
+    if (rangeOfVals <= 0): rangeOfVals = maxVal * 1e-3
     binSep = rangeOfVals / nBins
-
-    # Throw a sensible error if the range of values is a delta function
-    if (rangeOfVals <= 0): sys.exit('Error: datastream '+str(plot)+' contains exactly the same '
-     + 'number for every point, so pippi cannot bin it further within its range.  Does it make '
-     + 'sense to plot this quantity at all, if it is constant?')
 
     # Calculate bin centres
     binCentresOrig = np.array([minVal + (x+0.5)*rangeOfVals/nBins for x in range(nBins)])

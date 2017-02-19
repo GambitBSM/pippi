@@ -10,8 +10,23 @@
 #############################################################
 
 import re
+import copy
 
 permittedSchemes = {}
+
+def Blockshading(colour,line_code, fill_code):
+  scheme = colourScheme('Blockshading_'+colour)
+  scheme.baseProfColourMap = '#fff--#fff(contour1)--#'+fill_code+'(contour1)--#'+fill_code
+  scheme.basePostColourMap = '#fff--#fff(contour1)--#'+fill_code+'(contour1)--#'+fill_code
+  scheme.mainPostContourColour2D = '\'#'+line_code+'\''
+  scheme.mainProfContourColour2D = '\'#'+line_code+'\''
+  scheme.mainBestFitColour1D = '#'+line_code
+  scheme.mainPostMeanColour1D = '#'+line_code
+  scheme.mainBestFitColour2D = '#'+line_code
+  scheme.mainPostMeanColour2D = '#'+line_code
+  scheme.fillTransparency2D = '0.85' #so far this is not actually functional in ctioga2; presumably it will work in later versions.
+  return scheme
+
 
 class colourScheme:
   # Class for pippi plotting colour schemes
@@ -38,6 +53,7 @@ class colourScheme:
   lineWidth1D = '0.9'
 
   # Default values for 2D contour plotting styles
+  fillTransparency2D = '1.0'
   mainContourStyle = 'Solid'
   comparisonContourStyle = 'Solid'
   lineWidth2D = '0.9'
@@ -165,4 +181,12 @@ nightOfTheAllanachs.mainPostMeanColour2D = 'White'
 nightOfTheAllanachs.legendTextColour2D = 'White'
 nightOfTheAllanachs.keyTextColour2D = 'White'
 
-
+# Blockshading colour schemes
+Blockshading_red = Blockshading("red", "800", "e00")
+Blockshading_green = Blockshading("green", "080", "0e0")
+Blockshading_blue = Blockshading("blue", "005", "44f")
+Blockshading_pink = Blockshading("pink", "808", "e0e")
+Blockshading_purple = Blockshading("purple", "303", "80e")
+Blockshading_orange = Blockshading("orange", "840", "f90")
+Blockshading_yellow = Blockshading("yellow", "870", "fe0")
+Blockshading_cyan = Blockshading("cyan", "088", "3ee")

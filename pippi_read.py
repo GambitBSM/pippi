@@ -403,6 +403,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
       data_isvalid = data_isvalid[:,cut]
       sumcut = sum(cut)
       print "  Total valid samples within requested data ranges: ", sumcut
+      if sumcut == 0: sys.exit('  You cut out all your samples!  Pippi can\'t do much more from here.\n')
       rescaling = 1.0*sumcut/len(cut)
       # Find the full details of the best-fit point
       if likelihood_index is not None:
