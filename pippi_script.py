@@ -196,6 +196,10 @@ def script(filename):
       # Make profile likelihood plotting scripts
       if doProfile.value:
 
+        # Get contours
+        if contours1D.value is not None:
+          contourLevels = getContours(parseFilename,plot,'like')
+
         # Determine keys
         keyString = ''
         if doKey1D.value is not None and plot in doKey1D.value:
@@ -255,6 +259,12 @@ def script(filename):
         outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15')
         if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
         outfile.write('\\\n')
+        if contours1D is not None:
+          for i, contour in enumerate(contourLevels):
+            outfile.write('  --draw-line '+str(xtrema[0])+','+contour+' '+str(xtrema[1])+','+contour+' /color \'Black\' '+
+                          '/style Dashes /width '+str(float(colours.value.lineWidth1D)*0.5)+'\\\n')
+            outfile.write('  --draw-text '+str(xtrema[0]+0.045*(xtrema[1]-xtrema[0]))+','+str(float(contour)+0.005)+' \''+str(contours1D.value[i])+
+                          '\%CL\' /color \'Black\' /scale 0.5 /justification left /alignment bottom\\\n')
         if doComparison.value:
           # Do everything for comparison chain
           outfile.write('  --plot '+currentSecParse+'_like1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
@@ -319,6 +329,11 @@ def script(filename):
       # Make posterior pdf plotting scripts
       if doPosterior.value:
 
+        # Get contours
+        if contours1D.value is not None:
+          mainContourLevels = getContours(parseFilename,plot,'post')
+          if doComparison.value: secContourLevels = getContours(secParseFilename,plot,'post')
+
         # Determine keys
         keyString = ''
         if doKey1D.value is not None and plot in doKey1D.value:
@@ -378,8 +393,20 @@ def script(filename):
         outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15')
         if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
         outfile.write('\\\n')
+        if contours1D is not None:
+          for i, contour in enumerate(mainContourLevels):
+            outfile.write('  --draw-line '+str(xtrema[0])+','+contour+' '+str(xtrema[1])+','+contour+' /color \''+colours.value.mainPostColour1D+
+                          '\' /style Dashes /width '+str(float(colours.value.lineWidth1D)*0.5)+'\\\n')
+            outfile.write('  --draw-text '+str(xtrema[0]+0.045*(xtrema[1]-xtrema[0]))+','+str(float(contour)+0.005)+' \''+str(contours1D.value[i])+
+                          '\%CR\' /color \''+colours.value.mainPostColour1D+'\' /scale 0.5 /justification left /alignment bottom\\\n')
         if doComparison.value:
           # Do everything for comparison chain
+          if contours1D is not None:
+            for i, contour in enumerate(secContourLevels):
+              outfile.write('  --draw-line '+str(xtrema[0])+','+contour+' '+str(xtrema[1])+','+contour+' /color \''+colours.value.comparisonPostColour1D+
+                            '\' /style Dashes /width '+str(float(colours.value.lineWidth1D)*0.5)+'\\\n')
+              outfile.write('  --draw-text '+str(xtrema[0]+0.045*(xtrema[1]-xtrema[0]))+','+str(float(contour)+0.005)+' \''+str(contours1D.value[i])+
+                            '\%CR\' /color \''+colours.value.comparisonPostColour1D+'\' /scale 0.5 /justification left /alignment bottom\\\n')
           outfile.write('  --plot '+currentSecParse+'_post1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                         ' /fill-color '+colours.value.comparisonPostColour1D+' /color '+colours.value.comparisonPostColour1D+
                         ' /line-style '+colours.value.comparison1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
@@ -453,6 +480,11 @@ def script(filename):
           [main, sec] = ['like', 'post']
           [mainData, secData] = [bestFitData, postMeanData]
 
+        # Get contours
+        if contours1D.value is not None:
+          mainContourLevels = getContours(parseFilename,plot,main)
+          secContourLevels = getContours(parseFilename,plot,sec)
+
         # Determine keys
         keyString = ''
         if doKey1D.value is not None and plot in doKey1D.value:
@@ -500,6 +532,27 @@ def script(filename):
         outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.15')
         if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
         outfile.write('\\\n')
+        if contours1D is not None:
+          if main == 'like':
+            main_colour = colours.value.mainProfColour1D
+            main_text = 'CL'
+            sec_colour = colours.value.mainPostColour1D
+            sec_text = 'CR'
+          else:
+            main_colour = colours.value.mainPostColour1D
+            main_text = 'CR'
+            sec_colour = colours.value.mainProfColour1D
+            sec_text = 'CL'
+          for i, contour in enumerate(mainContourLevels):
+            outfile.write('  --draw-line '+str(xtrema[0])+','+contour+' '+str(xtrema[1])+','+contour+' /color \''+main_colour+
+                          '\' /style Dashes /width '+str(float(colours.value.lineWidth1D)*0.5)+'\\\n')
+            outfile.write('  --draw-text '+str(xtrema[0]+0.045*(xtrema[1]-xtrema[0]))+','+str(float(contour)+0.005)+' \''+str(contours1D.value[i])+
+                          '\%'+main_text+'\' /color \''+main_colour+'\' /scale 0.5 /justification left /alignment bottom\\\n')
+          for i, contour in enumerate(secContourLevels):
+            outfile.write('  --draw-line '+str(xtrema[0])+','+contour+' '+str(xtrema[1])+','+contour+' /color \''+sec_colour+
+                          '\' /style Dashes /width '+str(float(colours.value.lineWidth1D)*0.5)+'\\\n')
+            outfile.write('  --draw-text '+str(xtrema[0]+0.045*(xtrema[1]-xtrema[0]))+','+str(float(contour)+0.005)+' \''+str(contours1D.value[i])+
+                          '\%'+sec_text+'\' /color \''+sec_colour+'\' /scale 0.5 /justification left /alignment bottom\\\n')
         # Plot comparison distribution
         outfile.write('  --plot '+currentParse+'_'+sec+'1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                         ' /fill-color '+secData[3]+' /color '+secData[3]+
@@ -595,7 +648,7 @@ def script(filename):
       if doProfile.value:
 
         # Get contours
-        if contours.value is not None:
+        if contours2D.value is not None:
           contourLevels = getContours(parseFilename,plot,'like')
 
         # Determine keys
@@ -671,7 +724,7 @@ def script(filename):
         outfile.write('/color-map \''+colours.value.colourMap(contourLevels,'like')+'\'\\\n')
         if doComparison.value:
           # Do everything for comparison chain
-          if contours.value is not None:
+          if contours2D.value is not None:
             # Plot contours
             outfile.write('  --plot '+currentSecParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
             for contour in contourLevels:
@@ -691,7 +744,7 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if contours.value is not None:
+        if contours2D.value is not None:
           # Plot contours
           for contour in contourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.mainProfContourColour2D+
@@ -745,7 +798,7 @@ def script(filename):
       if doPosterior.value:
 
         # Get contours
-        if contours.value is not None:
+        if contours2D.value is not None:
           mainContourLevels = getContours(parseFilename,plot,'post')
           if doComparison.value: secContourLevels = getContours(secParseFilename,plot,'post')
 
@@ -822,7 +875,7 @@ def script(filename):
         outfile.write('/color-map \''+colours.value.colourMap(mainContourLevels,'post')+'\'\\\n')
         if doComparison.value:
           # Do everything for comparison chain
-          if contours.value is not None:
+          if contours2D.value is not None:
             # Plot contours
             outfile.write('  --plot '+currentSecParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
             for contour in secContourLevels:
@@ -841,7 +894,7 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if contours.value is not None:
+        if contours2D.value is not None:
           # Plot contours
           for contour in mainContourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.mainPostContourColour2D+
@@ -897,7 +950,7 @@ def script(filename):
         [main, sec] = ['post', 'like'] if PosteriorIsMainInComboPlot else ['like', 'post']
 
         # Get contours
-        if contours.value is not None:
+        if contours2D.value is not None:
           mainContourLevels = getContours(parseFilename,plot,main)
           secContourLevels = getContours(parseFilename,plot,sec)
 
@@ -971,14 +1024,14 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 ')
         if doColourbar.value is not None and plot in doColourbar.value: outfile.write('/zaxis zvalues ')
         outfile.write('/color-map \''+colours.value.colourMap(mainContourLevels,main)+'\'\\\n')
-        if contours.value is not None:
+        if contours2D.value is not None:
           # Plot comparison contours
           outfile.write('  --plot '+currentParse+'_'+sec+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
           for contour in secContourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonPostContourColour2D+
                           ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if contours.value is not None:
+        if contours2D.value is not None:
           # Plot contours
           for contour in mainContourLevels:
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.mainPostContourColour2D+

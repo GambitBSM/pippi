@@ -144,8 +144,8 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   #Perform all numerical operations required for chain parsing
 
   # Determine the minimum log-likelihood requested as an isocontour in 2D plots
-  if doProfile.value and twoDplots.value and contours.value:
-    min_contour = deltaLnLike(1.0,0.01*max(contours.value))
+  if doProfile.value and twoDplots.value and contours2D.value:
+    min_contour = deltaLnLike(1.0,0.01*max(contours2D.value))
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray,lk)
@@ -203,7 +203,7 @@ def standardise(dataArray,lk):
 
 def doSort(dataArray,lk):
   # Sort chain in order of increasing posterior mass (i.e. multiplicity)
-  if doPosterior.value and contours.value is not None:
+  if doPosterior.value and (contours1D.value is not None or contours2D.value is not None):
     viewString = 'float64' + ',float64' * (dataArray.shape[1]-1)
     dataArray.view(viewString).sort(order = ['f'+str(lk[labels.value[refMult]])], axis=0)
 
@@ -329,9 +329,9 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
 
   if oneDplots.value is None: return
 
-  if contours.value is not None:
+  if contours1D.value is not None:
     # Determine profile likelihood contour levels (same for all plots of a given dimensionality)
-    profContourLevels = [np.exp(-deltaLnLike(0.5,0.01*contour)) for contour in contours.value]
+    profContourLevels = [np.exp(-deltaLnLike(0.5,0.01*contour)) for contour in contours1D.value]
     outfile = smart_open(outputBaseFilename+'_like1D.contours','w')
     outfile.write('# This 1D profile likelihood ratio contours file created by pippi '\
                   +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
@@ -404,9 +404,9 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       postGrid = postGrid / postGrid.max()
 
     # Find posterior pdf contour levels
-    if contours.value is not None and doPosterior.value:
+    if contours1D.value is not None and doPosterior.value:
       # Zero posterior contour levels
-      postContourLevels = [None for contour in contours.value]
+      postContourLevels = [None for contour in contours1D.value]
       # Zero posterior integral
       integratedPosterior = 0.0
       # Sort bins in order of posterior mass
@@ -416,7 +416,7 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       # Work through bins backwards until total posterior mass adds up to the requested confidence levels
       for i in range(sortedPostGrid.shape[0]-1,-1,-1):
         integratedPosterior += sortedPostGrid[i]/totalMult
-        for j,contour in enumerate(contours.value):
+        for j,contour in enumerate(contours1D.value):
           if 100*integratedPosterior >= contour and postContourLevels[j] is None:
             postContourLevels[j] = sortedPostGrid[i]
         if all([x is not None for x in postContourLevels]): break
@@ -448,7 +448,7 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       outfile.write('\n'.join([str(binCentresOrig[i]-0.5*binSep)+'\t'+str(x)+'\n'+
                                str(binCentresOrig[i]+0.5*binSep)+'\t'+str(x) for i,x in enumerate(postGridHistogram)]))
       outfile.close
-      if contours.value is not None:
+      if contours1D.value is not None:
         outfile = smart_open(outputBaseFilename+'_'+str(plot)+'_post1D.contours','w')
         outfile.write('# This 1D posterior pdf contours file created by pippi '\
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
@@ -462,8 +462,8 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
   if twoDplots.value is None: return
 
   # Determine profile likelihood contour levels (same for all plots of a given dimensionality)
-  if contours.value is not None:
-    profContourLevels = [np.exp(-deltaLnLike(1.0,0.01*contour)) for contour in contours.value]
+  if contours2D.value is not None:
+    profContourLevels = [np.exp(-deltaLnLike(1.0,0.01*contour)) for contour in contours2D.value]
     outName = outputBaseFilename+'_like2D.contours'
     outfile = smart_open(outName,'w')
     outfile.write('# This 2D profile likelihood ratio contours file created by pippi '\
@@ -555,9 +555,9 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       postGrid = postGrid / postGrid.max()
 
     # Find posterior pdf contour levels
-    if contours.value is not None and doPosterior.value:
+    if contours2D.value is not None and doPosterior.value:
       # Zero posterior contour levels
-      postContourLevels = [None for contour in contours.value]
+      postContourLevels = [None for contour in contours2D.value]
       # Zero posterior integral
       integratedPosterior = 0.0
       # Sort bins in order of posterior mass
@@ -567,7 +567,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       # Work through bins backwards until total posterior mass adds up to the requested confidence levels
       for i in range(sortedPostGrid.shape[0]-1,-1,-1):
         integratedPosterior += sortedPostGrid[i]/totalMult
-        for j,contour in enumerate(contours.value):
+        for j,contour in enumerate(contours2D.value):
           if 100*integratedPosterior >= contour and postContourLevels[j] is None:
             postContourLevels[j] = sortedPostGrid[i]
         if all([x is not None for x in postContourLevels]): break
@@ -591,7 +591,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       outfile.write('\n'.join([str(binCentresInterp[0][i])+'\t'+str(binCentresInterp[1][j])+'\t'+str(postGrid[i,j]) \
                                for i in range(postGrid.shape[0]) for j in range(postGrid.shape[1])]))
       outfile.close
-      if contours.value is not None:
+      if contours2D.value is not None:
         outName = outputBaseFilename+'_'+'_'.join([str(x) for x in plot])+'_post2D.contours'
         outfile = smart_open(outName,'w')
         outfile.write('# This 2D posterior pdf contours file created by pippi '\
