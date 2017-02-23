@@ -146,6 +146,8 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   # Determine the minimum log-likelihood requested as an isocontour in 2D plots
   if doProfile.value and twoDplots.value and contours2D.value:
     min_contour = deltaLnLike(1.0,0.01*max(contours2D.value))
+  else:
+    min_contour = 0.
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray,lk)
