@@ -262,14 +262,15 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     # Rearrange the column names into the order we want them in.
     column_names = np.array(column_names)[all_indices]
     # Pick up all the datastreams with indices larger than the largest index in the hdf5 file
-    for index, assignment in assignments.value.iteritems():
-      if castable_to_int(index) and index >= index_count:
-        if is_functional_assignment(assignment):
-          functional_assignment_indices.append(index)
-          all_indices.append(index)
-        else:
-          try_append(indices, column_names, assignment)
-          try_append(all_indices, column_names, assignment)
+    if assignments.value is not None:
+      for index, assignment in assignments.value.iteritems():
+        if castable_to_int(index) and index >= index_count:
+          if is_functional_assignment(assignment):
+            functional_assignment_indices.append(index)
+            all_indices.append(index)
+          else:
+            try_append(indices, column_names, assignment)
+            try_append(all_indices, column_names, assignment)
     # Pad the column names with empties past the end of the hdf5 indices
     hdf5_length = len(column_names)
     column_names = np.append(column_names, np.array(['' for x in range(np.max(all_indices)-hdf5_length+1)]))
