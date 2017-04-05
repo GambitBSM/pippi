@@ -666,29 +666,39 @@ def script(filename):
           xVals = xtrema[0] + np.array(keyXVals[keyLoc[1]])*xRange
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
-                                      colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
-                                      colours.value.referenceMarkerOuterScale])
+          if plotRef: markers.append([colours.value.referenceMarkerOuter,
+                                      colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale,
+                                      refText,
+                                      colours.value.referenceMarkerInner,
+                                      colours.value.referenceMarkerInnerColour,
+                                      colours.value.referenceMarkerInnerScale/colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
-          if postMeanOnProf.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D,
-                                                   colours.value.mainPostMeanMarkerScale, 'Mean'])
+          if postMeanOnProf.value: markers.append([colours.value.mainPostMeanMarker,
+                                                   colours.value.mainPostMeanColour2D,
+                                                   colours.value.mainPostMeanColourOutline2D,
+                                                   colours.value.mainPostMeanMarkerScale,
+                                                  'Mean'])
           # Get details of key for best fit
-          if bestFitOnProf.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D,
-                                                  colours.value.mainBestFitMarkerScale, 'Best fit'])
+          if bestFitOnProf.value: markers.append([colours.value.mainBestFitMarker,
+                                                  colours.value.mainBestFitColour2D,
+                                                  colours.value.mainBestFitColourOutline2D,
+                                                  colours.value.mainBestFitMarkerScale,
+                                                  'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
           # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
-            if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
-            if key[2] > 1.0: key[2] = 1.0
+            if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[3] /= 1.5
+            if key[3] > 1.0: key[3] = 1.0
             # Write the extra marker overlay for the reference point
-            if len(key) == 7: keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[4]+' /color \''+\
-                                           key[5]+'\' /scale '+str(key[6]*key[2])+'\\\n'
+            if len(key) == 8: keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[5]+' /color \''+\
+                                           key[6]+'\' /scale '+str(key[7]*key[3])+'\\\n'
             # Write the main marker
-            keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[0]+' /color \''+key[1]+'\' /scale '+str(key[2])+'\\\n'
+            keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[0]+' /fill-color \''+str(key[1])+'\' /stroke-color \''+str(key[2])+'\' /scale '+str(key[3])+'\\\n'
             # Write the key text
-            keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour2D
+            keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[4]+'\'  /color \''+colours.value.keyTextColour2D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
 
         # Open plotting shell script file for writing
@@ -763,14 +773,14 @@ def script(filename):
           # Get best-fit point and plot it
           bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
           outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
-                        colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour2D+
+                        colours.value.mainBestFitMarker+' /fill-color \''+str(colours.value.mainBestFitColour2D)+'\' /stroke-color \''+str(colours.value.mainBestFitColourOutline2D)+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
         if postMeanOnProf.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
           if not postMean: sys.exit('Error: plot_posterior_mean_on_profile_like = T but no multiplicity given!')
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
-                        colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour2D+
+                        colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
@@ -817,29 +827,39 @@ def script(filename):
           xVals = xtrema[0] + np.array(keyXVals[keyLoc[1]])*xRange
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
-                                      colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
-                                      colours.value.referenceMarkerOuterScale])
+          if plotRef: markers.append([colours.value.referenceMarkerOuter,
+                                      colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale,
+                                      refText,
+                                      colours.value.referenceMarkerInner,
+                                      colours.value.referenceMarkerInnerColour,
+                                      colours.value.referenceMarkerInnerScale/colours.value.referenceMarkerOuterScale])
           # Get details of key for posterior mean
-          if postMeanOnPost.value: markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D,
-                                                   colours.value.mainPostMeanMarkerScale, 'Mean'])
+          if postMeanOnPost.value: markers.append([colours.value.mainPostMeanMarker,
+                                                   colours.value.mainPostMeanColour2D,
+                                                   colours.value.mainPostMeanColourOutline2D,
+                                                   colours.value.mainPostMeanMarkerScale,
+                                                   'Mean'])
           # Get details of key for best fit
-          if bestFitOnPost.value: markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D,
-                                                  colours.value.mainBestFitMarkerScale, 'Best fit'])
+          if bestFitOnPost.value: markers.append([colours.value.mainBestFitMarker,
+                                                  colours.value.mainBestFitColour2D,
+                                                  colours.value.mainBestFitColourOutline2D,
+                                                  colours.value.mainBestFitMarkerScale,
+                                                  'Best fit'])
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
           # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
-            if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
-            if key[2] > 1.0: key[2] = 1.0
+            if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[3] /= 1.5
+            if key[3] > 1.0: key[3] = 1.0
             # Write the extra marker overlay for the reference point
-            if len(key) == 7: keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[4]+' /color \''+\
-                                           key[5]+'\' /scale '+str(key[6]*key[2])+'\\\n'
+            if len(key) == 8: keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[5]+' /color \''+\
+                                           key[6]+'\' /scale '+str(key[7]*key[3])+'\\\n'
             # Write the main marker
-            keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[0]+' /color \''+key[1]+'\' /scale '+str(key[2])+'\\\n'
+            keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[0]+' /fill-color \''+str(key[1])+'\' /stroke-color \''+str(key[2])+'\' /scale '+str(key[3])+'\\\n'
             # Write the key text
-            keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour2D
+            keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[4]+'\'  /color \''+colours.value.keyTextColour2D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
 
         # Open plotting shell script file for writing
@@ -913,13 +933,13 @@ def script(filename):
           # Get best-fit point and plot it
           bestFit = getCentralVal(parseFilename,plot,'like',lookupKeys)
           outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+
-                        colours.value.mainBestFitMarker+' /color \''+colours.value.mainBestFitColour2D+
+                        colours.value.mainBestFitMarker+' /fill-color \''+str(colours.value.mainBestFitColour2D)+'\' /stroke-color \''+str(colours.value.mainBestFitColourOutline2D)+
                         '\' /scale '+str(colours.value.mainBestFitMarkerScale)+' \\\n')
         if postMeanOnPost.value:
           # Get posterior mean and plot it
           postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
-                        colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour2D+
+                        colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
@@ -959,38 +979,54 @@ def script(filename):
         if doKey2D.value is not None and plot in doKey2D.value:
           markers = []
           # Get details of key for reference point
-          if plotRef: markers.append([colours.value.referenceMarkerOuter, colours.value.referenceMarkerOuterColour,
-                                      colours.value.referenceMarkerOuterScale, refText, colours.value.referenceMarkerInner,
-                                      colours.value.referenceMarkerInnerColour, colours.value.referenceMarkerInnerScale/
-                                      colours.value.referenceMarkerOuterScale])
+          if plotRef: markers.append([colours.value.referenceMarkerOuter,
+                                      colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterColour,
+                                      colours.value.referenceMarkerOuterScale,
+                                      refText,
+                                      colours.value.referenceMarkerInner,
+                                      colours.value.referenceMarkerInnerColour,
+                                      colours.value.referenceMarkerInnerScale/colours.value.referenceMarkerOuterScale])
           if PosteriorIsMainInComboPlot:
             # Get details of key for posterior mean
-            markers.append([colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D,
-                            colours.value.mainPostMeanMarkerScale, 'Mean'])
+            markers.append([colours.value.mainPostMeanMarker,
+                            colours.value.mainPostMeanColour2D,
+                            colours.value.mainPostMeanColourOutline2D,
+                            colours.value.mainPostMeanMarkerScale,
+                            'Mean'])
             # Get details of key for best fit
-            markers.append([colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour,
-                          colours.value.comparisonBestFitMarkerScale, 'Best fit'])
+            markers.append([colours.value.comparisonBestFitMarker,
+                            colours.value.comparisonBestFitColour,
+                            colours.value.comparisonBestFitColour,
+                            colours.value.comparisonBestFitMarkerScale,
+                            'Best fit'])
           else:
             # Get details of key for posterior mean
-            markers.append([colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour,
-                            colours.value.comparisonPostMeanMarkerScale, 'Mean'])
+            markers.append([colours.value.comparisonPostMeanMarker,
+                            colours.value.comparisonPostMeanColour,
+                            colours.value.comparisonPostMeanColour,
+                            colours.value.comparisonPostMeanMarkerScale,
+                            'Mean'])
             # Get details of key for best fit
-            markers.append([colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D,
-                          colours.value.mainBestFitMarkerScale, 'Best fit'])
+            markers.append([colours.value.mainBestFitMarker,
+                            colours.value.mainBestFitColour2D,
+                            colours.value.mainBestFitColourOutline2D,
+                            colours.value.mainBestFitMarkerScale,
+                            'Best fit'])
 
           # Reverse vertical ordering if keys are to be placed at the top of the page, so as to fill from the top down
           if keyLoc[0] == 't': markers.reverse()
           # Construct ctioga2 command for each key
           for i,key in enumerate(markers):
-            if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[2] /= 1.5
-            if key[2] > 1.0: key[2] = 1.0
+            if key[0] == 'Bullet' or key[0] == 'BulletOpen': key[3] /= 1.5
+            if key[3] > 1.0: key[3] = 1.0
             # Write the extra marker overlay for the reference point
-            if len(key) == 7: keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[4]+' /color \''+\
-                                           key[5]+'\' /scale '+str(key[6]*key[2])+'\\\n'
+            if len(key) == 8: keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[5]+' /color \''+\
+                                           key[6]+'\' /scale '+str(key[7]*key[3])+'\\\n'
             # Write the main marker
-            keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[0]+' /color \''+key[1]+'\' /scale '+str(key[2])+'\\\n'
+            keyString += '  --draw-marker '+str(xVals[0])+','+str(yVals[i])+' '+key[0]+' /fill-color \''+str(key[1])+'\' /stroke-color \''+str(key[2])+'\' /scale '+str(key[3])+'\\\n'
             # Write the key text
-            keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[3]+'\'  /color \''+colours.value.keyTextColour2D
+            keyString += '  --draw-text '+str(xVals[1])+','+str(yVals[i])+' \''+key[4]+'\'  /color \''+colours.value.keyTextColour2D
             keyString += '\' /justification left /scale 0.75 /alignment center \\\n'
 
         # Open plotting shell script file for writing
@@ -1052,15 +1088,15 @@ def script(filename):
         postMean = getCentralVal(parseFilename,plot,'post',lookupKeys)
         # Always plot both best fit and posterior mean on comparison plot
         if PosteriorIsMainInComboPlot:
-          bestFitData = [colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour, colours.value.comparisonBestFitMarkerScale]
-          postMeanData = [colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D, colours.value.mainPostMeanMarkerScale]
+          bestFitData = [colours.value.comparisonBestFitMarker, colours.value.comparisonBestFitColour, colours.value.comparisonBestFitColour, colours.value.comparisonBestFitMarkerScale]
+          postMeanData = [colours.value.mainPostMeanMarker, colours.value.mainPostMeanColour2D, colours.value.mainPostMeanColourOutline2D, colours.value.mainPostMeanMarkerScale]
         else:
-          bestFitData = [colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, colours.value.mainBestFitMarkerScale]
-          postMeanData = [colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour, colours.value.comparisonPostMeanMarkerScale]
-        outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+bestFitData[0]+' /color \''+bestFitData[1]+
-                      '\' /scale '+str(bestFitData[2])+' \\\n')
-        if postMean: outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+postMeanData[0]+' /color \''+postMeanData[1]+
-                                   '\' /scale '+str(postMeanData[2])+' \\\n')
+          bestFitData = [colours.value.mainBestFitMarker, colours.value.mainBestFitColour2D, colours.value.mainBestFitColourOutline2D, colours.value.mainBestFitMarkerScale]
+          postMeanData = [colours.value.comparisonPostMeanMarker, colours.value.comparisonPostMeanColour, colours.value.comparisonPostMeanColour, colours.value.comparisonPostMeanMarkerScale]
+        outfile.write('  --draw-marker '+str(bestFit[0])+','+str(bestFit[1])+' '+bestFitData[0]+' /fill-color \''+str(bestFitData[1])+'\' /stroke-color \''+str(bestFitData[2])+
+                      '\' /scale '+str(bestFitData[3])+' \\\n')
+        if postMean: outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+postMeanData[0]+' /fill-color \''+str(postMeanData[1])+'\' /stroke-color \''+str(postMeanData[2])+
+                                   '\' /scale '+str(postMeanData[3])+' \\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key

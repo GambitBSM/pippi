@@ -78,11 +78,13 @@ class colourScheme:
   mainBestFitMarkerScale = 0.8
   mainBestFitColour1D = '#300'
   mainBestFitColour2D = '#300'
+  mainBestFitColourOutline2D = 'Black'
 
   mainPostMeanMarker = 'Bullet'
   mainPostMeanMarkerScale = 0.6
   mainPostMeanColour1D = '#004'
   mainPostMeanColour2D = '#004'
+  mainPostMeanColourOutline2D = 'Black'
 
   comparisonBestFitMarker = 'Star'
   comparisonBestFitMarkerScale = 0.8
@@ -180,6 +182,22 @@ nightOfTheAllanachs.mainBestFitColour2D = 'White'
 nightOfTheAllanachs.mainPostMeanColour2D = 'White'
 nightOfTheAllanachs.legendTextColour2D = 'White'
 nightOfTheAllanachs.keyTextColour2D = 'White'
+
+# nightOfTheAllanachs2 colour scheme
+nightOfTheAllanachs2 = colourScheme('nightOfTheAllanachs2')
+nightOfTheAllanachs2.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
+nightOfTheAllanachs2.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
+nightOfTheAllanachs2.mainPostContourColour2D = 'White'
+nightOfTheAllanachs2.mainProfContourColour2D = 'White'
+nightOfTheAllanachs2.axisColour2D = 'White'
+nightOfTheAllanachs2.mainBestFitColour1D = 'Red'
+nightOfTheAllanachs2.mainPostMeanColour1D = 'Blue'
+nightOfTheAllanachs2.mainBestFitColour2D = 'White'
+nightOfTheAllanachs2.mainBestFitColourOutline2D = 'Black'
+nightOfTheAllanachs2.mainPostMeanColour2D = 'White'
+nightOfTheAllanachs2.mainPostMeanColourOutline2D = 'Black'
+nightOfTheAllanachs2.legendTextColour2D = 'White'
+nightOfTheAllanachs2.keyTextColour2D = 'White'
 
 # Blockshading colour schemes
 Blockshading_red = Blockshading("red", "800", "e00")
