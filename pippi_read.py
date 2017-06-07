@@ -80,7 +80,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
   if savekeys is not None: outfile.close
 
 def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignments=None, labels=None, silent=False,
- probe_only=False, data_ranges=None, log_plots=None, rescalings=None, preamble=None):
+ probe_only=False, data_ranges=None, log_plots=None, obs_plots=None, rescalings=None, preamble=None):
   # Open a chain file and read it into memory
 
   column_names=None

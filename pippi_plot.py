@@ -108,6 +108,13 @@ def plot(filename):
         subprocess.call('cd '+baseFiledir+'; ./'+currentBase+'_post2D.bsh', shell=True)
         subprocess.call('mv '+baseFiledir+currentBase+'_post2D.pdf '+
          outdirectory+'/'+prestring+currentBase+'_post2D'+appstring+'.pdf', shell=True)
+      
+      #if doObservable.value:
+      if obsPlots.value is not None:
+          for column in obsPlots.value:
+            subprocess.call('cd '+baseFiledir+'; ./'+currentBase+'_obs2D_'+str(column)+'.bsh', shell=True)
+            subprocess.call('mv '+baseFiledir+currentBase+'_obs2D_'+str(column)+'.pdf '+
+            outdirectory+'/'+prestring+currentBase+'_obs2D_' + str(column) + appstring +'.pdf', shell=True)
       # Make profile-posterior comparison plots
       if doProfile.value and doPosterior.value:
         subprocess.call('cd '+baseFiledir+'; ./'+currentBase+'_combo2D.bsh', shell=True)

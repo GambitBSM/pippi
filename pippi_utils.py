@@ -273,4 +273,5 @@ oneDplots = dataObject('oneD_plot_quantities',int_list)
 twoDplots = dataObject('twoD_plot_quantities',intuple_list)
 contours1D = dataObject('oneD_contour_levels',float_list)
 contours2D = dataObject('twoD_contour_levels',float_list)
-keys = [mainChain,secChain,doPosterior,doProfile,oneDplots,twoDplots,contours1D,contours2D]
+obsPlots = dataObject('plot_observables',int_list)
+keys = [mainChain,secChain,doPosterior,doProfile,oneDplots,twoDplots,contours1D,contours2D,obsPlots]

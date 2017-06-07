@@ -8,8 +8,9 @@ do_posterior_pdf = T                        ;Parse, script or plot posterior pdf
 do_profile_like = T                         ;Parse, script or plot chain into profile likelihoods
 oneD_contour_levels = 68.3 95.4             ;Contour levels to plot in 1D plots (EFN; script operation ignores actual values)
 twoD_contour_levels = 68.3 95.4             ;Contour levels to plot in 2D plots (EFN; script operation ignores actual values)
-oneD_plot_quantities =       3 2            ;Parameters/observables to construct 1D plots of (EFN)
+oneD_plot_quantities =     25  3 2            ;Parameters/observables to construct 1D plots of (EFN)
 twoD_plot_quantities = {3,2}{5,4}{5,64} {5,65};Parameters/observable combinations to make 2D plots of (EFN)
+plot_observables = 25
 
 -------------------------------
 ---Parsing---------------------
@@ -44,6 +45,7 @@ quantity_labels = 0:'multiplicity' \
                   5:'$\tan\beta$' \
                   64:'$\log_{10}\left(m_0/m_\frac12\right)$' \
                   65:'$\pi\tan\beta$' \
+                  25:'$m_H$ (GeV)'
                                             ;labels to apply to different pippi datastream indices (LaTeX for all but multiplicity, prior and likelihood)
 -------------------------------
 ---Scripting-------------------

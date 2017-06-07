@@ -109,6 +109,8 @@ class colourScheme:
       localColourMap = self.basePostColourMap
     elif kind == 'like':
       localColourMap = self.baseProfColourMap
+    elif kind == 'obs':
+      localColourMap = self.baseObsColourMap
     else:
       sys.exit('    Error: unrecognised type of colourmap requested.\n    Quitting...\n')
     for i, contour in enumerate(contours):
@@ -143,6 +145,7 @@ iceCube79.lineWidth2D = '1.5'
 iceCube3sig = colourScheme('iceCube3sig')
 iceCube3sig.baseProfColourMap = '#fff--#fff(contour3)--#292(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
 iceCube3sig.basePostColourMap = '#fff--#fff(contour3)--#29d(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
+iceCube3sig.baseObsColourMap = 'White(contour1)--Red(contour2)--Green(contour3)'
 iceCube3sig.mainBestFitColour1D = 'Black'
 iceCube3sig.mainPostMeanColour1D = 'Black'
 iceCube3sig.mainBestFitColour2D = 'Black'
@@ -173,6 +176,7 @@ BlueGold.mainPostMeanColour2D = 'Black'
 nightOfTheAllanachs = colourScheme('nightOfTheAllanachs')
 nightOfTheAllanachs.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
 nightOfTheAllanachs.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
+nightOfTheAllanachs.baseObsColourMap = 'Black(contour1)--Red(contour2)--Green(contour3)'
 nightOfTheAllanachs.mainPostContourColour2D = 'White'
 nightOfTheAllanachs.mainProfContourColour2D = 'White'
 nightOfTheAllanachs.axisColour2D = 'White'
@@ -187,6 +191,7 @@ nightOfTheAllanachs.keyTextColour2D = 'White'
 nightOfTheAllanachs2 = colourScheme('nightOfTheAllanachs2')
 nightOfTheAllanachs2.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
 nightOfTheAllanachs2.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
+nightOfTheAllanachs2.baseObsColourMap = 'Black(contour1)--Red(contour2)--Green(contour3)'
 nightOfTheAllanachs2.mainPostContourColour2D = 'White'
 nightOfTheAllanachs2.mainProfContourColour2D = 'White'
 nightOfTheAllanachs2.axisColour2D = 'White'

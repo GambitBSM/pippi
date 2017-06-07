@@ -27,6 +27,7 @@ labelFile = dataObject('labels_from_file',string)
 col_assignments = dataObject('assign_to_pippi_datastream',string_dictionary)
 labels = dataObject('quantity_labels',string_dictionary)
 logPlots = dataObject('use_log_scale',int_list)
+
 rescalings = dataObject('quantity_rescalings',float_dictionary)
 defaultBins = dataObject('default_bins',integer)
 specificBins = dataObject('number_of_bins',int_dictionary)
@@ -42,6 +43,7 @@ keys = keys+[parsedir,labelFile,cutOnAnyInvalid,defaultBins,specificBins,intMeth
 # Initialise variables
 doPosteriorMean = True
 firstLikeKey = None
+ObsFloor = 0.0
 
 def parse(filename):
   #input:   filename = the name of the pip file
@@ -98,9 +100,10 @@ def parse(filename):
   #Check that flags and match up for quantities selected for plotting
   oneDlist = [] if oneDplots.value is None else oneDplots.value
   twoDlist = [] if twoDplots.value is None else twoDplots.value
+  obslist = [] if obsPlots.value is None else obsPlots.value
   datarangelist = [] if data_ranges.value is None else data_ranges.value.keys()
   partialSetOfRequestedColumns = set(oneDlist + [y for x in twoDlist for y in x])
-  setOfRequestedColumns = set.union(partialSetOfRequestedColumns, set(datarangelist))
+  setOfRequestedColumns = set.union(partialSetOfRequestedColumns, set(datarangelist),obslist)
 
   # Check that labels for all the requested columns are present.
   for plot in partialSetOfRequestedColumns:
@@ -116,7 +119,7 @@ def parse(filename):
 
   # Open main chain and read in contents
   (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(mainChain.value, cut_all_invalid=cutOnAnyInvalid.value,
-   requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
+   requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,obs_plots=obsPlots,
    rescalings=rescalings, preamble=preamble.value)
 
   # Parse main chain
@@ -128,7 +131,7 @@ def parse(filename):
     # Open secondary chain and read in contents
     outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
     (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
-     requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
+     requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,obs_plots=obsPlots,
      rescalings=rescalings, preamble=preamble.value)
     if mainArray.shape[1] >= max(setOfRequestedColumns):
       # Clear savedkeys file for this chain
@@ -179,6 +182,9 @@ def standardise(dataArray,lk):
     if any(key == prior for prior in permittedPriors):
       labels.value[refPrior] = labels.value[key]
       if key != refPrior: del labels.value[key]
+    #if any(key == obs for obs in permittedObs):
+    #  labels.value[refObs] = labels.value[key]
+    #  if key != refObs: del labels.value[key]
     if any(key == like for like in permittedLikes):
       if firstLikeKey is None: firstLikeKey = key
       dataArray[:,lk[labels.value[key]]] = mapToRefLike(firstLikeKey,dataArray[:,lk[labels.value[key]]])
@@ -187,6 +193,7 @@ def standardise(dataArray,lk):
     if any(entry == mult for mult in permittedMults): labels.value[key] = refMult
     if any(entry == prior for prior in permittedPriors): labels.value[key] = refPrior
     if any(entry == like for like in permittedLikes): labels.value[key] = refLike
+    #if any(entry == obs for obs in permittedObs): labels.value[key] = refObs
   # Rescale columns if requested
   if rescalings.value is not None:
     for key, entry in rescalings.value.iteritems(): dataArray[:,lk[key]] *= entry
@@ -483,6 +490,39 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
     likeGrid[:,:] = worstFit + 100.0
     postGrid = np.zeros((nBins[0],nBins[1]), dtype=np.float64)
 
+
+    num_obs = 0
+
+    if obsPlots.value is not None:
+      for column in obsPlots.value:
+        if column in lk:
+          num_obs = num_obs+1
+
+    obsGrid = np.zeros((num_obs,nBins[0],nBins[1]), dtype=np.float64)
+    k = -1
+    minimum_obs = np.zeros(num_obs)
+    obsMinVal = np.zeros(num_obs)
+    obsMaxVal = np.zeros(num_obs)
+    obsFloor = np.zeros(num_obs)
+    if obsPlots.value is not None:
+      for column in obsPlots.value:
+        if column in lk:
+          k = k+1
+          
+          obsMinVal[k] = dataArray[:,lk[column]].min()
+          obsMaxVal[k] = dataArray[:,lk[column]].max()
+          
+          # temporarily set the whole grid to a very low value
+          obsGrid[k,:,:] = obsMinVal[k] - 100
+          
+          # set a value just below the actual minimum
+          if obsMinVal[k] < 0:
+            obsFloor[k] = obsMinVal[k]*1.01
+          if obsMinVal[k] > 0:
+            obsFloor[k] = obsMinVal[k]*0.99
+          if obsMinVal[k] == 0:
+            obsFloor[k] = -0.01
+
     # Work out maximum and minimum values of parameters/derived quantities
     minVal = [dataRanges[plot[j]][0] for j in range(2)]
     maxVal = [dataRanges[plot[j]][1] for j in range(2)]
@@ -499,10 +539,19 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
     for j in range(2): binCentresOrig.append(np.array([minVal[j] + (x+0.5)*rangeOfVals[j]/nBins[j] for x in range(nBins[j])]))
     for j in range(2): binCentresInterp.append(np.array([binCentresOrig[j][0] + x*(binCentresOrig[j][-1]-binCentresOrig[j][0])\
                                  /(resolution.value-1) for x in range(resolution.value)]))
-
+                                 
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
       [in1,in2] = [min(int((dataArray[i,lk[plot[j]]]-minVal[j])/rangeOfVals[j]*nBins[j]),nBins[j]-2) for j in range(2)]
+
+      # Take observable at maximum likelihood for this bin
+      if dataArray[i,lk[labels.value[refLike]]] < likeGrid[in1,in2]:
+        if obsPlots.value is not None:
+          k = -1
+          for column in obsPlots.value:
+            if column in lk:
+              k = k + 1
+              obsGrid[k,in1,in2] = dataArray[i,lk[column]]
 
       # Profile over likelihoods
       if doProfile.value: likeGrid[in1,in2] = min(dataArray[i,lk[labels.value[refLike]]],likeGrid[in1,in2])
@@ -513,12 +562,28 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
     # Convert -log(profile likelihoods) to profile likelihood ratio
     likeGrid = np.exp(bestFit - likeGrid)
 
+    #obsFloor = np.zeros(k+1)
+    k = -1
+    if obsPlots.value is not None:
+        for column in obsPlots.value:
+          if column in lk:
+            k = k + 1
+
+            obsContourLevels = [obsFloor[k],obsMinVal[k],obsMaxVal[k]]
+            outName = outputBaseFilename+'_'+'_'.join([str(x) for x in plot])+'_obs2D_' + str(column) + '.contours'
+            outfile = smart_open(outName,'w')
+            outfile.write('# This 2D observable color-map levels file created by pippi '\
+                          +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
+            outfile.write(' '.join([str(x) for x in obsContourLevels]))
+            outfile.close
+
+
     # Precompute co-ordinate grids for splines to avoid repetition
     if intMethod.value == 'spline':
       oldCoords = np.array([[binCentresOrig[0][i], binCentresOrig[1][j]] for i in range(nBins[0]) for j in range(nBins[1])])
       newCoords = [[binCentresInterp[0][i], binCentresInterp[1][j]] for i in range(resolution.value) for j in range(resolution.value)]
 
-    # Interpolate posterior pdf and profile likelihood to requested display resolution
+    # Interpolate posterior pdf, profile likelihood and observable to requested display resolution
     if doProfile.value:
       if intMethod.value == 'spline':
         likeGrid = np.array(likeGrid).reshape(nBins[0]*nBins[1])
@@ -555,6 +620,41 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       postGrid[postGrid<0] = 0.0
       # Rescale posterior pdf back into the range [0,1]
       postGrid = postGrid / postGrid.max()
+
+    if obsPlots.value is not None:
+        k = -1
+        for column in obsPlots.value:
+          if column in lk:
+            k = k + 1
+            obsGrid_temp = obsGrid[k,:,:]
+            
+            obsGrid_temp[obsGrid_temp == (obsMinVal[k]-100) ] = obsMinVal[k]
+            
+            if intMethod.value == 'spline':
+                    obsGrid_temp = np.array(obsGrid_temp).reshape(nBins[0]*nBins[1])
+                    interpolator = twoDspline(oldCoords,obsGrid_temp)
+                    obsGrid_temp = np.array(interpolator(newCoords)).reshape(resolution.value,resolution.value)
+            else:
+                    interpolator = twoDbilinear(binCentresOrig[0], binCentresOrig[1], obsGrid_temp, ky = 1, kx = 1)
+                    obsGrid_temp = np.array([interpolator(binCentresInterp[0][j], binCentresInterp[1][i])
+                               for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
+
+            obsGrid_temp[obsGrid_temp < obsMinVal[k] ] = obsMinVal[k]
+            
+            # set points outside the contours to the floor value (effectively "no data")
+            obsGrid_temp[likeGrid<min(profContourLevels)] = obsFloor[k]
+
+            # Write observable to file
+            
+            outName = outputBaseFilename+'_'+'_'.join([str(x) for x in plot])+'_obs2D_'+str(column)+'.ct2'
+            outfile = smart_open(outName,'w')
+            outfile.write('# This 2D binned observable file created by pippi '\
+                           +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
+            outfile.write('\n'.join([str(binCentresInterp[0][i])+'\t'+str(binCentresInterp[1][j])+'\t'+str(obsGrid_temp[i,j]) \
+                                     for i in range(obsGrid_temp.shape[0]) for j in range(obsGrid_temp.shape[1])]))
+            outfile.close
+
+
 
     # Find posterior pdf contour levels
     if contours2D.value is not None and doPosterior.value:
@@ -600,4 +700,6 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
         outfile.write(' '.join([str(x) for x in postContourLevels]))
         outfile.close
+
+
 
