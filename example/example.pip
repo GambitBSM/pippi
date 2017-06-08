@@ -8,9 +8,9 @@ do_posterior_pdf = T                        ;Parse, script or plot posterior pdf
 do_profile_like = T                         ;Parse, script or plot chain into profile likelihoods
 oneD_contour_levels = 68.3 95.4             ;Contour levels to plot in 1D plots (EFN; script operation ignores actual values)
 twoD_contour_levels = 68.3 95.4             ;Contour levels to plot in 2D plots (EFN; script operation ignores actual values)
-oneD_plot_quantities =     25  3 2            ;Parameters/observables to construct 1D plots of (EFN)
-twoD_plot_quantities = {3,2}{5,4}{5,64} {5,65};Parameters/observable combinations to make 2D plots of (EFN)
-plot_observables = 25
+oneD_plot_quantities =  3 2                 ;Parameters/observables to construct 1D plots of (EFN)
+twoD_plot_quantities ={3,2}{5,4}{5,64}{5,65};Parameters/observable combinations to make 2D plots of (EFN)
+plot_observables = 25                       ;Observables to make 2D plots of (EFN)
 
 -------------------------------
 ---Parsing---------------------

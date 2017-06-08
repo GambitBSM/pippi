@@ -654,6 +654,27 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
                                      for i in range(obsGrid_temp.shape[0]) for j in range(obsGrid_temp.shape[1])]))
             outfile.close
 
+            # make a dummy grid with maximum and minimum values (of the reduced grid) to use for colorbar
+            obsGrid_temp_list = obsGrid_temp.reshape(obsGrid_temp.shape[1] * obsGrid_temp.shape[0] )
+            obsGrid_temp_list = obsGrid_temp_list[obsGrid_temp_list != obsFloor[k]]
+            obsMinValReduced = obsGrid_temp_list.min()
+            obsMaxValReduced = obsGrid_temp_list.max()
+            dummyGrid = np.zeros([2, 3])
+            dummyGrid[0,0] = binCentresInterp[0][0]
+            dummyGrid[0,1] = binCentresInterp[0][0]
+            dummyGrid[0,2] = obsMinValReduced
+            dummyGrid[1,0] = binCentresInterp[0][1]
+            dummyGrid[1,1] = binCentresInterp[0][1]
+            dummyGrid[1,2] = obsMaxValReduced
+            outName = outputBaseFilename+'_'+'_'.join([str(x) for x in plot])+'_obs2D_'+str(column)+'_colorbar.ct2'
+            outfile = smart_open(outName,'w')
+            outfile.write('# This 2D binned observable file created by pippi '\
+                           +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
+            outfile.write('\n'.join([str(dummyGrid[i,0])+'\t'+str(dummyGrid[i,1])+'\t'+str(dummyGrid[i,2]) \
+                                     for i in range(2) ]))
+            outfile.close
+            
+
 
 
     # Find posterior pdf contour levels

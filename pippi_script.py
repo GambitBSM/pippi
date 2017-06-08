@@ -963,11 +963,6 @@ def script(filename):
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_post2D.bsh', shell=True)
 
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
 # Make observable plotting scripts
 
      #if doObservable.value:
@@ -1053,11 +1048,8 @@ def script(filename):
             outfile.write('  --label-style x /scale 1.0 /shift 0.15 --label-style y /scale 1.0 /shift 0.75')
             if yAxisAngle.value is not None: outfile.write(' /angle '+str(yAxisAngle.value))
             outfile.write('\\\n  --xyz-map\\\n')
-            if doColourbar.value is not None and plot in doColourbar.value:
-              outfile.write('  --new-zaxis zvalues /location right /bar_size \'0.5cm\'\\\n')
-              outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')
             outfile.write('  --plot '+currentParse+'_obs2D_'+str(column)+'.ct2@1:2:3 ')
-            if doColourbar.value is not None and plot in doColourbar.value: outfile.write('/zaxis zvalues ')
+            #if doColourbar.value is not None and plot in doColourbar.value: outfile.write('/zaxis zvalues ')
             outfile.write('/color-map \''+colours.value.colourMap(contourLevelsObs,'obs')+'\'\\\n')
             if doComparison.value:
               # Do everything for comparison chain
@@ -1124,23 +1116,16 @@ def script(filename):
             for x in ['top', 'bottom', 'left', 'right']:
               outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
             if doColourbar.value is not None and plot in doColourbar.value:
-              # Do labelling for colourbar
-              outfile.write('  --y2 --plot '+currentParse+'_obs2D_'+str(column)+'.ct2@1:2:3 /fill-transparency 1\\\n')
+              # Do colourbar
+              outfile.write('  --xyz-map\\\n')
+              outfile.write('  --new-zaxis zvalues /location right /bar_size \'0.5cm\'\\\n')
+              outfile.write('  --label-style zvalues /angle 270 /shift 0.4\\\n')
+              outfile.write('  --y2 --plot '+currentParse+'_obs2D_'+str(column)+'_colorbar.ct2@1:2:3 /zaxis zvalues ')
+              outfile.write('/color-map \''+colours.value.colourMap(contourLevelsObs,'obs')+'\' /fill-transparency 1\\\n')
               outfile.write('  --axis-style y /decoration ticks --yrange '+str(ytrema[0])+':'+str(ytrema[1])+'\\\n')
               outfile.write('  --ylabel \''+labels.value[column]+'\' /shift 3.5 /angle 180 /scale 0.8\\\n')
             outfile.close
             subprocess.call('chmod +x '+currentBase+'_obs2D_'+str(column)+'.bsh', shell=True)
-
-############################################################################################################
-##########################################################################################
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-
-
 
       # Make profile-posterior comparison plotting scripts
       if doProfile.value and doPosterior.value:
