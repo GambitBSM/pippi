@@ -144,10 +144,9 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   #Perform all numerical operations required for chain parsing
 
   # Determine the minimum log-likelihood requested as an isocontour in 2D plots
+  min_contour = None
   if doProfile.value and twoDplots.value and contours2D.value:
     min_contour = deltaLnLike(1.0,0.01*max(contours2D.value))
-  else:
-    min_contour = 0.
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray,lk)
