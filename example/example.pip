@@ -66,7 +66,7 @@ plot_colourbar_2D = {3,2} {5,4}             ;2D plots that should include colour
 
 plot_comparison = T                         ;Overplot distributions from comparisonFilename in 1D plots and contours in 2D plots
 extra_legend_lines = 'Flat priors' 'CMSSM $\mu>0$';Additional text lines to be included in any legends (EFN)
-blame = 'pippi v1.0'                        ;Credit line to be placed in top corner of all plots
+blame = 'pippi v2.1'                        ;Credit line to be placed in top corner of all plots
 yaxis_number_angle = -90                    ;Angle relative to vertical for y-axis numerical labels
 
 plot_posterior_mean_on_posterior_pdf = T    ;Indicate the posterior mean in all posterior pdf plots

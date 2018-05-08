@@ -26,8 +26,7 @@ def try_append(indices, cols, x):
   try:
     indices.append(cols.index(x))
   except:
-    print "ERROR: hdf5 file does not contain a field titled \""+x+"\"."
-    quit()
+    sys.exit("ERROR: hdf5 file does not contain a field titled \""+x+"\".")
 
 def castable_to_int(x):
   try:
@@ -241,7 +240,7 @@ def internal(x):
 
 
 #Global constants and simple one-liners
-pippiVersion = 'v2.0'
+pippiVersion = 'v2.1'
 
 def times1(x): return x
 def half(x): return x*0.5
