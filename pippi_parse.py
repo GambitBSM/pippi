@@ -126,11 +126,14 @@ def parse(filename):
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
     # Open secondary chain and read in contents
-    outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
+    outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)+'_comparison'
     (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
      requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,
      rescalings=rescalings, preamble=preamble.value)
-    if mainArray.shape[1] >= max(setOfRequestedColumns):
+    # Switch depending on whether the comparison file is hdf5 or ascii
+    min_array_length = max(setOfRequestedColumns) if hdf5_names is None else len(setOfRequestedColumns)
+    print min_array_length, mainArray.shape[1], setOfRequestedColumns
+    if mainArray.shape[1] >= min_array_length:
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
@@ -230,7 +233,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
     for i, x in enumerate(dataArray[bestFitIndex,:]):
        outfile.write(str(i)+': '+str(x)+'\n')
   else:
-    # HDF5 file from GAMBIT or similar, with proper data record idenntifiers
+    # HDF5 file from GAMBIT or similar, with proper data record identifiers
     parameter_sets = {}
     i = 0
     for x in column_names:
@@ -266,6 +269,8 @@ def getPosteriorMean(dataArray,lk,outputBaseFilename):
     posteriorMean = []
     # Get total multiplicity for entire chain
     totalMult = np.sum(dataArray[:,lk[labels.value[refMult]]])
+    if (totalMult == 0.0):
+      sys.exit('Error: total multiplicity equal to zero.  Please make sure you have assigned posterior/weight columns correctly.\n')
     # Calculate posterior mean as weighted average of each point's contribution to each variable
     for i in range(dataArray.shape[1]):
       posteriorMean.append(np.sum(dataArray[:,lk[labels.value[refMult]]] * dataArray[:,i])/totalMult)

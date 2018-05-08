@@ -241,7 +241,7 @@ def internal(x):
 
 
 #Global constants and simple one-liners
-pippiVersion = 'v2.0'
+pippiVersion = 'v2.1'
 
 def times1(x): return x
 def half(x): return x*0.5

@@ -6,7 +6,7 @@
 # Author: Pat Scott (patscott@physics.mcgill.ca)
 # Originally developed: March 2012
 # Modified: Christoph Weniger, 2015
-#           Pat Scotr, 2016
+#           Pat Scott, 2016
 #############################################################
 
 import datetime

@@ -1,4 +1,4 @@
-Readme for Pippi v2.0
+Readme for Pippi v2.1
 ---------------------
 
 #############################################################
@@ -135,9 +135,19 @@ just pippi plot.  The opposite is not true; if you want changes you make
 to options in the 'parse' section to be implemented, you will need to
 rerun parse, script and plot.
 
+You can also find an example_diver.pip file, which uses the output of the
+C++ example in the Diver distribution (see https://diver.hepforge.org).
+
 
 Version history
 ---------------
+v2.1
+Added Diver example pip file and dataset
+Added the ability to indicate confidence / credibility level percentages in 1D plots
+Added the ability to choose the outline colour for best fit and posterior mean markers
+Improved some error and warning messages
+Various bug fixes
+
 v2.0
 Made hdf5 routines operate out of core
 Made binning configurable on per-column basis
