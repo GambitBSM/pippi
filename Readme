@@ -29,6 +29,7 @@ Pippi requires almost no installation.
      greater is required for full functionality)
    * ctioga2 v0.8 or later
    * bash
+   * if you want to use pippi with hdf5 files: the h5py library for python
 
 2. Extract the full pippi source directory and save it
    somewhere.

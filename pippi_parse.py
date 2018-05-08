@@ -132,7 +132,6 @@ def parse(filename):
      rescalings=rescalings, preamble=preamble.value)
     # Switch depending on whether the comparison file is hdf5 or ascii
     min_array_length = max(setOfRequestedColumns) if hdf5_names is None else len(setOfRequestedColumns)
-    print min_array_length, mainArray.shape[1], setOfRequestedColumns
     if mainArray.shape[1] >= min_array_length:
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
