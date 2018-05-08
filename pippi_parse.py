@@ -199,7 +199,12 @@ def standardise(dataArray,lk):
           print "Error: column {0} requested for log plotting has non-positive values!".format(column)
           bad_indices = np.where(dataArray[:,lk[column]] <= 0.0)[0]
           print "Here is the first point with bad values, for example: "
-          for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val)
+          for i,val in enumerate(dataArray[bad_indices[0],:]):
+            index = i
+            for x in lk:
+              if lk[x] == i:
+                index = x
+            print "  col {0}: {1}".format(index,val)
           sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
         dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
 

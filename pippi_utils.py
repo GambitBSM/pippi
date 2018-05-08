@@ -26,8 +26,7 @@ def try_append(indices, cols, x):
   try:
     indices.append(cols.index(x))
   except:
-    print "ERROR: hdf5 file does not contain a field titled \""+x+"\"."
-    quit()
+    sys.exit("ERROR: hdf5 file does not contain a field titled \""+x+"\".")
 
 def castable_to_int(x):
   try:
