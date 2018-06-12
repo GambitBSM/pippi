@@ -133,8 +133,8 @@ def script(filename):
   parseFilename = parseFiledir + re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
   parseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', mainChain.value)
   if doComparison.value:
-    secParseFilename = parseFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value)
-    secParseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value)
+    secParseFilename = parseFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value) + '_comparison'
+    secParseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value) + '_comparison'
 
   # Retrieve labels and data ranges saved in earlier parsing run
   getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges,lookupKeys])

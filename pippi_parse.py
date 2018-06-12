@@ -129,11 +129,13 @@ def parse(filename):
   # If a comparison chain is specified, parse it too
   if secChain.value is not None:
     # Open secondary chain and read in contents
-    outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)
+    outputBaseFilename = baseFiledir+re.sub(r'.*/|\..?.?.?$', '', secChain.value)+'_comparison'
     (mainArray, hdf5_names, lookupKey, all_best_fit_data) = getChainData(secChain.value, cut_all_invalid=cutOnAnyInvalid.value,
      requested_cols=setOfRequestedColumns, labels=labels, assignments=col_assignments, data_ranges=data_ranges, log_plots=logPlots,obs_plots=obsPlots,
      rescalings=rescalings, preamble=preamble.value)
-    if mainArray.shape[1] >= max(setOfRequestedColumns):
+    # Switch depending on whether the comparison file is hdf5 or ascii
+    min_array_length = max(setOfRequestedColumns) if hdf5_names is None else len(setOfRequestedColumns)
+    if mainArray.shape[1] >= min_array_length:
       # Clear savedkeys file for this chain
       subprocess.call('rm -rf '+outputBaseFilename+'_savedkeys.pip', shell=True)
       # Parse comparison chain
@@ -147,10 +149,9 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   #Perform all numerical operations required for chain parsing
 
   # Determine the minimum log-likelihood requested as an isocontour in 2D plots
+  min_contour = None
   if doProfile.value and twoDplots.value and contours2D.value:
     min_contour = deltaLnLike(1.0,0.01*max(contours2D.value))
-  else:
-    min_contour = 0.
 
   # Standardise likelihood, prior and multiplicity labels, and rescale likelihood and columns if necessary
   standardise(dataArray,lk)
@@ -205,7 +206,12 @@ def standardise(dataArray,lk):
           print "Error: column {0} requested for log plotting has non-positive values!".format(column)
           bad_indices = np.where(dataArray[:,lk[column]] <= 0.0)[0]
           print "Here is the first point with bad values, for example: "
-          for i,val in enumerate(dataArray[bad_indices[0],:]): print "  col {0}: {1}".format(i,val)
+          for i,val in enumerate(dataArray[bad_indices[0],:]):
+            index = i
+            for x in lk:
+              if lk[x] == i:
+                index = x
+            print "  col {0}: {1}".format(index,val)
           sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
         dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
 
@@ -238,7 +244,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
     for i, x in enumerate(dataArray[bestFitIndex,:]):
        outfile.write(str(i)+': '+str(x)+'\n')
   else:
-    # HDF5 file from GAMBIT or similar, with proper data record idenntifiers
+    # HDF5 file from GAMBIT or similar, with proper data record identifiers
     parameter_sets = {}
     i = 0
     for x in column_names:
@@ -274,6 +280,8 @@ def getPosteriorMean(dataArray,lk,outputBaseFilename):
     posteriorMean = []
     # Get total multiplicity for entire chain
     totalMult = np.sum(dataArray[:,lk[labels.value[refMult]]])
+    if (totalMult == 0.0):
+      sys.exit('Error: total multiplicity equal to zero.  Please make sure you have assigned posterior/weight columns correctly.\n')
     # Calculate posterior mean as weighted average of each point's contribution to each variable
     for i in range(dataArray.shape[1]):
       posteriorMean.append(np.sum(dataArray[:,lk[labels.value[refMult]]] * dataArray[:,i])/totalMult)

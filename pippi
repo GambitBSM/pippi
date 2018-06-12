@@ -3,11 +3,11 @@
 #############################################################
 # pippi: parse it, plot it
 # ------------------------
-# A program for operating on MCMC chains and related lists of 
+# A program for operating on MCMC chains and related lists of
 # samples from a function or distribution.  pippi can merge,
 # parse and plot sample ensembles ('chains'), either in terms
 # of the likelihood/fitness function directly, or as implied
-# posterior probability densities.  With the addition of a 
+# posterior probability densities.  With the addition of a
 # user-defined function, it can also post-process ('pare')
 # chains.
 #
@@ -28,7 +28,7 @@ def main(arguments):
   commandLineOptions = { 'probe':probe, 'merge':merge, 'pare':pare, 'parse':parse, 'script':script, 'plot':plot }
 
   if (len(arguments) == 1):
-    #Print usage info and quit if pippi is invoked without an argument 
+    #Print usage info and quit if pippi is invoked without an argument
     usage()
 
   else:
@@ -39,7 +39,14 @@ def main(arguments):
       if not command in [merge, pare]:
         print
         print 'Beginning pippi '+arguments[1]+' operation...'
-      command(arguments[2:])
+      try:
+        command(arguments[2:])
+      except BaseException as err:
+        print
+        print 'Running pippi failed in '+command.__name__+' operation, due to error:'
+        print err
+        print
+        sys.exit()
       if not command in [merge, pare]:
         print
         print 'Completed sucessfully.'
@@ -49,9 +56,15 @@ def main(arguments):
       if os.path.isfile(arguments[1]):
         print
         print 'Beginning pippi parse-to-plot operation...'
-        parse(arguments[1:])
-        script(arguments[1:])
-        plot(arguments[1:])
+        for command in [parse, script, plot]:
+          try:
+            command(arguments[1:])
+          except BaseException as err:
+            print
+            print 'Running pippi failed in '+command.__name__+' operation.'
+            print err
+            print
+            sys.exit()
         print
         print 'Completed sucessfully.'
         print
