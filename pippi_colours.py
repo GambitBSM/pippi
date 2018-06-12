@@ -208,6 +208,24 @@ nightOfTheAllanachs2.mainPostMeanColourOutline2D = 'Black'
 nightOfTheAllanachs2.legendTextColour2D = 'White'
 nightOfTheAllanachs2.keyTextColour2D = 'White'
 
+
+# nightOfTheAllanachs3 colour scheme
+nightOfTheAllanachs3 = colourScheme('nightOfTheAllanachs3')
+nightOfTheAllanachs3.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
+nightOfTheAllanachs3.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
+nightOfTheAllanachs3.baseObsColourMap = 'Black(contour1)--Blue(contour2)--Orange(contour3)'
+nightOfTheAllanachs3.mainPostContourColour2D = 'White'
+nightOfTheAllanachs3.mainProfContourColour2D = 'White'
+nightOfTheAllanachs3.axisColour2D = 'White'
+nightOfTheAllanachs3.mainBestFitColour1D = 'Red'
+nightOfTheAllanachs3.mainPostMeanColour1D = 'Blue'
+nightOfTheAllanachs3.mainBestFitColour2D = 'White'
+nightOfTheAllanachs3.mainBestFitColourOutline2D = 'Black'
+nightOfTheAllanachs3.mainPostMeanColour2D = 'White'
+nightOfTheAllanachs3.mainPostMeanColourOutline2D = 'Black'
+nightOfTheAllanachs3.legendTextColour2D = 'White'
+nightOfTheAllanachs3.keyTextColour2D = 'White'
+
 # Blockshading colour schemes
 Blockshading_red = Blockshading("red", "800", "e00")
 Blockshading_green = Blockshading("green", "080", "0e0")
