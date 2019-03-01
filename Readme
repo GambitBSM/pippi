@@ -111,7 +111,7 @@ example/example.pip in particular has a full list of available options.
 
 First download the example chain, using e.g. wget under linux, and save it
 to the example/chains directory:
-wget http://www.physics.mcgill.ca/~patscott/pippi/oldchain.txt -P example/chains
+wget https://zenodo.org/record/2581331/files/oldchain.txt?download=1 -O example/chains/oldchain.txt
 
 Post-process the CMSSM chain 'oldchain' in order to remove all points with
 m_0 < 1 TeV, and save the new chain as 'newchain':
