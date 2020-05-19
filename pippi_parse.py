@@ -516,13 +516,13 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
       for column in obsPlots.value:
         if column in lk:
           k = k+1
-          
+
           obsMinVal[k] = dataArray[:,lk[column]].min()
           obsMaxVal[k] = dataArray[:,lk[column]].max()
-          
+
           # temporarily set the whole grid to a very low value
           obsGrid[k,:,:] = obsMinVal[k] - 100
-          
+
           # set a value just below the actual minimum
           if obsMinVal[k] < 0:
             obsFloor[k] = obsMinVal[k]*1.01
@@ -547,7 +547,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
     for j in range(2): binCentresOrig.append(np.array([minVal[j] + (x+0.5)*rangeOfVals[j]/nBins[j] for x in range(nBins[j])]))
     for j in range(2): binCentresInterp.append(np.array([binCentresOrig[j][0] + x*(binCentresOrig[j][-1]-binCentresOrig[j][0])\
                                  /(resolution.value-1) for x in range(resolution.value)]))
-                                 
+
     # Loop over points in chain
     for i in range(dataArray.shape[0]-1,-1,-1):
       [in1,in2] = [min(int((dataArray[i,lk[plot[j]]]-minVal[j])/rangeOfVals[j]*nBins[j]),nBins[j]-2) for j in range(2)]
@@ -635,9 +635,9 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
           if column in lk:
             k = k + 1
             obsGrid_temp = obsGrid[k,:,:]
-            
+
             obsGrid_temp[obsGrid_temp == (obsMinVal[k]-100) ] = obsMinVal[k]
-            
+
             if intMethod.value == 'spline':
                     obsGrid_temp = np.array(obsGrid_temp).reshape(nBins[0]*nBins[1])
                     interpolator = twoDspline(oldCoords,obsGrid_temp)
@@ -648,12 +648,12 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
                                for j in range(resolution.value) for i in range(resolution.value)]).reshape(resolution.value,resolution.value)
 
             obsGrid_temp[obsGrid_temp < obsMinVal[k] ] = obsMinVal[k]
-            
+
             # set points outside the contours to the floor value (effectively "no data")
             obsGrid_temp[likeGrid<min(profContourLevels)] = obsFloor[k]
 
             # Write observable to file
-            
+
             outName = outputBaseFilename+'_'+'_'.join([str(x) for x in plot])+'_obs2D_'+str(column)+'.ct2'
             outfile = smart_open(outName,'w')
             outfile.write('# This 2D binned observable file created by pippi '\
@@ -681,7 +681,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
             outfile.write('\n'.join([str(dummyGrid[i,0])+'\t'+str(dummyGrid[i,1])+'\t'+str(dummyGrid[i,2]) \
                                      for i in range(2) ]))
             outfile.close
-            
+
 
 
 
