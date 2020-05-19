@@ -190,6 +190,8 @@ nightOfTheAllanachs.mainBestFitColour2D = 'White'
 nightOfTheAllanachs.mainPostMeanColour2D = 'White'
 nightOfTheAllanachs.legendTextColour2D = 'White'
 nightOfTheAllanachs.keyTextColour2D = 'White'
+nightOfTheAllanachs.comparisonContourStyle = 'Dashes'
+nightOfTheAllanachs.comparison1DLineStyle = 'Dashes'
 
 # nightOfTheAllanachs2 colour scheme
 nightOfTheAllanachs2 = colourScheme('nightOfTheAllanachs2')
@@ -207,7 +209,8 @@ nightOfTheAllanachs2.mainPostMeanColour2D = 'White'
 nightOfTheAllanachs2.mainPostMeanColourOutline2D = 'Black'
 nightOfTheAllanachs2.legendTextColour2D = 'White'
 nightOfTheAllanachs2.keyTextColour2D = 'White'
-
+nightOfTheAllanachs2.comparisonContourStyle = 'Dashes'
+nightOfTheAllanachs2.comparison1DLineStyle = 'Dashes'
 
 # nightOfTheAllanachs3 colour scheme
 nightOfTheAllanachs3 = colourScheme('nightOfTheAllanachs3')
@@ -225,6 +228,8 @@ nightOfTheAllanachs3.mainPostMeanColour2D = 'White'
 nightOfTheAllanachs3.mainPostMeanColourOutline2D = 'Black'
 nightOfTheAllanachs3.legendTextColour2D = 'White'
 nightOfTheAllanachs3.keyTextColour2D = 'White'
+nightOfTheAllanachs3.comparisonContourStyle = 'Dashes'
+nightOfTheAllanachs3.comparison1DLineStyle = 'Dashes'
 
 # Blockshading colour schemes
 Blockshading_red = Blockshading("red", "800", "e00")
