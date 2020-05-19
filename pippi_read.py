@@ -326,13 +326,13 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     for i, elem in enumerate(data):
       if elem is 'functional':
         data[i] = np.zeros(total_samples, dtype=np.float64)
-      else
+      else:
         # Do some pruning to deal with cases where the some datasets have extra entries (although this arguably indicates a bug in the sampler)
         data[i] = elem[:total_samples]
     for i, elem in enumerate(data_isvalid):
       if elem is 'functional':
         data_isvalid[i] = np.ones(total_samples, dtype=np.float64)
-      else
+      else:
         # Do some pruning to deal with cases where the some datasets have extra entries (although this arguably indicates a bug in the sampler)
         data_isvalid[i] = elem[:total_samples]
     # Make everything a neat numpy array
