@@ -142,6 +142,10 @@ C++ example in the Diver distribution (see https://diver.hepforge.org).
 
 Version history
 ---------------
+v2.2
+Allowed for different interpolated resolutions in different observables
+Changed "number_of_bins" key to "specific_bins" in order to reduce confusion with "default_bins" key
+
 v2.1
 Added Diver example pip file and dataset
 Added the ability to indicate confidence / credibility level percentages in 1D plots

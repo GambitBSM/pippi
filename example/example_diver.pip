@@ -20,8 +20,9 @@ parse_dir = 'parse_diver'                   ;Directory to save parsing output in
 cut_on_invalid_observables = F              ;Cut on any invalid entries in an hdf5 file, not just the likelihood (defaults to false, meaning cut on likelihood only)
 
 default_bins = 50                           ;Default number of bins to sort samples into in each direction.
-number_of_bins =                            ;Bins to use for specific observables (overrides default)
-interpolated_resolution = 300               ;Resolution of binwise interpolation for plotting (~300+ for publication)
+specific_bins =                             ;Bins to use for specific observables (EFN; overrides default)
+default_resolution = 300                    ;Default resolution of binwise interpolation for plotting (~300+ for publication)
+specific_resolution =                       ;Resolution of binwise interpolation for specific observables (EFN; overrides default)
 interpolation_method = 'spline'             ;Either bilinear (default) or spline (watch out for ringing in the latter case)
 
 chain_type = other                          ;Algorithm used to generate chain (valid: MCMC, MultiNest, other)
