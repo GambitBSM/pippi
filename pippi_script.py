@@ -173,7 +173,7 @@ def script(filename):
 
       # Determine whether to use log scale
       xlog = False
-      if plot in logVars.value:
+      if logVars.value is not None and plot in logVars.value:
         xlog = True
 
       # Locate and scale logo (if any)
@@ -633,9 +633,9 @@ def script(filename):
       # Determine whether to use log scale
       xlog = False
       ylog = False
-      if plot[0] in logVars.value:
+      if logVars.value is not None and plot[0] in logVars.value:
         xlog = True
-      if plot[1] in logVars.value:
+      if logVars.value is not None and plot[1] in logVars.value:
         ylog = True
 
       # Locate and scale logo (if any)

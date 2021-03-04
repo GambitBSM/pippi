@@ -334,9 +334,10 @@ def saveLogVars(lk,outputBaseFilename,logPlots):
   # Save the variables requested to be plot in log scale
   outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
   outfile.write('use_log_scale =')
-  for column in logPlots.value:
-    if column in lk:
-      outfile.write(' '+str(column))
+  if logPlots.value is not None:
+    for column in logPlots.value:
+      if column in lk:
+        outfile.write(' '+str(column))
   outfile.write('\n')
   outfile.close
 
