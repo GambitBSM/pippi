@@ -434,7 +434,6 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_post1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+colours.value.mainPostColour1D+' /color '+colours.value.mainPostColour1D+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
-                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
         if xlog: 
           outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
