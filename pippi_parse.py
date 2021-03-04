@@ -165,6 +165,8 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   [lnZMain,lnZMainError] = getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename)
   # Save data minima and maxima
   saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns,dataRanges)
+  # Save variables to plot in log scale
+  saveLogVars(lk,outputBaseFilename,logPlots)
   # Save lookup keys for parameters
   saveLookupKeys(lk,outputBaseFilename)
   # Do binning for 1D plots
@@ -328,6 +330,15 @@ def saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns,dataRanges
   outfile.write('\n')
   outfile.close
 
+def saveLogVars(lk,outputBaseFilename,logPlots):
+  # Save the variables requested to be plot in log scale
+  outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
+  outfile.write('use_log_scale =')
+  for column in logPlots.value:
+    if column in lk:
+      outfile.write(' '+str(column))
+  outfile.write('\n')
+  outfile.close
 
 def saveLookupKeys(lk,outputBaseFilename):
   # Save the lookup keys for all the requested parameters

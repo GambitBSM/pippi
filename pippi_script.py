@@ -56,6 +56,7 @@ keys = keys+[scriptdir,doComparison,postMeanOnPost,postMeanOnProf,bestFitOnPost,
         refKey,doKey1D,doKey2D,keyLoc1D,keyLoc2D,parsedir,logoFile,logoLoc,logoWidth]
 # Define pip file entries to be read from savedkeys file
 labels = dataObject('quantity_labels',string_dictionary)
+logVars = dataObject('use_log_scale', int_list)
 dataRanges = dataObject('data_ranges',floatuple_dictionary)
 lookupKeys = dataObject('lookup_keys',int_dictionary)
 
@@ -137,7 +138,7 @@ def script(filename):
     secParseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value) + '_comparison'
 
   # Retrieve labels and data ranges saved in earlier parsing run
-  getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges,lookupKeys])
+  getIniData([parseFilename+'_savedkeys.pip'],[labels,logVars,dataRanges,lookupKeys])
 
   #Work out whether to do posteriors and check that flags match up
   if doPosterior.value and not any(x in labels.value for x in permittedMults):
@@ -169,6 +170,11 @@ def script(filename):
       xRange = xtrema[1] - xtrema[0]
       ytrema = [0.0,1.0]
       yRange = 1.0
+
+      # Determine whether to use log scale
+      xlog = False
+      if plot in logVars.value:
+        xlog = True
 
       # Locate and scale logo (if any)
       if logoFile.value is not None:
@@ -286,6 +292,8 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_like1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+colours.value.mainProfColour1D+' /color '+colours.value.mainProfColour1D+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+        if xlog:
+          outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
           try:
@@ -426,6 +434,9 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_post1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+colours.value.mainPostColour1D+' /color '+colours.value.mainPostColour1D+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
           try:
@@ -561,6 +572,9 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_'+main+'1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+mainData[3]+' /color '+mainData[3]+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
           try:
@@ -617,6 +631,14 @@ def script(filename):
       ytrema = dictFallback(axisRanges,dataRanges,plot[1])
       xRange = xtrema[1] - xtrema[0]
       yRange = ytrema[1] - ytrema[0]
+
+      # Determine whether to use log scale
+      xlog = False
+      ylog = False
+      if plot[0] in logVars.value:
+        xlog = True
+      if plot[1] in logVars.value:
+        ylog = True
 
       # Locate and scale logo (if any)
       if logoFile.value is not None:
@@ -755,6 +777,10 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
+        if ylog:
+          outfile.write('  --ylog\\\n')
         if contours2D.value is not None:
           # Plot contours
           for contour in contourLevels:
@@ -916,6 +942,10 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
+        if xlog:
+          outfile.write('  --xlog\\\n')
+        if ylog:
+          outfile.write('  --ylog\\\n')
         if contours2D.value is not None:
           # Plot contours
           for contour in mainContourLevels:
@@ -1234,6 +1264,10 @@ def script(filename):
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonPostContourColour2D+
                           ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
+        if ylog:
+          outfile.write('  --ylog\\\n')
         if contours2D.value is not None:
           # Plot contours
           for contour in mainContourLevels:
