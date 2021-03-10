@@ -181,7 +181,7 @@ def script(filename):
       xCustomTicks = False
       if customTicks.value is not None and plot in customTicks.value: 
         xCustomTicks = True
-        ticks_major, ticks_minor, ticks_labels = getOptimalTicks(xtrema, log=xlog)
+        ticks_major, ticks_minor, ticks_labels, tick_label_scale = getOptimalTicks(xtrema, log=xlog)
  
       # Locate and scale logo (if any)
       if logoFile.value is not None:
@@ -342,6 +342,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in ticks_major]))
             outfile.write(" /ticks-labels="+ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
           outfile.write('\\\n')
         # Set axis colours for y axes
         for y in ['left', 'right']:
@@ -492,6 +494,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in ticks_major]))
             outfile.write(" /ticks-labels="+ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
           outfile.write('\\\n')
         # Set axis colours for y axes
         for y in ['left', 'right']:
@@ -633,6 +637,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in ticks_major]))
             outfile.write(" /ticks-labels="+ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
           outfile.write('\\\n')
         # Set axis colours for y axes
         for y in ['left', 'right']:
@@ -674,10 +680,10 @@ def script(filename):
       yCustomTicks = False
       if customTicks.value is not None and plot[0] in customTicks.value:
         xCustomTicks  = True
-        x_ticks_major, x_ticks_minor, x_ticks_labels = getOptimalTicks(xtrema, log=xlog)
+        x_ticks_major, x_ticks_minor, x_ticks_labels, x_tick_label_scale  = getOptimalTicks(xtrema, log=xlog)
       if customTicks.value is not None and plot[1] in customTicks.value:
         yCustomTicks = True
-        y_ticks_major, y_ticks_minor, y_ticks_labels = getOptimalTicks(ytrema, log=ylog)
+        y_ticks_major, y_ticks_minor, y_ticks_labels, y_tick_label_scale  = getOptimalTicks(ytrema, log=ylog)
 
       # Locate and scale logo (if any)
       if logoFile.value is not None:
@@ -866,6 +872,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
             outfile.write(" /ticks-labels="+x_ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
           outfile.write('\\\n')
         # Set axis colours and ticks for y axes
         for y in ['left', 'right']:
@@ -874,6 +882,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
             outfile.write(" /ticks-labels="+y_ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+            if y_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
           outfile.write('\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
@@ -1043,6 +1053,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
             outfile.write(" /ticks-labels="+x_ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
           outfile.write('\\\n')
         # Set axis colours and ticks for y axes
         for y in ['left', 'right']:
@@ -1051,6 +1063,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
             outfile.write(" /ticks-labels="+y_ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+            if y_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
           outfile.write('\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
@@ -1217,6 +1231,8 @@ def script(filename):
                 outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
                 outfile.write(" /ticks-labels="+x_ticks_labels)
                 outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+                if x_tick_label_scale < 1:
+                  outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
               outfile.write('\\\n')
             # Set axis colours and ticks for y axes
             for y in ['left', 'right']:
@@ -1225,6 +1241,8 @@ def script(filename):
                 outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
                 outfile.write(" /ticks-labels="+y_ticks_labels)
                 outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+                if y_tick_label_scale < 1:
+                  outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
               outfile.write('\\\n')
             if doColourbar.value is not None and plot in doColourbar.value:
               # Do colourbar
@@ -1394,6 +1412,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
             outfile.write(" /ticks-labels="+x_ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
           outfile.write('\\\n')
         # Set axis colours and ticks for y axes
         for y in ['left', 'right']:
@@ -1402,6 +1422,8 @@ def script(filename):
             outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
             outfile.write(" /ticks-labels="+y_ticks_labels)
             outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+            if y_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
           outfile.write('\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
@@ -1479,6 +1501,8 @@ def getOptimalTicks(xtrema, log=False):
   maxminorticks = 30
 
   xRange = xtrema[1] - xtrema[0]
+
+  tick_label_scale = 1
  
   if not log:
     # Nearest order with enough ticks
@@ -1506,38 +1530,27 @@ def getOptimalTicks(xtrema, log=False):
     ticks_labels = ",".join([str(tick) for tick in ticks_major])
  
   else:
-    # In lot scale more than 5 major ticks is too much
-    nticks = int(xRange)
-    nticks = nticks if nticks <= minnticks else minnticks
-    if nticks > 0:
-      tick_step = int(xRange/nticks)
-      # Take full powers of 10 as major ticks
-      ticks_major = [int(xtrema[0])+i for i in range(0,nticks+1,tick_step)] 
-      # Redo minor ticks on log scale, 10 per major tick
-      nminorticks = 10
-      ticks_minor = sorted(list({tick + np.log10(1+i*(10**tick_step-1)/(nminorticks-1)) for tick in ticks_major for i in range(nminorticks)}))
-      # Trim to within range
-      ticks_major = [tick for tick in ticks_major if tick > xtrema[0]]
-      ticks_minor = [tick for tick in ticks_minor if tick > xtrema[0] and tick < xtrema[1]]
-      # Labels
-      ticks_labels = ",".join(['\'$10^{'+str(int(i))+'}$\'' for i in ticks_major])
- 
-    # If the range doesn't span more than one order of magnitude, then use partial powers of 10
-    else:
-      nticks = int(xRange*10)
-      tick_step = int(xRange*10/nticks)
-      ticks_major = [int(xtrema[0])+float(i)/10 for i in range(0,nticks+1,tick_step)] 
-      # Redo minor ticks on log scale, 10 per major tick
-      nminorticks = 10
-      ticks_minor = sorted(list({tick + np.log10(1+i*(10**tick_step-1)/(nminorticks-1)) for tick in ticks_major for i in range(nminorticks)}))
-      # Trim to within range
-      ticks_major = [tick for tick in ticks_major if tick > xtrema[0]]
-      ticks_minor = [tick for tick in ticks_minor if tick > xtrema[0] and tick < xtrema[1]]
-      # Labels
-      ticks_labels = ",".join(['\'$10^{'+str("{:.1f}".format(i))+'}$\'' for i in ticks_major])
- 
+    nticks = int(xRange)+1
 
-  return ticks_major, ticks_minor, ticks_labels
+    if nticks < 2:
+      # If the range doesn't span more than one order of magnitude, you shouldn't be using log scale
+      sys.exit('Error: Cannot use log scale for variable, change to linear scale.\nQuitting...')
+
+    tick_step = int( (xRange + 1) / nticks)
+    # Take full powers of 10 as major ticks
+    ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)] 
+    # Redo minor ticks on log scale, 10 per major tick, unless there are more than 5 major ticks
+    nminorticks = 10 if nticks <= 5 else 5
+    ticks_minor = sorted(list({tick + np.log10(1+float(i)/(nminorticks-1)*(10**tick_step-1)) for tick in ticks_major for i in range(nminorticks)}))
+    # Trim to within range
+    ticks_major = [tick for tick in ticks_major if tick > xtrema[0]]
+    ticks_minor = [tick for tick in ticks_minor if tick > xtrema[0] and tick < xtrema[1]]
+    # Labels
+    ticks_labels = ",".join(['\'$10^{'+str(int(i))+'}$\'' for i in ticks_major])
+    # Tick label scale, reduce size if there's 10 or more ticks
+    if nticks >= 10: tick_label_scale = 0.7
+ 
+  return ticks_major, ticks_minor, ticks_labels, tick_label_scale
 
 def dictFallback(risky,safe,key):
   # Try to extract entry corresponding to key from risky dataObject, otherwise use safe dataObject
