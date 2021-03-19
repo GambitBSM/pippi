@@ -1539,11 +1539,20 @@ def getOptimalTicks(xtrema, log=False):
     tick_step = int( (xRange + 1) / nticks)
     # Take full powers of 10 as major ticks
     ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)] 
-    # Redo minor ticks on log scale, 10 per major tick, unless there are more than 5 major ticks
-    nminorticks = 10 if nticks <= 5 else 5
-    ticks_minor = sorted(list({tick + np.log10(1+float(i)/(nminorticks-1)*(10**tick_step-1)) for tick in ticks_major for i in range(nminorticks)}))
+
+    # Redo minor ticks on log scale, 10 minor ticks for 1-5 major ticks and 5 minor ticks for 5-10 major ticks
+    if nticks < 10:
+      nminorticks = 10 if nticks <= 5 else 5
+      ticks_minor = sorted(list({tick + np.log10(1+float(i)/(nminorticks-1)*(10**tick_step-1)) for tick in ticks_major for i in range(nminorticks)}))
+    else:
+      # For more than 10 ticks just show a selection of 10 major ticks and the rest as minor ticks
+      ticks_minor = ticks_major
+      nticks = nticks/(nticks%10) + 1
+      tick_step = int( (xRange + 1) / nticks)
+      ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)]
+
     # Trim to within range
-    ticks_major = [tick for tick in ticks_major if tick > xtrema[0]]
+    ticks_major = [tick for tick in ticks_major if tick > xtrema[0] and tick < xtrema[1]]
     ticks_minor = [tick for tick in ticks_minor if tick > xtrema[0] and tick < xtrema[1]]
     # Labels
     ticks_labels = ",".join(['\'$10^{'+str(int(i))+'}$\'' for i in ticks_major])
