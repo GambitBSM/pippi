@@ -181,7 +181,7 @@ def script(filename):
       xCustomTicks = False
       if customTicks.value is not None and plot in customTicks.value: 
         xCustomTicks = True
-        ticks_major, ticks_minor, ticks_labels, tick_label_scale, x_tick_label_scale = getOptimalTicks(xtrema, log=xlog)
+        ticks_major, ticks_minor, ticks_labels, x_tick_label_scale = getOptimalTicks(xtrema, log=xlog)
  
       # Locate and scale logo (if any)
       if logoFile.value is not None:
