@@ -44,7 +44,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
 
   #Find relevant bits in pipfile
   for i,key in enumerate(keys):
-    lines = filter(key.seek,parse_options)
+    lines = list(filter(key.seek,parse_options))
     if (len(lines) == 0):
       sys.exit('Error: field '+key.pipFileKey+' required for requested operation not found in '+filename+'.  Quitting...\n')
     if (len(lines) > 1):
@@ -72,7 +72,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
 
     # Parse the pip file again and save the requested keys
     for key in savekeys:
-      lines = filter(key.seek,parse_options)
+      lines = list(filter(key.seek,parse_options))
       # Save keys verbatim to the savedkeys pip file
       if savekeys is not None and key in savekeys: outfile.write(lines[0])
 
@@ -220,7 +220,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
           entries = entries[key]
         except KeyError:
           sys.exit("ERROR: requested group \""+key+"\" does not exist in hdf5 file.")
-    column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
+    column_names = list(filter(lambda x: x[-8:] != "_isvalid", list(entries)))
 
     # Reorganize MPIrank, pointID and other requested entries for convenience.
     indices = []
