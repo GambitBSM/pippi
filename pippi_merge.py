@@ -83,7 +83,7 @@ def merge(filenames):
     print()
 
     #Find the length of each dataset and create it (empty) in the new file
-    print "  Creating empty datasets of required lengths in {0}...".format(filenames[-1])
+    print("  Creating empty datasets of required lengths in {0}...".format(filenames[-1]))
     out_dsets = {}
     for ds in common_datasets:
       length = 0
