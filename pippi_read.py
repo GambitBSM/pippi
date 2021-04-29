@@ -361,7 +361,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         # Read in any python preamble specified in the pip file.
         if preamble is not None: exec(preamble)
         exec('data[lookup_key['+str(i)+']] = '+expression)
-      except KeyError, e:
+      except KeyError as e:
         print('ERROR: Datastream '+str(e)+', which you have tried to define a function of')
         print('in assign_to_pippi_datastream, is not itself defined as a datastream.')
         print('This usually happens because you have not requested it for plotting in')
