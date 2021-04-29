@@ -27,7 +27,7 @@ keys = keys+[parsedir,scriptdir,outdir,prepend,append]
 
 def plot(filename):
 
-  print
+  print()
 
   # Parse pip file
   getIniData(filename,keys)
@@ -60,7 +60,7 @@ def plot(filename):
 
   #Work out whether to do posteriors check that flags match up for posterior pdf
   if doPosterior.value and not any(x in labels.value for x in permittedMults):
-    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    print('  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...')
     doPosterior.value = False
 
   # Set defaults for prepend and append string
@@ -72,7 +72,7 @@ def plot(filename):
   if oneDplots.value is not None:
     # Work through 1D plotting scripts
     for plot in oneDplots.value:
-      print '    Running plotting scripts for 1D plots of quantity ',plot
+      print('    Running plotting scripts for 1D plots of quantity ',plot)
       # Set up filenames
       currentBase = baseFilename+'_'+str(plot)
       # Make profile likelihood plots
@@ -95,7 +95,7 @@ def plot(filename):
   if twoDplots.value is not None:
     # Loop over requested plots
     for plot in twoDplots.value:
-      print '    Running plotting scripts for 2D plots of quantity ',plot
+      print('    Running plotting scripts for 2D plots of quantity ',plot)
       # Set up filenames
       currentBase = baseFilename+'_'+'_'.join([str(x) for x in plot])
       # Make profile likelihood plots

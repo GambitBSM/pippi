@@ -37,41 +37,41 @@ def main(arguments):
       #Check if pippi has been invoked with one of the five known specific commands
       command = commandLineOptions[arguments[1]]
       if not command in [merge, pare]:
-        print
-        print 'Beginning pippi '+arguments[1]+' operation...'
+        print()
+        print('Beginning pippi '+arguments[1]+' operation...')
       try:
         command(arguments[2:])
       except BaseException as err:
-        print
-        print 'Running pippi failed in '+command.__name__+' operation, due to error:'
-        print err
-        print
+        print()
+        print('Running pippi failed in '+command.__name__+' operation, due to error:')
+        print(err)
+        print()
         sys.exit()
       if not command in [merge, pare]:
-        print
-        print 'Completed sucessfully.'
-        print
+        print()
+        print('Completed sucessfully.')
+        print()
     except KeyError:
       #Otherise check if it has been invoked with just a filename
       if os.path.isfile(arguments[1]):
-        print
-        print 'Beginning pippi parse-to-plot operation...'
+        print()
+        print('Beginning pippi parse-to-plot operation...')
         for command in [parse, script, plot]:
           try:
             command(arguments[1:])
           except BaseException as err:
-            print
-            print 'Running pippi failed in '+command.__name__+' operation.'
-            print err
-            print
+            print()
+            print('Running pippi failed in '+command.__name__+' operation.')
+            print(err)
+            print()
             sys.exit()
-        print
-        print 'Completed sucessfully.'
-        print
+        print()
+        print('Completed sucessfully.')
+        print()
       else:
         #Otherwise crack it and tell the user to get their shit in order
-        print
-        print 'Can\'t find file '+arguments[1]
+        print()
+        print('Can\'t find file '+arguments[1])
         usage()
 
   sys.exit()
