@@ -11,6 +11,7 @@ import sys
 import os.path
 import re
 import numpy as np
+import __future__
 from pippi_colours import *
 
 def mapToRefLike(otherlike,array):

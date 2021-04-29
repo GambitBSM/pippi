@@ -178,7 +178,7 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
 def standardise(dataArray,lk):
   global firstLikeKey
   # Standardise likelihood, prior and multiplicity labels, rescale likelihood if necessary,
-  for key, entry in labels.value.copy().iteritems():
+  for key, entry in labels.value.copy().items():
     if any(key == mult for mult in permittedMults):
       labels.value[refMult] = labels.value[key]
       if key != refMult: del labels.value[key]
@@ -199,7 +199,7 @@ def standardise(dataArray,lk):
     #if any(entry == obs for obs in permittedObs): labels.value[key] = refObs
   # Rescale columns if requested
   if rescalings.value is not None:
-    for key, entry in rescalings.value.iteritems(): dataArray[:,lk[key]] *= entry
+    for key, entry in rescalings.value.items(): dataArray[:,lk[key]] *= entry
   # Convert columns to log if requested
   if logPlots.value is not None:
     for column in logPlots.value:
@@ -263,7 +263,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
       outfile2.write('# This best-fit file created in GAMBIT yaml format by pippi '
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
       outfile2.write('# Best-fit log-likelihood: '+str(-bestFit)+'\n\n')
-      for model, parameters in parameter_sets.iteritems():
+      for model, parameters in parameter_sets.items():
         outfile2.write('    ' + model + ':\n')
         for parval in parameters: outfile2.write('  ' + parval + '\n')
       outfile2.close
@@ -346,7 +346,7 @@ def saveLookupKeys(lk,outputBaseFilename):
   outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
   outfile.write('lookup_keys =')
   if type(lk) == dict:
-    for key, value in lk.iteritems(): outfile.write(' '+str(key)+':'+str(value))
+    for key, value in lk.items(): outfile.write(' '+str(key)+':'+str(value))
   else:
     for i in lk: outfile.write(' '+str(i)+':'+str(i))
   outfile.write('\n')

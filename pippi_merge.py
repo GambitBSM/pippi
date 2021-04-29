@@ -150,6 +150,6 @@ def merge(filenames):
 
 def get_datasets(g,datasets):
   import h5py
-  for name, item in g.iteritems():
+  for name, item in g.items():
     if isinstance(item,h5py.Group): get_datasets(item,datasets)
     if isinstance(item,h5py.Dataset): datasets[item.name] = item

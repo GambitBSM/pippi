@@ -164,7 +164,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     # Filter out points inside the requested data ranges
     cut = None
     if data_ranges is not None and data_ranges.value:
-      for key, value in data_ranges.value.iteritems():
+      for key, value in data_ranges.value.items():
         lowercut = value[0]
         uppercut = value[1]
         if log_plots.value is not None and key in log_plots.value:
@@ -257,7 +257,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     column_names = np.array(column_names)[all_indices]
     # Pick up all the datastreams with indices larger than the largest index in the hdf5 file
     if assignments.value is not None:
-      for index, assignment in assignments.value.iteritems():
+      for index, assignment in assignments.value.items():
         if castable_to_int(index) and index >= index_count:
           if is_functional_assignment(assignment):
             functional_assignment_indices.append(index)
@@ -281,13 +281,13 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
 
     # Identify any likelihood or multiplicity indicated by the labels.
     if labels:
-      likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
-      if not likelihood_index: likelihood_index = [key for key, value in labels.value.iteritems() if value in permittedLikes]
+      likelihood_index = [value for key, value in labels.value.items() if key in permittedLikes]
+      if not likelihood_index: likelihood_index = [key for key, value in labels.value.items() if value in permittedLikes]
       if likelihood_index:
         likelihood_index = likelihood_index[0]
         if likelihood_index not in requested_cols: requested_cols.add(likelihood_index)
-      multiplicity_index = [value for key, value in labels.value.iteritems() if key in permittedMults]
-      if not multiplicity_index: multiplicity_index = [key for key, value in labels.value.iteritems() if value in permittedMults]
+      multiplicity_index = [value for key, value in labels.value.items() if key in permittedMults]
+      if not multiplicity_index: multiplicity_index = [key for key, value in labels.value.items() if value in permittedMults]
       if multiplicity_index:
         multiplicity_index = multiplicity_index[0]
         if multiplicity_index not in requested_cols: requested_cols.add(multiplicity_index)
@@ -378,7 +378,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
 
     # Filter out points inside the requested data ranges
     if data_ranges.value:
-      for key, value in data_ranges.value.iteritems():
+      for key, value in data_ranges.value.items():
         if key not in requested_cols:
           print('ERROR: '+str(key)+' mentioned in data_ranges does not')
           print('appear in requested_cols!  Please report this as a pippi bug.')
@@ -409,7 +409,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         if likelihood_index in labels.value:
           findMin = labels.value[likelihood_index] in permittedLikes_samesign
         else:
-          findMin = [value for key, value in labels.value.iteritems() if key in permittedLikes_samesign]
+          findMin = [value for key, value in labels.value.items() if key in permittedLikes_samesign]
         if findMin:
           bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmin()
           bestfit_index = data[lookup_key[likelihood_index]].argmin()
@@ -425,7 +425,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
 
     # Print list of contents for convenience
     if not silent:
-      for key, value in sorted(lookup_key.iteritems()):
+      for key, value in sorted(lookup_key.items()):
         print("   ",key, ":", column_names[key])
         print("        mean: %.2e  min: %.2e  max %.2e"%(np.mean(data[value]), np.min(data[value]), np.max(data[value])))
         print("        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[value].mean()))
