@@ -7,11 +7,12 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
+
 import sys
 import os.path
 import re
 import numpy as np
-import __future__
 from pippi_colours import *
 
 def mapToRefLike(otherlike,array):
