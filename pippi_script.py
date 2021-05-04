@@ -1501,7 +1501,6 @@ def getOptimalTicks(xtrema, log=False):
   maxminorticks = 30
 
   xRange = xtrema[1] - xtrema[0]
-  print(xtrema)
 
   tick_label_scale = 1
  
@@ -1532,17 +1531,14 @@ def getOptimalTicks(xtrema, log=False):
  
   else:
     nticks = int(xRange)+1
-    print(nticks)
 
     if nticks < 2:
       # If the range doesn't span more than one order of magnitude, you shouldn't be using log scale
       sys.exit('Error: Cannot use log scale for variable, change to linear scale.\nQuitting...')
 
     tick_step = int( (xRange + 1) / nticks)
-    print(tick_step)
     # Take full powers of 10 as major ticks
     ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)] 
-    print(ticks_major)
 
     # Redo minor ticks on log scale, 10 minor ticks for 1-5 major ticks and 5 minor ticks for 5-10 major ticks
     if nticks <= 10:
@@ -1551,7 +1547,7 @@ def getOptimalTicks(xtrema, log=False):
     else:
       # For more than 10 ticks just show a selection of 10 major ticks and the rest as minor ticks
       ticks_minor = ticks_major
-      nticks = nticks/(nticks%10) + 1
+      nticks = int(nticks/(nticks%10) + 1)
       tick_step = int( (xRange + 1) / nticks)
       ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)]
 
