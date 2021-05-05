@@ -324,6 +324,8 @@ def script(filename):
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour1D+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -854,6 +856,8 @@ def script(filename):
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -1035,6 +1039,8 @@ def script(filename):
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -1213,6 +1219,8 @@ def script(filename):
               outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                             colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                             '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+            # Fill the background colour
+            outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
             # Plot reference point
             if plotRef: outfile.write(refString)
             # Draw key
@@ -1394,6 +1402,8 @@ def script(filename):
                       '\' /scale '+str(bestFitData[3])+' \\\n')
         if postMean: outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+postMeanData[0]+' /fill-color \''+str(postMeanData[1])+'\' /stroke-color \''+str(postMeanData[2])+
                                    '\' /scale '+str(postMeanData[3])+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
