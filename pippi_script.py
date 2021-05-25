@@ -42,6 +42,7 @@ doHistograms = dataObject('plot_as_histograms_1D',boolean)
 legendLines = dataObject('extra_legend_lines',string_list)
 plotSize = dataObject('plot_size',string)
 blame = dataObject('blame',string)
+blameScale = dataObject('blame_scale', floater)
 logoFile = dataObject('logo_file',string)
 logoLoc = dataObject('logo_loc',floatuple_list)
 logoWidth = dataObject('logo_width',floater)
@@ -53,7 +54,7 @@ refPoint = dataObject('reference_point',float_dictionary)
 refKey = dataObject('reference_text',string)
 keys = keys+[scriptdir,doComparison,postMeanOnPost,postMeanOnProf,bestFitOnPost,
         bestFitOnProf,doColourbar,doLegend1D,doLegend2D,legendLoc1D,legendLoc2D,
-        doHistograms,legendLines,blame,colours,axisRanges,yAxisAngle,customTicks,refPoint,
+        doHistograms,legendLines,blame,blame_scale,colours,axisRanges,yAxisAngle,customTicks,refPoint,
         refKey,doKey1D,doKey2D,keyLoc1D,keyLoc2D,parsedir,logoFile,logoLoc,logoWidth]
 # Define pip file entries to be read from savedkeys file
 labels = dataObject('quantity_labels',string_dictionary)
@@ -333,7 +334,7 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
@@ -485,7 +486,7 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
@@ -628,7 +629,7 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
@@ -865,7 +866,7 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
@@ -1048,7 +1049,7 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
@@ -1228,7 +1229,7 @@ def script(filename):
             # Write credits
             if blame.value is not None:
               blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-              outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+              outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
             # Add logo
             if logoFile.value is not None:
               outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
@@ -1411,7 +1412,7 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + blameScale + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
