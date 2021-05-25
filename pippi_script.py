@@ -1558,7 +1558,7 @@ def getOptimalTicks(xtrema, log=False):
     else:
       # For more than 10 ticks just show a selection of 10 major ticks and the rest as minor ticks
       ticks_minor = ticks_major
-      nticks = int(nticks/(nticks%10) + 1)
+      nticks = int(nticks / (int(nticks/10) + 1))
       tick_step = int( (xRange + 1) / nticks)
       ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)]
 
