@@ -65,7 +65,7 @@ lookupKeys = dataObject('lookup_keys',int_dictionary)
 # Constants
 blameFractionalVerticalOffset = 1.2e-2
 PosteriorIsMainInComboPlot = True
-likeColourbarString = 'Profile likelihood ratio $\Lambda=\mathcal{L}/\mathcal{L}_\mathrm{max}$'
+likeColourbarString = 'Profile likelihood ratio $\mathcal{L}/\mathcal{L}_\mathrm{max}$'
 postColourbarString = 'Relative probability $P/P_\mathrm{max}$'
 defaultLegendLocation = 'bl'
 defaultKeyLocation = 'tr'
