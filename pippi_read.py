@@ -312,7 +312,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         data_isvalid.append(np.array(entries[column_names[index]+"_isvalid"], dtype=np.float64))
       lookup_key[index] = index_count
       index_count += 1
-    non_functional_cols = [i for i, elem in enumerate(data) if data[i] is not 'functional']
+    non_functional_cols = [i for i, elem in enumerate(data) if data[i] != 'functional']
     if not non_functional_cols:
       print("ERROR: At least one non-function assignment is needed in")
       print("assign_to_pippi_datastream, or a multiplicity or likelihood")
@@ -324,13 +324,13 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     # Fill in the functional columns with zeros.  Note that this uses more memory than doing it after validity
     # cuts, but should actually be faster (I think; haven't actually tested that). It makes the code simpler too.
     for i, elem in enumerate(data):
-      if elem is 'functional':
+      if elem == 'functional':
         data[i] = np.zeros(total_samples, dtype=np.float64)
       else:
         # Do some pruning to deal with cases where the some datasets have extra entries (although this arguably indicates a bug in the sampler)
         data[i] = elem[:total_samples]
     for i, elem in enumerate(data_isvalid):
-      if elem is 'functional':
+      if elem == 'functional':
         data_isvalid[i] = np.ones(total_samples, dtype=np.float64)
       else:
         # Do some pruning to deal with cases where the some datasets have extra entries (although this arguably indicates a bug in the sampler)
