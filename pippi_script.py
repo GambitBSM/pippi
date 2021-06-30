@@ -8,6 +8,8 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
+
 left_margin = 0.16
 right_margin = 0.03
 top_margin = 0.05

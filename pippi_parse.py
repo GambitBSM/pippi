@@ -8,6 +8,7 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
 import subprocess
 from pippi_utils import *
 from pippi_read import *

@@ -15,6 +15,7 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
 from pippi_probe  import *
 from pippi_merge  import *
 from pippi_pare   import *

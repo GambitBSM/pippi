@@ -9,6 +9,7 @@
 #           Pat Scott, 2016
 #############################################################
 
+from __future__ import print_function
 import datetime
 import sys
 from pippi_utils import *

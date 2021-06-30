@@ -8,6 +8,7 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
 import subprocess
 from pippi_utils import *
 from pippi_read import *
@@ -108,7 +109,7 @@ def plot(filename):
         subprocess.check_call('cd '+baseFiledir+'; ./'+currentBase+'_post2D.bsh', shell=True)
         subprocess.check_call('mv '+baseFiledir+currentBase+'_post2D.pdf '+
          outdirectory+'/'+prestring+currentBase+'_post2D'+appstring+'.pdf', shell=True)
-      
+
       #if doObservable.value:
       if obsPlots.value is not None:
           for column in obsPlots.value:
