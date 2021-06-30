@@ -40,8 +40,8 @@ assign_to_pippi_datastream = 'np.log10($2)-np.log10($3)':64 \
                                             ;Assign a python function or named hdf5 data stream to a particular pippi datastream index (use pippi probe to test; EFN)
 quantity_labels = 0:'multiplicity' \
                   1:'-lnlike'      \
-                  2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' \
-                  3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' \
+                  2:'$m_0$ (TeV)' \
+                  3:'$m_\frac12$ (TeV)' \
                   4:'$A_0$ (TeV)' \
                   5:'$\tan\beta$' \
                   64:'$\log_{10}\left(m_0/m_\frac12\right)$' \
