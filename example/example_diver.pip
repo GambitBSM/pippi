@@ -59,7 +59,8 @@ plot_colourbar_2D =                         ;2D plots that should include colour
 
 plot_comparison = F                         ;Overplot distributions from comparisonFilename in 1D plots and contours in 2D plots
 extra_legend_lines =                        ;Additional text lines to be included in any legends (EFN)
-blame = 'pippi v2.1'                        ;Credit line to be placed in top corner of all plots
+blame_text = 'pippi v2.1'                        ;Credit line to be placed in top corner of all plots
+blame_scale = 0.5                           ;Scale of credit line, default is 0.5
 yaxis_number_angle = -90                    ;Angle relative to vertical for y-axis numerical labels
 
 plot_posterior_mean_on_posterior_pdf = F    ;Indicate the posterior mean in all posterior pdf plots
@@ -68,6 +69,8 @@ plot_best_fit_on_posterior_pdf = F          ;Indicate the best fit in all poster
 plot_best_fit_on_profile_like = T           ;Indicate the best fit in all profile likelihood plots
 
 axis_ranges =                               ;Axis ranges over which to plot parameters/observables (defaults to data_ranges if absent)
+
+custom_ticks =                              ;Parameters/observables that use custom ticks
 
 reference_point =                           ;Coordinates of reference point (only plotted where one of the listed axes is present)
 reference_text =                            ;Key string to be printed for reference point

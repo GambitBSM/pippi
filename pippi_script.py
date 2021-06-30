@@ -41,28 +41,31 @@ doColourbar = dataObject('plot_colourbar_2D',intuple_list)
 doHistograms = dataObject('plot_as_histograms_1D',boolean)
 legendLines = dataObject('extra_legend_lines',string_list)
 plotSize = dataObject('plot_size',string)
-blame = dataObject('blame',string)
+blame = dataObject('blame_text',string)
+blameScale = dataObject('blame_scale', floater)
 logoFile = dataObject('logo_file',string)
 logoLoc = dataObject('logo_loc',floatuple_list)
 logoWidth = dataObject('logo_width',floater)
 colours = dataObject('colour_scheme',internal)
 axisRanges = dataObject('axis_ranges',floatuple_dictionary)
 yAxisAngle = dataObject('yaxis_number_angle',floater)
+customTicks = dataObject('custom_ticks', int_list)
 refPoint = dataObject('reference_point',float_dictionary)
 refKey = dataObject('reference_text',string)
 keys = keys+[scriptdir,doComparison,postMeanOnPost,postMeanOnProf,bestFitOnPost,
         bestFitOnProf,doColourbar,doLegend1D,doLegend2D,legendLoc1D,legendLoc2D,
-        doHistograms,legendLines,blame,colours,axisRanges,yAxisAngle,refPoint,
+        doHistograms,legendLines,blame,blameScale,colours,axisRanges,yAxisAngle,customTicks,refPoint,
         refKey,doKey1D,doKey2D,keyLoc1D,keyLoc2D,parsedir,logoFile,logoLoc,logoWidth]
 # Define pip file entries to be read from savedkeys file
 labels = dataObject('quantity_labels',string_dictionary)
+logVars = dataObject('use_log_scale', int_list)
 dataRanges = dataObject('data_ranges',floatuple_dictionary)
 lookupKeys = dataObject('lookup_keys',int_dictionary)
 
 # Constants
 blameFractionalVerticalOffset = 1.2e-2
 PosteriorIsMainInComboPlot = True
-likeColourbarString = 'Profile likelihood ratio $\Lambda=\mathcal{L}/\mathcal{L}_\mathrm{max}$'
+likeColourbarString = 'Profile likelihood ratio $\mathcal{L}/\mathcal{L}_\mathrm{max}$'
 postColourbarString = 'Relative probability $P/P_\mathrm{max}$'
 defaultLegendLocation = 'bl'
 defaultKeyLocation = 'tr'
@@ -75,14 +78,14 @@ keyXVals = {'r':[0.74 + x*keyXSep for x in range(2)], 'c':[0.45 + x*keyXSep for 
 def script(filename):
   # input:  filename = the name of the pip file
 
-  print
+  print()
 
   # Parse pip file
   getIniData(filename,keys)
 
   # Make sure that comparison is turned off if comparison filename is missing
   if doComparison.value and secChain.value is None:
-    print '  Warning: comparison curves requested but no comparison file specified.\n  Skipping comparison...\n'
+    print('  Warning: comparison curves requested but no comparison file specified.\n  Skipping comparison...\n')
     doComparison.value = False
 
   # Work out where the parse output is located
@@ -137,11 +140,11 @@ def script(filename):
     secParseFilenameFromScriptFiledir = parseFiledirFromScriptFiledir + re.sub(r'.*/|\..?.?.?$', '', secChain.value) + '_comparison'
 
   # Retrieve labels and data ranges saved in earlier parsing run
-  getIniData([parseFilename+'_savedkeys.pip'],[labels,dataRanges,lookupKeys])
+  getIniData([parseFilename+'_savedkeys.pip'],[labels,logVars,dataRanges,lookupKeys])
 
   #Work out whether to do posteriors and check that flags match up
   if doPosterior.value and not any(x in labels.value for x in permittedMults):
-    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    print('  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...')
     doPosterior.value = False
 
   # set colour scheme if it is undefined
@@ -156,7 +159,7 @@ def script(filename):
     # Loop over requested plots
     for plot in oneDplots.value:
 
-      print '    Writing scripts for 1D plots of quantity ',plot
+      print('    Writing scripts for 1D plots of quantity ',plot)
 
       # Set up filenames
       currentBase = baseFilename+'_'+str(plot)
@@ -170,6 +173,17 @@ def script(filename):
       ytrema = [0.0,1.0]
       yRange = 1.0
 
+      # Determine whether to use log scale
+      xlog = False
+      if logVars.value is not None and plot in logVars.value:
+        xlog = True
+
+      # Find the optimal ticks
+      xCustomTicks = False
+      if customTicks.value is not None and plot in customTicks.value: 
+        xCustomTicks = True
+        ticks_major, ticks_minor, ticks_labels, x_tick_label_scale = getOptimalTicks(xtrema, log=xlog)
+ 
       # Locate and scale logo (if any)
       if logoFile.value is not None:
         logoCoords = [xtrema[0]+logoLoc.value[0][0]*xRange,logoLoc.value[0][1]]
@@ -286,6 +300,8 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_like1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+colours.value.mainProfColour1D+' /color '+colours.value.mainProfColour1D+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+        if xlog:
+          outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
           try:
@@ -309,6 +325,8 @@ def script(filename):
           outfile.write('  --draw-marker '+str(postMean)+','+str(yRange*colours.value.mainPostMeanMarkerScale/40.0)+' '+
                         colours.value.mainPostMeanMarker+' /color \''+colours.value.mainPostMeanColour1D+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -316,13 +334,23 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value) + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-        # Set axis colours
-        for x in ['top', 'bottom', 'left', 'right']:
-          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour1D+'\'\\\n')
+        # Set axis colours and ticks for x axes
+        for x in ['top', 'bottom']:
+          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour1D+'\'')
+          if xCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in ticks_major]))
+            outfile.write(" /ticks-labels="+ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+          outfile.write('\\\n')
+        # Set axis colours for y axes
+        for y in ['left', 'right']:
+          outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour1D+'\'\\\n')
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_like1D.bsh', shell=True)
 
@@ -426,6 +454,8 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_post1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+colours.value.mainPostColour1D+' /color '+colours.value.mainPostColour1D+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
           try:
@@ -456,13 +486,23 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value) + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-        # Set axis colours
-        for x in ['top', 'bottom', 'left', 'right']:
-          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour1D+'\'\\\n')
+        # Set axis colours and ticks for x axes
+        for x in ['top', 'bottom']:
+          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour1D+'\'')
+          if xCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in ticks_major]))
+            outfile.write(" /ticks-labels="+ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+          outfile.write('\\\n')
+        # Set axis colours for y axes
+        for y in ['left', 'right']:
+          outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour1D+'\'\\\n')
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_post1D.bsh', shell=True)
 
@@ -561,6 +601,8 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_'+main+'1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+mainData[3]+' /color '+mainData[3]+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
           try:
@@ -587,13 +629,23 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value) + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-        # Set axis colours
-        for x in ['top', 'bottom', 'left', 'right']:
-          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour1D+'\'\\\n')
+        # Set axis colours and ticks for x axes
+        for x in ['top', 'bottom']:
+          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour1D+'\'')
+          if xCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in ticks_major]))
+            outfile.write(" /ticks-labels="+ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+          outfile.write('\\\n')
+        # Set axis colours for y axes
+        for y in ['left', 'right']:
+          outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour1D+'\'\\\n')
         outfile.close
         subprocess.call('chmod +x '+currentBase+'_combo1D.bsh', shell=True)
 
@@ -604,7 +656,7 @@ def script(filename):
     # Loop over requested plots
     for plot in twoDplots.value:
 
-      print '    Writing scripts for 2D plots of quantities ',plot
+      print('    Writing scripts for 2D plots of quantities ',plot)
 
       # Set up filenames
       currentBase = baseFilename+'_'+'_'.join([str(x) for x in plot])
@@ -617,6 +669,24 @@ def script(filename):
       ytrema = dictFallback(axisRanges,dataRanges,plot[1])
       xRange = xtrema[1] - xtrema[0]
       yRange = ytrema[1] - ytrema[0]
+
+      # Determine whether to use log scale
+      xlog = False
+      ylog = False
+      if logVars.value is not None and plot[0] in logVars.value:
+        xlog = True
+      if logVars.value is not None and plot[1] in logVars.value:
+        ylog = True
+
+      # Find the optimal ticks
+      xCustomTicks = False
+      yCustomTicks = False
+      if customTicks.value is not None and plot[0] in customTicks.value:
+        xCustomTicks  = True
+        x_ticks_major, x_ticks_minor, x_ticks_labels, x_tick_label_scale  = getOptimalTicks(xtrema, log=xlog)
+      if customTicks.value is not None and plot[1] in customTicks.value:
+        yCustomTicks = True
+        y_ticks_major, y_ticks_minor, y_ticks_labels, y_tick_label_scale  = getOptimalTicks(ytrema, log=ylog)
 
       # Locate and scale logo (if any)
       if logoFile.value is not None:
@@ -755,6 +825,10 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
+        if ylog:
+          outfile.write('  --ylog\\\n')
         if contours2D.value is not None:
           # Plot contours
           for contour in contourLevels:
@@ -783,6 +857,8 @@ def script(filename):
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -790,13 +866,30 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value)  + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-        # Set axis colours
-        for x in ['top', 'bottom', 'left', 'right']:
-          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
+        # Set axis colours and ticks for x axes
+        for x in ['top', 'bottom']:
+          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'')
+          if xCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
+            outfile.write(" /ticks-labels="+x_ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+          outfile.write('\\\n')
+        # Set axis colours and ticks for y axes
+        for y in ['left', 'right']:
+          outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour2D+'\'')
+          if yCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
+            outfile.write(" /ticks-labels="+y_ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+            if y_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
+          outfile.write('\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
           outfile.write('  --y2 --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
@@ -916,6 +1009,10 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
+        if xlog:
+          outfile.write('  --xlog\\\n')
+        if ylog:
+          outfile.write('  --ylog\\\n')
         if contours2D.value is not None:
           # Plot contours
           for contour in mainContourLevels:
@@ -943,6 +1040,8 @@ def script(filename):
           outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                         colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                         '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -950,13 +1049,30 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value) + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-        # Set axis colours
-        for x in ['top', 'bottom', 'left', 'right']:
-          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
+        # Set axis colours and ticks for x axes
+        for x in ['top', 'bottom']:
+          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'')
+          if xCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
+            outfile.write(" /ticks-labels="+x_ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+          outfile.write('\\\n')
+        # Set axis colours and ticks for y axes
+        for y in ['left', 'right']:
+          outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour2D+'\'')
+          if yCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
+            outfile.write(" /ticks-labels="+y_ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+            if y_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
+          outfile.write('\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
           outfile.write('  --y2 --plot '+currentParse+'_post2D.ct2@1:2:3 /fill-transparency 1\\\n')
@@ -1104,6 +1220,8 @@ def script(filename):
               outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+
                             colours.value.mainPostMeanMarker+' /fill-color \''+str(colours.value.mainPostMeanColour2D)+'\' /stroke-color \''+str(colours.value.mainPostMeanColourOutline2D)+
                             '\' /scale '+str(colours.value.mainPostMeanMarkerScale)+' \\\n')
+            # Fill the background colour
+            outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
             # Plot reference point
             if plotRef: outfile.write(refString)
             # Draw key
@@ -1111,13 +1229,30 @@ def script(filename):
             # Write credits
             if blame.value is not None:
               blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-              outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+              outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value) + ' /justification right\\\n')
             # Add logo
             if logoFile.value is not None:
               outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-            # Set axis colours
-            for x in ['top', 'bottom', 'left', 'right']:
-              outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
+            # Set axis colours and ticks for x axes
+            for x in ['top', 'bottom']:
+              outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'')
+              if xCustomTicks:
+                outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
+                outfile.write(" /ticks-labels="+x_ticks_labels)
+                outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+                if x_tick_label_scale < 1:
+                  outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+              outfile.write('\\\n')
+            # Set axis colours and ticks for y axes
+            for y in ['left', 'right']:
+              outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour2D+'\'')
+              if yCustomTicks:
+                outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
+                outfile.write(" /ticks-labels="+y_ticks_labels)
+                outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+                if y_tick_label_scale < 1:
+                  outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
+              outfile.write('\\\n')
             if doColourbar.value is not None and plot in doColourbar.value:
               # Do colourbar
               outfile.write('  --xyz-map\\\n')
@@ -1234,6 +1369,10 @@ def script(filename):
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonPostContourColour2D+
                           ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
+        if xlog: 
+          outfile.write('  --xlog\\\n')
+        if ylog:
+          outfile.write('  --ylog\\\n')
         if contours2D.value is not None:
           # Plot contours
           for contour in mainContourLevels:
@@ -1264,6 +1403,8 @@ def script(filename):
                       '\' /scale '+str(bestFitData[3])+' \\\n')
         if postMean: outfile.write('  --draw-marker '+str(postMean[0])+','+str(postMean[1])+' '+postMeanData[0]+' /fill-color \''+str(postMeanData[1])+'\' /stroke-color \''+str(postMeanData[2])+
                                    '\' /scale '+str(postMeanData[3])+' \\\n')
+        # Fill the background colour
+        outfile.write('  --background \'' + colours.value.backgroundColour + '\'\\\n')
         # Plot reference point
         if plotRef: outfile.write(refString)
         # Draw key
@@ -1271,13 +1412,30 @@ def script(filename):
         # Write credits
         if blame.value is not None:
           blameYCoordinate = str(blameFractionalVerticalOffset * yRange + ytrema[1])
-          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale 0.5 /justification right\\\n')
+          outfile.write('  --draw-text '+str(xtrema[1])+','+blameYCoordinate+' \''+blame.value+'\' /scale ' + str(blameScale.value) + ' /justification right\\\n')
         # Add logo
         if logoFile.value is not None:
           outfile.write('  --draw-text '+str(logoCoords[0])+','+str(logoCoords[1])+' '+logoString+'\\\n')
-        # Set axis colours
-        for x in ['top', 'bottom', 'left', 'right']:
-          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'\\\n')
+        # Set axis colours and ticks for x axes
+        for x in ['top', 'bottom']:
+          outfile.write('  --axis-style '+x+' /stroke_color \''+colours.value.axisColour2D+'\'')
+          if xCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in x_ticks_major]))
+            outfile.write(" /ticks-labels="+x_ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in x_ticks_minor]))
+            if x_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(x_tick_label_scale))
+          outfile.write('\\\n')
+        # Set axis colours and ticks for y axes
+        for y in ['left', 'right']:
+          outfile.write('  --axis-style '+y+' /stroke_color \''+colours.value.axisColour2D+'\'')
+          if yCustomTicks:
+            outfile.write(" /ticks-major="+','.join([str(tick) for tick in y_ticks_major]))
+            outfile.write(" /ticks-labels="+y_ticks_labels)
+            outfile.write(" /ticks-minor="+','.join([str(tick) for tick in y_ticks_minor]))
+            if y_tick_label_scale < 1:
+              outfile.write(" /tick-label-scale="+str(y_tick_label_scale))
+          outfile.write('\\\n')
         if doColourbar.value is not None and plot in doColourbar.value:
           # Do labelling for colourbar
           outfile.write('  --y2 --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
@@ -1344,6 +1502,75 @@ def getCentralVal(parseFilename,plot,statistic,lk):
   else:
     coordinates = point[lk.value[plot]]
   return coordinates
+
+def getOptimalTicks(xtrema, log=False):
+  # Find the optimal ticks for the axes, in either linear or log scale
+  # Stick with between 5 and 10 major ticks, and up to 50 total ticks
+
+  minnticks = 5
+  maxnticks = 8
+  maxminorticks = 30
+
+  xRange = xtrema[1] - xtrema[0]
+
+  tick_label_scale = 1
+ 
+  if not log:
+    # Nearest order with enough ticks
+    order = int(np.log10(xRange))
+    # Optimal number of ticks for that order
+    nticks = int(xRange/10**order)
+    if nticks < minnticks:
+      order -= 1
+      nticks = int(xRange/10**order)
+    tick_step = 10**order * (int(nticks/maxnticks)+1)
+    nticks = nticks if nticks < maxnticks else maxnticks
+    # First tick
+    firsttick = (int(xtrema[0]/tick_step)+1)*tick_step
+    # Build major ticks
+    ticks_major = [firsttick + i*tick_step for i in range(nticks) if firsttick + i*tick_step < xtrema[1]]
+    # Optimal number of minor ticks is a power of 2 + 1, so that there are no more than 50 ticks in total
+    nminorticks = int(maxminorticks / nticks)
+    nminorticks = 2**int(np.log2(nminorticks-1))
+    minor_tick_step = float(tick_step) / nminorticks
+    # First minor tick
+    firstminortick = (int(xtrema[0]/minor_tick_step) + 1)*minor_tick_step
+    # Build minor ticks
+    ticks_minor = [firstminortick + i*minor_tick_step for i in range(nminorticks*(nticks+1)) if firstminortick + i*minor_tick_step < xtrema[1]]
+    # Labels
+    ticks_labels = ",".join([str(tick) for tick in ticks_major])
+ 
+  else:
+    nticks = int(xRange)+1
+
+    if nticks < 2:
+      # If the range doesn't span more than one order of magnitude, you shouldn't be using log scale
+      sys.exit('Error: Cannot use log scale for variable, change to linear scale.\nQuitting...')
+
+    tick_step = int( (xRange + 1) / nticks)
+    # Take full powers of 10 as major ticks
+    ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)] 
+
+    # Redo minor ticks on log scale, 10 minor ticks for 1-5 major ticks and 5 minor ticks for 5-10 major ticks
+    if nticks <= 10:
+      nminorticks = 10 if nticks <= 5 else 5
+      ticks_minor = sorted(list({tick + np.log10(1+float(i)/(nminorticks-1)*(10**tick_step-1)) for tick in ticks_major for i in range(nminorticks)}))
+    else:
+      # For more than 10 ticks just show a selection of 10 major ticks and the rest as minor ticks
+      ticks_minor = ticks_major
+      nticks = int(nticks / (int(nticks/10) + 1))
+      tick_step = int( (xRange + 1) / nticks)
+      ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)]
+
+    # Trim to within range
+    ticks_major = [tick for tick in ticks_major if tick > xtrema[0] and tick < xtrema[1]]
+    ticks_minor = [tick for tick in ticks_minor if tick > xtrema[0] and tick < xtrema[1]]
+    # Labels
+    ticks_labels = ",".join(['\'$10^{'+str(int(i))+'}$\'' for i in ticks_major])
+    # Tick label scale, reduce size if there's 10 or more ticks
+    if nticks >= 10: tick_label_scale = 0.7
+ 
+  return ticks_major, ticks_minor, ticks_labels, tick_label_scale
 
 def dictFallback(risky,safe,key):
   # Try to extract entry corresponding to key from risky dataObject, otherwise use safe dataObject

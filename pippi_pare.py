@@ -45,6 +45,6 @@ def pare(argstring):
 
   # Pump it through the user-supplied function, printing each new point to stdout
   for i in range(chainArray.shape[0]):
-    print '\t'.join([str(x) for x in pareFunc(chainArray[i,:])])
+    print('\t'.join([str(x) for x in pareFunc(chainArray[i,:])]))
 
 

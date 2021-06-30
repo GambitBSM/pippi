@@ -16,6 +16,7 @@ permittedSchemes = {}
 
 def Blockshading(colour,line_code, fill_code):
   scheme = colourScheme('Blockshading_'+colour)
+  scheme.backgroundColour = '#fff'
   scheme.baseProfColourMap = '#fff--#fff(contour1)--#'+fill_code+'(contour1)--#'+fill_code
   scheme.basePostColourMap = '#fff--#fff(contour1)--#'+fill_code+'(contour1)--#'+fill_code
   scheme.mainPostContourColour2D = '\'#'+line_code+'\''
@@ -43,6 +44,7 @@ class colourScheme:
   comparisonProfColour1D = 'Grey'
   comparisonPostContourColour2D = 'Grey'
   comparisonProfContourColour2D = 'Grey'
+  backgroundColour = '#fff'
   baseProfColourMap = '#fff--#fff(contour2)--#f45(contour1)--#612'
   basePostColourMap = '#fff--#fff(contour2)--#88f(contour1)--#229'
 
@@ -122,6 +124,7 @@ basic = colourScheme('basic')
 
 # iceCube colour scheme
 iceCube = colourScheme('iceCube')
+iceCube.backgroundColour = '#fff'
 iceCube.baseProfColourMap = '#fff--#fff(contour2)--#292(contour1)--#f55(contour1)--#000'
 iceCube.basePostColourMap = '#fff--#fff(contour2)--#29d(contour1)--#f55(contour1)--#000'
 iceCube.baseObsColourMap = 'hls:White(contour1)--Red(contour2)--Green(contour3)'
@@ -132,6 +135,7 @@ iceCube.mainPostMeanColour2D = 'Black'
 
 # iceCube79 colour scheme
 iceCube79 = colourScheme('iceCube79')
+iceCube79.backgroundColour = '#fff'
 iceCube79.baseProfColourMap = '#fff--#fff(contour2)--#fab(contour1)--#f45'
 iceCube79.basePostColourMap = '#fff--#fff(contour2)--#ddf(contour1)--#88f'
 iceCube79.baseObsColourMap = 'hls:White(contour1)--Red(contour2)--Green(contour3)'
@@ -145,6 +149,7 @@ iceCube79.lineWidth2D = '1.5'
 
 # iceCube3sig colour scheme
 iceCube3sig = colourScheme('iceCube3sig')
+iceCube3sig.backgroundColour = '#fff'
 iceCube3sig.baseProfColourMap = '#fff--#fff(contour3)--#292(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
 iceCube3sig.basePostColourMap = '#fff--#fff(contour3)--#29d(contour2)--#fff(contour2)--#929(contour1)--#f55(contour1)--#000'
 iceCube3sig.baseObsColourMap = 'hls:White(contour1)--Red(contour2)--Green(contour3)'
@@ -155,6 +160,7 @@ iceCube3sig.mainPostMeanColour2D = 'Black'
 
 # SBClassic colour scheme
 SBClassic = colourScheme('SBClassic')
+SBClassic.backgroundColour = '#fff'
 SBClassic.baseProfColourMap = '#fff--#fff(contour2)--#2f2(contour1)--#f33(0.5)--#000'
 SBClassic.basePostColourMap = '#fff--#fff(contour2)--#95d(contour1)--#f33(0.5)--#000'
 SBClassic.baseObsColourMap = 'hls:White(contour1)--Red(contour2)--Green(contour3)'
@@ -165,6 +171,7 @@ SBClassic.mainPostMeanColour2D = 'Black'
 
 # BlueGold colour scheme
 BlueGold = colourScheme('BlueGold')
+BlueGold.backgroundColour = '#fff'
 BlueGold.baseProfColourMap = '#fff--#fff(contour2)--#f44(contour2)--#f44(contour1)--#ece(contour1)--#ece'
 BlueGold.basePostColourMap = '#fff--#fff(contour2)--#44f(contour2)--#44f(contour1)--#fc0(contour1)--#fc0'
 BlueGold.baseObsColourMap = 'hls:White(contour1)--Red(contour2)--Green(contour3)'
@@ -178,6 +185,7 @@ BlueGold.mainPostMeanColour2D = 'Black'
 
 # nightOfTheAllanachs colour scheme
 nightOfTheAllanachs = colourScheme('nightOfTheAllanachs')
+nightOfTheAllanachs.backgroundColour = '#000'
 nightOfTheAllanachs.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
 nightOfTheAllanachs.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
 nightOfTheAllanachs.baseObsColourMap = 'Black(contour1)--Red(contour2)--Green(contour3)'
@@ -195,6 +203,7 @@ nightOfTheAllanachs.comparison1DLineStyle = 'Dashes'
 
 # nightOfTheAllanachs2 colour scheme
 nightOfTheAllanachs2 = colourScheme('nightOfTheAllanachs2')
+nightOfTheAllanachs2.backgroundColour = '#000'
 nightOfTheAllanachs2.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
 nightOfTheAllanachs2.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
 nightOfTheAllanachs2.baseObsColourMap = 'Black(contour1)--Red(contour2)--#00FFFF(contour3)'
@@ -214,6 +223,7 @@ nightOfTheAllanachs2.comparison1DLineStyle = 'Dashes'
 
 # nightOfTheAllanachs3 colour scheme
 nightOfTheAllanachs3 = colourScheme('nightOfTheAllanachs3')
+nightOfTheAllanachs3.backgroundcolour = '#000'
 nightOfTheAllanachs3.basePostColourMap = '#000--#000(contour2)--#808(contour1)--#f33(0.5)--#ff0'
 nightOfTheAllanachs3.baseProfColourMap = '#000--#000(contour2)--#33f(contour1)--#0ff(0.5)--#ff0'
 nightOfTheAllanachs3.baseObsColourMap = 'Black(contour1)--Blue(contour2)--Orange(contour3)'

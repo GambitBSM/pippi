@@ -7,6 +7,8 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
+
 import sys
 import os.path
 import re
@@ -37,30 +39,30 @@ def castable_to_int(x):
 
 def usage():
   #Print pippi usage information
-  print
-  print 'You must be new here (or have fat fingers).  You can use pippi to'
-  print
-  print '  merge two or more chains:'
-  print '    pippi merge <chain1> <chain2> ... <chainx>'
-  print
-  print '  post-process a chain:'
-  print '    pippi pare <chain> <name_of_python_module> <name_of_function_in_module>'
-  print
-  print '  parse a chain using options in iniFile.pip:'
-  print '    pippi parse iniFile.pip'
-  print
-  print '  write plotting scipts for a chain using options in iniFile.pip:'
-  print '    pippi script iniFile.pip'
-  print
-  print '  run plotting scipts for a chain using options in iniFile.pip:'
-  print '    pippi plot iniFile.pip'
-  print
-  print '  print an hdf5 file\'s computed column indices, using options in iniFile.pip:'
-  print '    pippi probe iniFile.pip'
-  print
-  print '  parse, script and plot in one go:'
-  print '    pippi iniFile.pip'
-  print
+  print()
+  print('You must be new here (or have fat fingers).  You can use pippi to')
+  print()
+  print('  merge two or more chains:')
+  print('    pippi merge <chain1> <chain2> ... <chainx>')
+  print()
+  print('  post-process a chain:')
+  print('    pippi pare <chain> <name_of_python_module> <name_of_function_in_module>')
+  print()
+  print('  parse a chain using options in iniFile.pip:')
+  print('    pippi parse iniFile.pip')
+  print()
+  print('  write plotting scipts for a chain using options in iniFile.pip:')
+  print('    pippi script iniFile.pip')
+  print()
+  print('  run plotting scipts for a chain using options in iniFile.pip:')
+  print('    pippi plot iniFile.pip')
+  print()
+  print('  print an hdf5 file\'s computed column indices, using options in iniFile.pip:')
+  print('    pippi probe iniFile.pip')
+  print()
+  print('  parse, script and plot in one go:')
+  print('    pippi iniFile.pip')
+  print()
 
 def safe_open(filename):
   #Try to open input file
@@ -111,8 +113,8 @@ class dataObject:
       else:
         self.value = self.conversion(string)
     except:
-      print "Failed to convert string:"
-      print string
+      print("Failed to convert string:")
+      print(string)
       sys.exit('Error: invalid data format in field '+self.pipFileKey+'. Quitting...\n')
 
 #Conversion functions for parsing pip file entries
