@@ -1,4 +1,4 @@
-Readme for Pippi v2.1
+Readme for Pippi v2.2
 ---------------------
 
 #############################################################
@@ -142,6 +142,13 @@ C++ example in the Diver distribution (see https://diver.hepforge.org).
 
 Version history
 ---------------
+v2.2
+Allowed for different interpolated resolutions in different observables
+Changed "number_of_bins" key to "specific_bins" in order to reduce confusion with "default_bins" key
+Added ability to colour plots by observable values (thanks to James McKay)
+Added native ctioga2 support for log axis plotting (thanks to Tomas Gonzalo)
+Added plot backgrounds (thanks to Tomas Gonzalo)
+
 v2.1
 Added Diver example pip file and dataset
 Added the ability to indicate confidence / credibility level percentages in 1D plots

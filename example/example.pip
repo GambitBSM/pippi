@@ -20,8 +20,9 @@ parse_dir = 'parse'                         ;Directory to save parsing output in
 cut_on_invalid_observables = F              ;Cut on any invalid entries in an hdf5 file, not just the likelihood (defaults to false, meaning cut on likelihood only)
 
 default_bins = 50                           ;Default number of bins to sort samples into in each direction.
-number_of_bins = 2:40 3:60                  ;Bins to use for specific observables (overrides default)
-interpolated_resolution = 300               ;Resolution of binwise interpolation for plotting (~300+ for publication)
+specific_bins = 2:40 3:60                   ;Bins to use for specific observables (EFN; overrides default)
+default_resolution = 300                    ;Default resolution of binwise interpolation for plotting (~300+ for publication)
+specific_resolution = 5:500                 ;Resolution of binwise interpolation for specific observables (EFN; overrides default)
 interpolation_method = 'spline'             ;Either bilinear (default) or spline (watch out for ringing in the latter case)
 
 chain_type = MultiNest                      ;Algorithm used to generate chain (valid: MCMC, MultiNest, other)
@@ -39,8 +40,8 @@ assign_to_pippi_datastream = 'np.log10($2)-np.log10($3)':64 \
                                             ;Assign a python function or named hdf5 data stream to a particular pippi datastream index (use pippi probe to test; EFN)
 quantity_labels = 0:'multiplicity' \
                   1:'-lnlike'      \
-                  2:'$\log_{10}\left(m_0/\mathrm{TeV}\right)$' \
-                  3:'$\log_{10}\left(m_\frac12/\mathrm{TeV}\right)$' \
+                  2:'$m_0$ (TeV)' \
+                  3:'$m_\frac12$ (TeV)' \
                   4:'$A_0$ (TeV)' \
                   5:'$\tan\beta$' \
                   64:'$\log_{10}\left(m_0/m_\frac12\right)$' \
@@ -66,7 +67,7 @@ plot_colourbar_2D = {3,2} {5,4}             ;2D plots that should include colour
 
 plot_comparison = T                         ;Overplot distributions from comparisonFilename in 1D plots and contours in 2D plots
 extra_legend_lines = 'Flat priors' 'CMSSM $\mu>0$';Additional text lines to be included in any legends (EFN)
-blame_text = 'pippi v2.1'                        ;Credit line to be placed in top corner of all plots
+blame_text = 'pippi v2.2'                   ;Credit line to be placed in top corner of all plots
 blame_scale = 0.5                           ;Scale of credit line, default is 0.5
 yaxis_number_angle = -90                    ;Angle relative to vertical for y-axis numerical labels
 

@@ -8,6 +8,8 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
+
 left_margin = 0.16
 right_margin = 0.03
 top_margin = 0.05
@@ -180,10 +182,10 @@ def script(filename):
 
       # Find the optimal ticks
       xCustomTicks = False
-      if customTicks.value is not None and plot in customTicks.value: 
+      if customTicks.value is not None and plot in customTicks.value:
         xCustomTicks = True
         ticks_major, ticks_minor, ticks_labels, x_tick_label_scale = getOptimalTicks(xtrema, log=xlog)
- 
+
       # Locate and scale logo (if any)
       if logoFile.value is not None:
         logoCoords = [xtrema[0]+logoLoc.value[0][0]*xRange,logoLoc.value[0][1]]
@@ -202,7 +204,7 @@ def script(filename):
         plotRef = False
 
       # Determine plot size
-      if plotSize.value is None or plotSize.value is '':
+      if plotSize.value is None or plotSize.value == '':
           plotSizeInternal = '11cm x 4in'
       else:
           plotSizeInternal = plotSize.value
@@ -454,7 +456,7 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_post1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+colours.value.mainPostColour1D+' /color '+colours.value.mainPostColour1D+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
-        if xlog: 
+        if xlog:
           outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
@@ -601,7 +603,7 @@ def script(filename):
         outfile.write('  --plot '+currentParse+'_'+main+'1D'+histString+'.ct2@1:2 /fill xaxis /fill-transparency '+colours.value.fillTransparency1D+
                       ' /fill-color '+mainData[3]+' /color '+mainData[3]+
                       ' /line-style '+colours.value.main1DLineStyle+' /line-width '+colours.value.lineWidth1D+'\\\n')
-        if xlog: 
+        if xlog:
           outfile.write('  --xlog\\\n')
         if doLegend1D.value is not None and plot in doLegend1D.value:
           # Write legend
@@ -706,7 +708,7 @@ def script(filename):
         plotRef = False
 
       # Determine plot size
-      if plotSize.value is None or plotSize.value is '':
+      if plotSize.value is None or plotSize.value == '':
         if doColourbar.value is not None and plot in doColourbar.value:
           plotSizeInternal = '12.5cm x 4in'
         else:
@@ -825,7 +827,7 @@ def script(filename):
                           colours.value.comparisonPostMeanMarker+' /color \''+colours.value.comparisonPostMeanColour+
                           '\' /scale '+str(colours.value.comparisonPostMeanMarkerScale)+' \\\n')
         outfile.write('  --plot '+currentParse+'_like2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if xlog: 
+        if xlog:
           outfile.write('  --xlog\\\n')
         if ylog:
           outfile.write('  --ylog\\\n')
@@ -1086,7 +1088,7 @@ def script(filename):
      #if doObservable.value:
       if obsPlots.value is not None:
           for column in obsPlots.value:
-          
+
             # Get contours
             if contours2D.value is not None:
               contourLevelsLike = getContours(parseFilename,plot,'like')
@@ -1369,7 +1371,7 @@ def script(filename):
             outfile.write('  --draw-contour '+contour+' /color '+colours.value.comparisonPostContourColour2D+
                           ' /style '+colours.value.comparisonContourStyle+' /width '+colours.value.lineWidth2D+'\\\n')
         outfile.write('  --plot '+currentParse+'_'+main+'2D.ct2@1:2:3 /fill-transparency 1\\\n')
-        if xlog: 
+        if xlog:
           outfile.write('  --xlog\\\n')
         if ylog:
           outfile.write('  --ylog\\\n')
@@ -1514,7 +1516,7 @@ def getOptimalTicks(xtrema, log=False):
   xRange = xtrema[1] - xtrema[0]
 
   tick_label_scale = 1
- 
+
   if not log:
     # Nearest order with enough ticks
     order = int(np.log10(xRange))
@@ -1539,7 +1541,7 @@ def getOptimalTicks(xtrema, log=False):
     ticks_minor = [firstminortick + i*minor_tick_step for i in range(nminorticks*(nticks+1)) if firstminortick + i*minor_tick_step < xtrema[1]]
     # Labels
     ticks_labels = ",".join([str(tick) for tick in ticks_major])
- 
+
   else:
     nticks = int(xRange)+1
 
@@ -1549,7 +1551,7 @@ def getOptimalTicks(xtrema, log=False):
 
     tick_step = int( (xRange + 1) / nticks)
     # Take full powers of 10 as major ticks
-    ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)] 
+    ticks_major = [int(xtrema[0])+i*tick_step for i in range(0,nticks+1)]
 
     # Redo minor ticks on log scale, 10 minor ticks for 1-5 major ticks and 5 minor ticks for 5-10 major ticks
     if nticks <= 10:
@@ -1569,7 +1571,7 @@ def getOptimalTicks(xtrema, log=False):
     ticks_labels = ",".join(['\'$10^{'+str(int(i))+'}$\'' for i in ticks_major])
     # Tick label scale, reduce size if there's 10 or more ticks
     if nticks >= 10: tick_label_scale = 0.7
- 
+
   return ticks_major, ticks_minor, ticks_labels, tick_label_scale
 
 def dictFallback(risky,safe,key):
