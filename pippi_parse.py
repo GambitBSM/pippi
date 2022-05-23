@@ -8,6 +8,7 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
 import subprocess
 from pippi_utils import *
 from pippi_read import *
@@ -77,13 +78,13 @@ def parse(filename):
 
   #Check that flags match up for profile likelihood
   if all(x not in labels.value for x in permittedLikes) and doProfile.value:
-    print '  Warning: no likelihood in chain labels.\n  Skipping profile likelihood...'
+    print('  Warning: no likelihood in chain labels.\n  Skipping profile likelihood...')
     doProfile.value = False
 
   #Work out whether to do posterior mean and check that flags match up for posterior pdf
   doPosteriorMean = any(x in labels.value for x in permittedMults)
   if doPosterior.value and not doPosteriorMean:
-    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    print('  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...')
     doPosterior.value = False
 
   #Check that flags match up for evidence
@@ -92,10 +93,10 @@ def parse(filename):
       if all(x not in labels.value for x in permittedLikes) or \
          all(x not in labels.value for x in permittedMults) or \
          all(x not in labels.value for x in permittedPriors):
-        print '  The evidence cannot be calculated without multiplicity, prior and likelihood.\n  Skipping evidence...'
+        print('  The evidence cannot be calculated without multiplicity, prior and likelihood.\n  Skipping evidence...')
         doEvidence.value = False
     else:
-      print '  The evidence can only be calculated from an MCMC chain.\n  Skipping evidence...'
+      print('  The evidence can only be calculated from an MCMC chain.\n  Skipping evidence...')
       doEvidence.value = False
 
   #Check that flags and match up for quantities selected for plotting
@@ -147,8 +148,8 @@ def parse(filename):
       # Parse comparison chain
       doParse(mainArray,lookupKey,outputBaseFilename,setOfRequestedColumns,hdf5_names,dataRanges,all_best_fit_data,nBins,iBins,alt_best_fit)
     else:
-      print '    Chain '+secChain.value+' has less columns than required to do all requested plots.'
-      print '    Skipping parsing of this chain...'
+      print('    Chain '+secChain.value+' has less columns than required to do all requested plots.')
+      print('    Skipping parsing of this chain...')
 
 
 def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,dataRanges,all_best_fit_data,nBins,iBins,alt_best_fit):
@@ -171,6 +172,8 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
   [lnZMain,lnZMainError] = getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename)
   # Save data minima and maxima
   saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns,dataRanges)
+  # Save variables to plot in log scale
+  saveLogVars(lk,outputBaseFilename,logPlots)
   # Save lookup keys for parameters
   saveLookupKeys(lk,outputBaseFilename)
   # Do binning for 1D plots
@@ -182,7 +185,7 @@ def doParse(dataArray,lk,outputBaseFilename,setOfRequestedColumns,column_names,d
 def standardise(dataArray,lk):
   global firstLikeKey
   # Standardise likelihood, prior and multiplicity labels, rescale likelihood if necessary,
-  for key, entry in labels.value.copy().iteritems():
+  for key, entry in labels.value.copy().items():
     if any(key == mult for mult in permittedMults):
       labels.value[refMult] = labels.value[key]
       if key != refMult: del labels.value[key]
@@ -203,21 +206,21 @@ def standardise(dataArray,lk):
     #if any(entry == obs for obs in permittedObs): labels.value[key] = refObs
   # Rescale columns if requested
   if rescalings.value is not None:
-    for key, entry in rescalings.value.iteritems(): dataArray[:,lk[key]] *= entry
+    for key, entry in rescalings.value.items(): dataArray[:,lk[key]] *= entry
   # Convert columns to log if requested
   if logPlots.value is not None:
     for column in logPlots.value:
       if column in lk:
         if any(dataArray[:,lk[column]] <= 0.0):
-          print "Error: column {0} requested for log plotting has non-positive values!".format(column)
+          print("Error: column {0} requested for log plotting has non-positive values!".format(column))
           bad_indices = np.where(dataArray[:,lk[column]] <= 0.0)[0]
-          print "Here is the first point with bad values, for example: "
+          print("Here is the first point with bad values, for example: ")
           for i,val in enumerate(dataArray[bad_indices[0],:]):
             index = i
             for x in lk:
               if lk[x] == i:
                 index = x
-            print "  col {0}: {1}".format(index,val)
+            print("  col {0}: {1}".format(index,val))
           sys.exit('\nPlease fix log settings (or your data) and rerun pippi.')
         dataArray[:,lk[column]] = np.log10(dataArray[:,lk[column]])
 
@@ -234,7 +237,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
   bestFitIndex = dataArray[:,lk[labels.value[refLike]]].argmin()
   bestFit = dataArray[bestFitIndex,lk[labels.value[refLike]]]
   worstFit = dataArray[:,lk[labels.value[refLike]]].max()
-  print '    Best fit -lnlike: ',bestFit
+  print('    Best fit -lnlike: ',bestFit)
   outfile = smart_open(outputBaseFilename+'.best','w')
   outfile.write('# This best-fit/posterior mean file created by pippi '
            +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
@@ -267,7 +270,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
       outfile2.write('# This best-fit file created in GAMBIT yaml format by pippi '
                      +pippiVersion+' on '+datetime.datetime.now().strftime('%c')+'\n')
       outfile2.write('# Best-fit log-likelihood: '+str(-bestFit)+'\n\n')
-      for model, parameters in parameter_sets.iteritems():
+      for model, parameters in parameter_sets.items():
         outfile2.write('    ' + model + ':\n')
         for parval in parameters: outfile2.write('  ' + parval + '\n')
       outfile2.close
@@ -275,7 +278,7 @@ def getBestFit(dataArray,lk,outputBaseFilename,column_names,all_best_fit_data,al
   if alt_best_fit.value is not None:
     halt = (min_contour is not None) and (bestFit+alt_best_fit.value > min_contour)
     bestFit = -alt_best_fit.value
-    print '    Best fit -lnlike to be used to define profile likelihood ratio: ',bestFit
+    print('    Best fit -lnlike to be used to define profile likelihood ratio: ',bestFit)
     if halt: sys.exit('\n  The highest CL likelihood likelihood contour you have requested contains no samples! No more pippi for you.\n')
   return [bestFit,worstFit,bestFitIndex]
 
@@ -309,7 +312,7 @@ def getEvidence(dataArray,lk,bestFit,totalMult,outputBaseFilename):
                           np.exp(bestFit-dataArray[:,lk[labels.value[refLike]]]))) \
                           - bestFit - np.log(totalMult)
       lnZError = np.log(1.0 - pow(totalMult,-0.5))
-      print '    ln(evidence): ',lnZ,'+/-',lnZError
+      print('    ln(evidence): ',lnZ,'+/-',lnZError)
     else:
       sys.exit('Error: evidence calculation only possible for MCMC (should never get here).')
     outfile = smart_open(outputBaseFilename+'.lnZ','w')
@@ -334,13 +337,23 @@ def saveExtrema(dataArray,lk,outputBaseFilename,setOfRequestedColumns,dataRanges
   outfile.write('\n')
   outfile.close
 
+def saveLogVars(lk,outputBaseFilename,logPlots):
+  # Save the variables requested to be plot in log scale
+  outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
+  outfile.write('use_log_scale =')
+  if logPlots.value is not None:
+    for column in logPlots.value:
+      if column in lk:
+        outfile.write(' '+str(column))
+  outfile.write('\n')
+  outfile.close
 
 def saveLookupKeys(lk,outputBaseFilename):
   # Save the lookup keys for all the requested parameters
   outfile = smart_open(outputBaseFilename+'_savedkeys.pip','a')
   outfile.write('lookup_keys =')
   if type(lk) == dict:
-    for key, value in lk.iteritems(): outfile.write(' '+str(key)+':'+str(value))
+    for key, value in lk.items(): outfile.write(' '+str(key)+':'+str(value))
   else:
     for i in lk: outfile.write(' '+str(i)+':'+str(i))
   outfile.write('\n')
@@ -363,7 +376,7 @@ def oneDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
 
   for plot in oneDplots.value:
 
-    print '    Parsing data for 1D plots of quantity ',plot
+    print('    Parsing data for 1D plots of quantity ',plot)
 
     nBins = nAllBins[plot]
     resolution = rAllBins[plot]
@@ -497,7 +510,7 @@ def twoDsampler(dataArray,lk,bestFit,worstFit,outputBaseFilename,dataRanges,nAll
 
   for plot in twoDplots.value:
 
-    print '    Parsing data for 2D plots of quantities ',plot
+    print('    Parsing data for 2D plots of quantities ',plot)
 
     nBins = [nAllBins[plot[j]] for j in range(2)]
     resolution = [rAllBins[plot[j]] for j in range(2)]

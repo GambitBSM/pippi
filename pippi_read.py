@@ -9,6 +9,7 @@
 #           Pat Scott, 2016
 #############################################################
 
+from __future__ import print_function
 import datetime
 import sys
 from pippi_utils import *
@@ -44,7 +45,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
 
   #Find relevant bits in pipfile
   for i,key in enumerate(keys):
-    lines = filter(key.seek,parse_options)
+    lines = list(filter(key.seek,parse_options))
     if (len(lines) == 0):
       sys.exit('Error: field '+key.pipFileKey+' required for requested operation not found in '+filename+'.  Quitting...\n')
     if (len(lines) > 1):
@@ -57,7 +58,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
 
     # Make sure saving is actually possible
     if not mainChain in keys:
-      print '\n  Warning: saving of keys not possible because mainChain is undefined.\n  Skipping save...'
+      print('\n  Warning: saving of keys not possible because mainChain is undefined.\n  Skipping save...')
       return
 
     # Open the file keys will be saved to
@@ -72,7 +73,7 @@ def getIniData(filename,keys,savekeys=None,savedir=None):
 
     # Parse the pip file again and save the requested keys
     for key in savekeys:
-      lines = filter(key.seek,parse_options)
+      lines = list(filter(key.seek,parse_options))
       # Save keys verbatim to the savedkeys pip file
       if savekeys is not None and key in savekeys: outfile.write(lines[0])
 
@@ -109,11 +110,11 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
       for index in assignments.value:
         if castable_to_int(index):
           if ncols+n_extra_cols not in assignments.value:
-            print 'ERROR: When working with ASCII chains and trying to assign function'
-            print 'results to datastreams, all functional datastreams must be assigned indices'
-            print 'in continuous ascending order starting from the index of the last'
-            print 'column in the ASCII file. In this case, that means you must start with'
-            print str(ncols)+' and go up by one for each subsequent functional stream.'
+            print('ERROR: When working with ASCII chains and trying to assign function')
+            print('results to datastreams, all functional datastreams must be assigned indices')
+            print('in continuous ascending order starting from the index of the last')
+            print('column in the ASCII file. In this case, that means you must start with')
+            print(str(ncols)+' and go up by one for each subsequent functional stream.')
             sys.exit("")
           if not is_functional_assignment(assignments.value[ncols+n_extra_cols]):
             sys.exit('ERROR: When working with ASCII chains, all entries in assign_to_pippi_datastream\nmust be functional assignments.')
@@ -131,9 +132,9 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     #Close the chainfile and indicate success
     chainfile.close
     if not silent:
-      print
-      print '  Read chain '+filename
-      print
+      print()
+      print('  Read chain '+filename)
+      print()
 
     #Turn the whole lot into a numpy array of doubles
     data = np.array(data, dtype=np.float64)
@@ -148,23 +149,23 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
           # Read in any python preamble specified in the pip file.
           if preamble is not None: exec(preamble)
           exec('data[:,'+str(i)+'] = '+expression)
-        except KeyError, e:
-          print 'ERROR: Datastream '+str(e)+', which you have tried to define a function of'
-          print 'in assign_to_pippi_datastream, is not itself defined as a datastream.'
-          print 'This usually happens because it does not exist in the chain you are trying'
-          print 'to parse. Please fix assignment "'+assignments.value[i]+'".'
+        except KeyError as e:
+          print('ERROR: Datastream '+str(e)+', which you have tried to define a function of')
+          print('in assign_to_pippi_datastream, is not itself defined as a datastream.')
+          print('This usually happens because it does not exist in the chain you are trying')
+          print('to parse. Please fix assignment "'+assignments.value[i]+'".')
           sys.exit("")
         except:
-          print 'ERROR: something in one of the functions of datastreams you defined in '
-          print 'assign_to_pippi_datastream is buggy.  Please fix the expression: '
-          print assignments.value[i]
-          print 'Now raising the original error, so you can see the stacktrace for yourself...'
+          print('ERROR: something in one of the functions of datastreams you defined in ')
+          print('assign_to_pippi_datastream is buggy.  Please fix the expression: ')
+          print(assignments.value[i])
+          print('Now raising the original error, so you can see the stacktrace for yourself...')
           raise
 
     # Filter out points inside the requested data ranges
     cut = None
     if data_ranges is not None and data_ranges.value:
-      for key, value in data_ranges.value.iteritems():
+      for key, value in data_ranges.value.items():
         lowercut = value[0]
         uppercut = value[1]
         if log_plots.value is not None and key in log_plots.value:
@@ -179,24 +180,24 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
           cut = np.logical_and(cut, np.logical_and(data[:,key] >= lowercut, data[:,key] <= uppercut))
       # Print the details of the cuts
       rescaling = 1.0
-      print "  Total samples: ", data.shape[0]
+      print("  Total samples: ", data.shape[0])
       if cut is not None:
         data = data[cut,:]
         sumcut = sum(cut)
-        print "  Total samples within requested data ranges: ", sumcut
+        print("  Total samples within requested data ranges: ", sumcut)
         if sumcut <= 0.0: sys.exit('Requested data cuts leave no remaining samples!')
         rescaling = 1.0*sumcut/len(cut)
-      print "  Fraction of samples within requested data ranges: %.4f"%(rescaling)
+      print("  Fraction of samples within requested data ranges: %.4f"%(rescaling))
 
   # HDF5 file
   else:
     filename, groupname = filename.split(":")
     if not silent:
-      print
-      print "  Reading HDF5 chain file"
-      print "    filename:", filename
-      print "    group:", groupname
-      print
+      print()
+      print("  Reading HDF5 chain file")
+      print("    filename:", filename)
+      print("    group:", groupname)
+      print()
 
     # Parse group entry
     groups = groupname.split('/')
@@ -220,7 +221,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
           entries = entries[key]
         except KeyError:
           sys.exit("ERROR: requested group \""+key+"\" does not exist in hdf5 file.")
-    column_names = filter(lambda x: x[-8:] != "_isvalid", list(entries))
+    column_names = list(filter(lambda x: x[-8:] != "_isvalid", list(entries)))
 
     # Reorganize MPIrank, pointID and other requested entries for convenience.
     indices = []
@@ -257,7 +258,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     column_names = np.array(column_names)[all_indices]
     # Pick up all the datastreams with indices larger than the largest index in the hdf5 file
     if assignments.value is not None:
-      for index, assignment in assignments.value.iteritems():
+      for index, assignment in assignments.value.items():
         if castable_to_int(index) and index >= index_count:
           if is_functional_assignment(assignment):
             functional_assignment_indices.append(index)
@@ -275,19 +276,19 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
     # Print probed contents and split
     if probe_only:
       for i, column_name in enumerate(column_names):
-        if column_name != '': print "   ", i, ":", column_name
-      print
+        if column_name != '': print("   ", i, ":", column_name)
+      print()
       quit()
 
     # Identify any likelihood or multiplicity indicated by the labels.
     if labels:
-      likelihood_index = [value for key, value in labels.value.iteritems() if key in permittedLikes]
-      if not likelihood_index: likelihood_index = [key for key, value in labels.value.iteritems() if value in permittedLikes]
+      likelihood_index = [value for key, value in labels.value.items() if key in permittedLikes]
+      if not likelihood_index: likelihood_index = [key for key, value in labels.value.items() if value in permittedLikes]
       if likelihood_index:
         likelihood_index = likelihood_index[0]
         if likelihood_index not in requested_cols: requested_cols.add(likelihood_index)
-      multiplicity_index = [value for key, value in labels.value.iteritems() if key in permittedMults]
-      if not multiplicity_index: multiplicity_index = [key for key, value in labels.value.iteritems() if value in permittedMults]
+      multiplicity_index = [value for key, value in labels.value.items() if key in permittedMults]
+      if not multiplicity_index: multiplicity_index = [key for key, value in labels.value.items() if value in permittedMults]
       if multiplicity_index:
         multiplicity_index = multiplicity_index[0]
         if multiplicity_index not in requested_cols: requested_cols.add(multiplicity_index)
@@ -312,25 +313,25 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         data_isvalid.append(np.array(entries[column_names[index]+"_isvalid"], dtype=np.float64))
       lookup_key[index] = index_count
       index_count += 1
-    non_functional_cols = [i for i, elem in enumerate(data) if data[i] is not 'functional']
+    non_functional_cols = [i for i, elem in enumerate(data) if data[i] != 'functional']
     if not non_functional_cols:
-      print "ERROR: At least one non-function assignment is needed in"
-      print "assign_to_pippi_datastream, or a multiplicity or likelihood"
-      print "identification in quantity_labels."
+      print("ERROR: At least one non-function assignment is needed in")
+      print("assign_to_pippi_datastream, or a multiplicity or likelihood")
+      print("identification in quantity_labels.")
       sys.exit("")
     # Print the raw number of samples in the hdf5 file
     total_samples = data[non_functional_cols[0]].size
-    print "  Total samples: ", total_samples
+    print("  Total samples: ", total_samples)
     # Fill in the functional columns with zeros.  Note that this uses more memory than doing it after validity
     # cuts, but should actually be faster (I think; haven't actually tested that). It makes the code simpler too.
     for i, elem in enumerate(data):
-      if elem is 'functional':
+      if elem == 'functional':
         data[i] = np.zeros(total_samples, dtype=np.float64)
       else:
         # Do some pruning to deal with cases where the some datasets have extra entries (although this arguably indicates a bug in the sampler)
         data[i] = elem[:total_samples]
     for i, elem in enumerate(data_isvalid):
-      if elem is 'functional':
+      if elem == 'functional':
         data_isvalid[i] = np.ones(total_samples, dtype=np.float64)
       else:
         # Do some pruning to deal with cases where the some datasets have extra entries (although this arguably indicates a bug in the sampler)
@@ -352,7 +353,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         # Based on the likelihood entry only
         if likelihood_index is not None:
           cut = (data_isvalid[lookup_key[likelihood_index]] == 1)
-    print "  Total valid samples: ", sum(cut)
+    print("  Total valid samples: ", sum(cut))
 
     # Fill in the derived quantities specified via functional assignments
     for i in sorted(functional_assignment_indices, key=int):
@@ -361,27 +362,27 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         # Read in any python preamble specified in the pip file.
         if preamble is not None: exec(preamble)
         exec('data[lookup_key['+str(i)+']] = '+expression)
-      except KeyError, e:
-        print 'ERROR: Datastream '+str(e)+', which you have tried to define a function of'
-        print 'in assign_to_pippi_datastream, is not itself defined as a datastream.'
-        print 'This usually happens because you have not requested it for plotting in'
-        print 'either oneD_plot_quantities or twoD_plot_quantities, so it has not been'
-        print 'extracted from the hdf5 file.  Please add it to one of these lists if you'
-        print 'really want to do the calculation "'+assignments.value[i]+'"'
+      except KeyError as e:
+        print('ERROR: Datastream '+str(e)+', which you have tried to define a function of')
+        print('in assign_to_pippi_datastream, is not itself defined as a datastream.')
+        print('This usually happens because you have not requested it for plotting in')
+        print('either oneD_plot_quantities or twoD_plot_quantities, so it has not been')
+        print('extracted from the hdf5 file.  Please add it to one of these lists if you')
+        print('really want to do the calculation "'+assignments.value[i]+'"')
         sys.exit("")
       except:
-        print 'ERROR: something in one of the functions of datastreams you defined in '
-        print 'assign_to_pippi_datastream is buggy.  Please fix the expression: '
-        print assignments.value[i]
-        print 'Now raising the original error, so you can see the stacktrace for yourself...'
+        print('ERROR: something in one of the functions of datastreams you defined in ')
+        print('assign_to_pippi_datastream is buggy.  Please fix the expression: ')
+        print(assignments.value[i])
+        print('Now raising the original error, so you can see the stacktrace for yourself...')
         raise
 
     # Filter out points inside the requested data ranges
     if data_ranges.value:
-      for key, value in data_ranges.value.iteritems():
+      for key, value in data_ranges.value.items():
         if key not in requested_cols:
-          print 'ERROR: '+str(key)+' mentioned in data_ranges does not'
-          print 'appear in requested_cols!  Please report this as a pippi bug.'
+          print('ERROR: '+str(key)+' mentioned in data_ranges does not')
+          print('appear in requested_cols!  Please report this as a pippi bug.')
         lowercut = value[0]
         uppercut = value[1]
         if log_plots.value is not None and key in log_plots.value:
@@ -401,7 +402,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
       data = data[:,cut]
       data_isvalid = data_isvalid[:,cut]
       sumcut = sum(cut)
-      print "  Total valid samples within requested data ranges: ", sumcut
+      print("  Total valid samples within requested data ranges: ", sumcut)
       if sumcut == 0: sys.exit('  You cut out all your samples!  Pippi can\'t do much more from here.\n')
       rescaling = 1.0*sumcut/len(cut)
       # Find the full details of the best-fit point
@@ -409,7 +410,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
         if likelihood_index in labels.value:
           findMin = labels.value[likelihood_index] in permittedLikes_samesign
         else:
-          findMin = [value for key, value in labels.value.iteritems() if key in permittedLikes_samesign]
+          findMin = [value for key, value in labels.value.items() if key in permittedLikes_samesign]
         if findMin:
           bestfit_any_index = np.ma.array(old_likelihood_column, mask=~cut).argmin()
           bestfit_index = data[lookup_key[likelihood_index]].argmin()
@@ -421,15 +422,15 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
             all_best_fit_data.append(str(data[lookup_key[i]][bestfit_index]))
           else:
             if column_name != '': all_best_fit_data.append(str(entries[column_name][bestfit_any_index]))
-    print "  Fraction of samples deemed valid and within requested data ranges: %.4f"%(rescaling)
+    print("  Fraction of samples deemed valid and within requested data ranges: %.4f"%(rescaling))
 
     # Print list of contents for convenience
     if not silent:
-      for key, value in sorted(lookup_key.iteritems()):
-        print "   ",key, ":", column_names[key]
-        print "        mean: %.2e  min: %.2e  max %.2e"%(np.mean(data[value]), np.min(data[value]), np.max(data[value]))
-        print "        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[value].mean())
-      print
+      for key, value in sorted(lookup_key.items()):
+        print("   ",key, ":", column_names[key])
+        print("        mean: %.2e  min: %.2e  max %.2e"%(np.mean(data[value]), np.min(data[value]), np.max(data[value])))
+        print("        Fraction of valid points where this is invalid: %.4f"%(1.0-data_isvalid[value].mean()))
+      print()
 
     # Flip 'em.
     data = np.array(data.T, dtype=np.float64)

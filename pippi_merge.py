@@ -30,11 +30,11 @@ def merge(filenames):
     import h5py
     f = h5py.File(filenames[0],'r')
     h5merge = True
-    print
-    print "Files identified as hdf5.  Interpreting final argument as output filename."
-    print
-    print "Concatenating common datasets and outputting to {0}...".format(filenames[-1])
-    print
+    print()
+    print("Files identified as hdf5.  Interpreting final argument as output filename.")
+    print()
+    print("Concatenating common datasets and outputting to {0}...".format(filenames[-1]))
+    print()
   except:
     h5merge = False
 
@@ -49,19 +49,19 @@ def merge(filenames):
     try:
       fout = h5py.File(filenames[-1],'w-')
     except:
-      print "Could not create output file {0}!".format(filenames[-1])
-      print "Please make sure it does not exist already."
-      print
+      print("Could not create output file {0}!".format(filenames[-1]))
+      print("Please make sure it does not exist already.")
+      print()
       return
 
-    print "  Determining common datasets..."
+    print("  Determining common datasets...")
     for fname in filenames[0:-1]:
-      print "    Opening: {0}".format(fname)
+      print("    Opening: {0}".format(fname))
       try:
         f = h5py.File(fname,'r')
       except:
-        print "Could not open file {0}!".format(fname)
-        print
+        print("Could not open file {0}!".format(fname))
+        print()
         return
       files[fname] = f
       datasets = {}
@@ -77,13 +77,13 @@ def merge(filenames):
       datashape = dataset_collection[0][x].shape
       if all(f[x].dtype == datatype and f[x].shape[1:] == datashape[1:] for f in dataset_collection):
         common_datasets.add(x)
-    print
-    print "  Common datasets: "
-    for x in common_datasets: print "    {0}".format(x)
-    print
+    print()
+    print("  Common datasets: ")
+    for x in common_datasets: print("    {0}".format(x))
+    print()
 
     #Find the length of each dataset and create it (empty) in the new file
-    print "  Creating empty datasets of required lengths in {0}...".format(filenames[-1])
+    print("  Creating empty datasets of required lengths in {0}...".format(filenames[-1]))
     out_dsets = {}
     for ds in common_datasets:
       length = 0
@@ -91,21 +91,21 @@ def merge(filenames):
       datatype = dataset_collection[0][ds].dtype
       datashape = (length,) + dataset_collection[0][ds].shape[1:]
       out_dsets[ds] = fout.create_dataset(ds, datashape, dtype=datatype)
-    print
+    print()
 
     #Copy the data over to the new file
-    print "  Adding data to empty datasets in {0}...".format(filenames[-1])
+    print("  Adding data to empty datasets in {0}...".format(filenames[-1]))
     for ds in common_datasets:
-      print "    Populating {0}".format(ds)
+      print("    Populating {0}".format(ds))
       index_low = 0
       for f in dataset_collection:
         index_high = index_low + f[ds].len()
         out_dsets[ds][index_low:index_high,...] = f[ds][...]
         index_low = index_high
 
-    print
-    print "Done."
-    print
+    print()
+    print("Done.")
+    print()
 
 
   else:    # We are doing an ASCII merge
@@ -137,7 +137,7 @@ def merge(filenames):
             #Crash if a later chain or line has a different number of columns to the first one
             sys.exit('Error: chains do not match (number of columns differ).  Quitting...')
           #Output the current line to stdout and get the next one
-          print line.rstrip('\n')
+          print(line.rstrip('\n'))
           #Read the next line
           line = infile.readline()
           #Work out the number of columns in the next line
@@ -150,6 +150,6 @@ def merge(filenames):
 
 def get_datasets(g,datasets):
   import h5py
-  for name, item in g.iteritems():
+  for name, item in g.items():
     if isinstance(item,h5py.Group): get_datasets(item,datasets)
     if isinstance(item,h5py.Dataset): datasets[item.name] = item
