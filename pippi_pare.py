@@ -8,6 +8,7 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
 from pippi_utils import *
 from pippi_read import *
 from importlib import import_module
@@ -45,6 +46,6 @@ def pare(argstring):
 
   # Pump it through the user-supplied function, printing each new point to stdout
   for i in range(chainArray.shape[0]):
-    print '\t'.join([str(x) for x in pareFunc(chainArray[i,:])])
+    print('\t'.join([str(x) for x in pareFunc(chainArray[i,:])]))
 
 

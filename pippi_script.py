@@ -8,6 +8,7 @@
 # Originally developed: March 2012
 #############################################################
 
+from __future__ import print_function
 left_margin = 0.16
 right_margin = 0.03
 top_margin = 0.05
@@ -75,14 +76,14 @@ keyXVals = {'r':[0.74 + x*keyXSep for x in range(2)], 'c':[0.45 + x*keyXSep for 
 def script(filename):
   # input:  filename = the name of the pip file
 
-  print
+  print()
 
   # Parse pip file
   getIniData(filename,keys)
 
   # Make sure that comparison is turned off if comparison filename is missing
   if doComparison.value and secChain.value is None:
-    print '  Warning: comparison curves requested but no comparison file specified.\n  Skipping comparison...\n'
+    print('  Warning: comparison curves requested but no comparison file specified.\n  Skipping comparison...\n')
     doComparison.value = False
 
   # Work out where the parse output is located
@@ -141,7 +142,7 @@ def script(filename):
 
   #Work out whether to do posteriors and check that flags match up
   if doPosterior.value and not any(x in labels.value for x in permittedMults):
-    print '  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...'
+    print('  Warning: do_posterior_pdf = T but no multiplicity in chain labels.\n  Skipping posterior PDF...')
     doPosterior.value = False
 
   # set colour scheme if it is undefined
@@ -156,7 +157,7 @@ def script(filename):
     # Loop over requested plots
     for plot in oneDplots.value:
 
-      print '    Writing scripts for 1D plots of quantity ',plot
+      print('    Writing scripts for 1D plots of quantity ',plot)
 
       # Set up filenames
       currentBase = baseFilename+'_'+str(plot)
@@ -188,7 +189,7 @@ def script(filename):
         plotRef = False
 
       # Determine plot size
-      if plotSize.value is None or plotSize.value is '':
+      if plotSize.value == None or plotSize.value == '':
           plotSizeInternal = '11cm x 4in'
       else:
           plotSizeInternal = plotSize.value
@@ -604,7 +605,7 @@ def script(filename):
     # Loop over requested plots
     for plot in twoDplots.value:
 
-      print '    Writing scripts for 2D plots of quantities ',plot
+      print('    Writing scripts for 2D plots of quantities ',plot)
 
       # Set up filenames
       currentBase = baseFilename+'_'+'_'.join([str(x) for x in plot])
@@ -636,7 +637,7 @@ def script(filename):
         plotRef = False
 
       # Determine plot size
-      if plotSize.value is None or plotSize.value is '':
+      if plotSize.value == None or plotSize.value == '':
         if doColourbar.value is not None and plot in doColourbar.value:
           plotSizeInternal = '12.5cm x 4in'
         else:
