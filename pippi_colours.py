@@ -254,8 +254,8 @@ Blockshading_cyan = Blockshading("cyan", "088", "3ee")
 
 # Extended Basic scheme - red
 ExtendedBasic_red = colourScheme('extendedBasic_red')
-ExtendedBasic_red.basePostColourMap = '#fff--#fff(contour3)--#fab(contour2)--#f45(contour1)--#612'
-ExtendedBasic_red.baseProfColourMap = '#fff--#fff(contour3)--#fab(contour2)--#f45(contour1)--#612'
+ExtendedBasic_red.basePostColourMap = '#fff--#fab(contour2)--#f45(contour1)--#612'
+ExtendedBasic_red.baseProfColourMap = '#fff--#fab(contour2)--#f45(contour1)--#612'
 ExtendedBasic_red.baseObsColourMap = '#fff(contour1)--#00f(contour2)--#0f0(contour3)'
 ExtendedBasic_red.mainBestFitColour1D = '#300'
 ExtendedBasic_red.mainBestFitColour2D = '#300'
@@ -275,8 +275,8 @@ ExtendedBasic_red.comparison1DLineStyle = 'Dashes'
 
 # Extended Basic scheme - green
 ExtendedBasic_green = colourScheme('extendedBasic_green')
-ExtendedBasic_green.basePostColourMap = '#fff--#fff(contour3)--#ad9(contour2)--#3a5(contour1)--#162'
-ExtendedBasic_green.baseProfColourMap = '#fff--#fff(contour3)--#ad9(contour2)--#3a5(contour1)--#162'
+ExtendedBasic_green.basePostColourMap = '#fff--#ad9(contour2)--#3a5(contour1)--#162'
+ExtendedBasic_green.baseProfColourMap = '#fff--#ad9(contour2)--#3a5(contour1)--#162'
 ExtendedBasic_green.baseObsColourMap = '#fff(contour1)--#00f(contour2)--#f00(contour3)'
 ExtendedBasic_green.mainBestFitColour1D = '#030'
 ExtendedBasic_green.mainBestFitColour2D = '#030'
@@ -296,8 +296,8 @@ ExtendedBasic_green.comparison1DLineStyle = 'Dashes'
 
 # Extended Basic scheme - blue
 ExtendedBasic_blue = colourScheme('extendedBasic_blue')
-ExtendedBasic_blue.basePostColourMap = '#fff--#fff(contour3)--#9ce(contour2)--#38b(contour1)--#126'
-ExtendedBasic_blue.baseProfColourMap = '#fff--#fff(contour3)--#9ce(contour2)--#38b(contour1)--#126'
+ExtendedBasic_blue.basePostColourMap = '#fff--#9ce(contour2)--#38b(contour1)--#126'
+ExtendedBasic_blue.baseProfColourMap = '#fff--#9ce(contour2)--#38b(contour1)--#126'
 ExtendedBasic_blue.baseObsColourMap = '#fff(contour1)--#f00(contour2)--#0f0(contour3)'
 ExtendedBasic_blue.mainBestFitColour1D = '#003'
 ExtendedBasic_blue.mainBestFitColour2D = '#003'
@@ -317,8 +317,8 @@ ExtendedBasic_blue.comparison1DLineStyle = 'Dashes'
 
 # Extended Basic scheme - grey
 ExtendedBasic_grey = colourScheme('extendedBasic_grey')
-ExtendedBasic_grey.basePostColourMap = '#fff--#fff(contour3)--#aaa(contour2)--#555(contour1)--#222'
-ExtendedBasic_grey.baseProfColourMap = '#fff--#fff(contour3)--#aaa(contour2)--#555(contour1)--#222'
+ExtendedBasic_grey.basePostColourMap = '#fff--#aaa(contour2)--#555(contour1)--#222'
+ExtendedBasic_grey.baseProfColourMap = '#fff--#aaa(contour2)--#555(contour1)--#222'
 ExtendedBasic_grey.baseObsColourMap = '#fff(contour1)--#999(contour2)--#333(contour3)'
 ExtendedBasic_grey.mainBestFitColour1D = '#000'
 ExtendedBasic_grey.mainBestFitColour2D = '#000'
@@ -338,8 +338,8 @@ ExtendedBasic_grey.comparison1DLineStyle = 'Dashes'
 
 # Sharp Basic scheme - red
 SharpBasic_red = colourScheme('sharpBasic_red')
-SharpBasic_red.basePostColourMap = '#fff--#fff(contour3)--#fab(contour2)--#f89(contour2)--#d45(contour1)--#b34(contour1)--#612'
-SharpBasic_red.baseProfColourMap = '#fff--#fff(contour3)--#fab(contour2)--#f89(contour2)--#d45(contour1)--#b34(contour1)--#612'
+SharpBasic_red.basePostColourMap = '#fff--#fab(contour2)--#f89(contour2)--#d45(contour1)--#b34(contour1)--#612'
+SharpBasic_red.baseProfColourMap = '#fff--#fab(contour2)--#f89(contour2)--#d45(contour1)--#b34(contour1)--#612'
 SharpBasic_red.baseObsColourMap = '#fff(contour1)--#7a9(contour2)--#365(contour3)'
 SharpBasic_red.mainBestFitColour1D = '#300'
 SharpBasic_red.mainBestFitColour2D = '#300'
@@ -364,8 +364,8 @@ SharpBasic_red.comparisonProfContourColour2D = 'Green'
 
 # Sharp Basic scheme - green
 SharpBasic_green = colourScheme('sharpBasic_green')
-SharpBasic_green.basePostColourMap = '#fff--#fff(contour3)--#ad9(contour2)--#7a9(contour2)--#385(contour1)--#365(contour1)--#142'
-SharpBasic_green.baseProfColourMap = '#fff--#fff(contour3)--#ad9(contour2)--#7a9(contour2)--#385(contour1)--#365(contour1)--#142'
+SharpBasic_green.basePostColourMap = '#fff--#ad9(contour2)--#7a9(contour2)--#385(contour1)--#365(contour1)--#142'
+SharpBasic_green.baseProfColourMap = '#fff--#ad9(contour2)--#7a9(contour2)--#385(contour1)--#365(contour1)--#142'
 SharpBasic_green.baseObsColourMap = '#fff(contour1)--#f89(contour2)--#b34(contour3)'
 SharpBasic_green.mainBestFitColour1D = '#030'
 SharpBasic_green.mainBestFitColour2D = '#030'
@@ -389,8 +389,8 @@ SharpBasic_green.comparisonProfContourColour2D = 'Red'
 
 # Sharp Basic scheme - blue
 SharpBasic_blue = colourScheme('sharpBasic_blue')
-SharpBasic_blue.basePostColourMap = '#fff--#fff(contour3)--#9ce(contour2)--#6be(contour2)--#38b(contour1)--#169(contour1)--#126'
-SharpBasic_blue.baseProfColourMap = '#fff--#fff(contour3)--#9ce(contour2)--#6be(contour2)--#38b(contour1)--#169(contour1)--#126'
+SharpBasic_blue.basePostColourMap = '#fff--#9ce(contour2)--#6be(contour2)--#38b(contour1)--#169(contour1)--#126'
+SharpBasic_blue.baseProfColourMap = '#fff--#9ce(contour2)--#6be(contour2)--#38b(contour1)--#169(contour1)--#126'
 SharpBasic_blue.baseObsColourMap = '#fff(contour1)--#f92(contour2)--#930(contour3)'
 SharpBasic_blue.mainBestFitColour1D = '#003'
 SharpBasic_blue.mainBestFitColour2D = '#003'
@@ -417,8 +417,8 @@ SharpBasic_blue.comparison1DLineStyle = 'Solid'
 
 # Sharp Basic scheme - grey
 SharpBasic_grey = colourScheme('sharpBasic_grey')
-SharpBasic_grey.basePostColourMap = '#fff--#fff(contour3)--#ccc(contour2)--#aaa(contour2)--#777(contour1)--#555(contour1)--#222'
-SharpBasic_grey.baseProfColourMap = '#fff--#fff(contour3)--#ccc(contour2)--#aaa(contour2)--#777(contour1)--#555(contour1)--#222'
+SharpBasic_grey.basePostColourMap = '#fff--#ccc(contour2)--#aaa(contour2)--#777(contour1)--#555(contour1)--#222'
+SharpBasic_grey.baseProfColourMap = '#fff--#ccc(contour2)--#aaa(contour2)--#777(contour1)--#555(contour1)--#222'
 SharpBasic_grey.baseObsColourMap = '#fff--#fff(contour1)--#ccc(contour2)--#aaa(contour2)--#777(contour3)--#555(contour3)--#222'
 SharpBasic_grey.mainBestFitColour1D = '#000'
 SharpBasic_grey.mainBestFitColour2D = '#000'
@@ -444,18 +444,18 @@ OrangeRed.mainBestFitColour2D = '#300'
 
 # Blue-Purple scheme
 BluePurple = colourScheme('bluePurple')
-BluePurple.baseProfColourMap = '#fff--#fff(contour3)--#cbd6d9(contour2)--#b3cde3(contour2)--#6a74a4(contour1)--#aa63bf(contour1)--#424'
+BluePurple.baseProfColourMap = '#fff--#cbd6d9(contour2)--#b3cde3(contour2)--#6a74a4(contour1)--#aa63bf(contour1)--#424'
 BluePurple.mainBestFitColour1D = '#303'
 BluePurple.mainBestFitColour2D = '#303'
 
 # Green-Blue scheme
 GreenBlue = colourScheme('greenBlue')
-GreenBlue.baseProfColourMap = '#fff--#fff(contour3)--#d0d7c6(contour2)--#bae4bc(contour2)--#59aaa2(contour1)--#4daedf(contour1)--#126'
+GreenBlue.baseProfColourMap = '#fff-#d0d7c6(contour2)--#bae4bc(contour2)--#59aaa2(contour1)--#4daedf(contour1)--#126'
 GreenBlue.mainBestFitColour1D = '#003'
 GreenBlue.mainBestFitColour2D = '#003'
 
 # Yellow-Green scheme
 YellowGreen = colourScheme('yellowGreen')
-YellowGreen.baseProfColourMap = '#fff--#fff(contour3)--#ddddaa(contour2)--#c2e699(contour2)--#56a457(contour1)--#45a665(contour1)--#142'
+YellowGreen.baseProfColourMap = '#fff--#ddddaa(contour2)--#c2e699(contour2)--#56a457(contour1)--#45a665(contour1)--#142'
 YellowGreen.mainBestFitColour1D = '#030'
 YellowGreen.mainBestFitColour2D = '#030'
