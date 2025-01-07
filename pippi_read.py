@@ -278,7 +278,7 @@ def getChainData(filename, cut_all_invalid=None, requested_cols=None, assignment
       for i, column_name in enumerate(column_names):
         if column_name != '': print("   ", i, ":", column_name)
       print()
-      quit()
+      sys.exit(0)
 
     # Identify any likelihood or multiplicity indicated by the labels.
     if labels:
