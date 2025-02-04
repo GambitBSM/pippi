@@ -24,8 +24,8 @@ Installation
 Pippi requires almost no installation.
 
 1. Make sure you have the following already installed:
-   * Either Python v2.7 or later or Python v3
-   * NumPy and SciPy libraries for python (NumPy v0.9.0 or
+   * Either Python v2.7 or later or Python v3.8 or later
+   * NumPy, SciPy, and Packaging libraries for python (NumPy v0.9.0 or
      greater is required for full functionality)
    * ctioga2 v0.8 or later
    * bash
