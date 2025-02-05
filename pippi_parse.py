@@ -17,8 +17,8 @@ from scipy.special import gammaincinv as deltaLnLike
 from scipy.interpolate import InterpolatedUnivariateSpline as oneDspline
 from scipy.interpolate import RectBivariateSpline as twoDbilinear
 
-from packaging.version import Version
-if Version(scipyCurrent.version) >= Version("0.9.0"):
+from distutils.version import StrictVersion
+if StrictVersion(scipyCurrent.version) >= StrictVersion("0.9.0"):
   from scipy.interpolate import CloughTocher2DInterpolator as twoDspline
 
 # Define parse-specific pip file entries
@@ -69,7 +69,7 @@ def parse(filename):
   if twoDplots.value is not None:
     if intMethod.value is None: intMethod.value = allowedIntMethods[0]
     if intMethod.value not in allowedIntMethods: sys.exit('Error: unrecognised interpolation_method.')
-    if intMethod.value == 'spline' and Version(scipyCurrent.version) < Version("0.9.0"):
+    if intMethod.value == 'spline' and StrictVersion(scipyCurrent.version) < StrictVersion("0.9.0"):
       sys.exit('Sorry, Clough-Tocher 2D interpolation is not supported in SciPy \n'+
                'v0.8 or lower; please upgrade your installation to use this option.')
 
