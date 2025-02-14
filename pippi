@@ -43,11 +43,15 @@ def main(arguments):
       try:
         command(arguments[2:])
       except BaseException as err:
-        print()
-        print('Running pippi failed in '+command.__name__+' operation, due to error:')
-        print(err)
-        print()
-        sys.exit()
+        clean_exit = False
+        if isinstance(err, SystemExit):
+          clean_exit = True if err.code == 0 else clean_exit
+        if not clean_exit:
+          print()
+          print('Running pippi failed in '+command.__name__+' operation, due to error:')
+          print(err)
+          print()
+          sys.exit()
       if not command in [merge, pare]:
         print()
         print('Completed sucessfully.')
@@ -61,11 +65,15 @@ def main(arguments):
           try:
             command(arguments[1:])
           except BaseException as err:
-            print()
-            print('Running pippi failed in '+command.__name__+' operation.')
-            print(err)
-            print()
-            sys.exit()
+            clean_exit = False
+            if isinstance(err, SystemExit):
+              clean_exit = True if err.code == 0 else clean_exit
+            if not clean_exit:
+              print()
+              print('Running pippi failed in '+command.__name__+' operation.')
+              print(err)
+              print()
+              sys.exit()
         print()
         print('Completed sucessfully.')
         print()
